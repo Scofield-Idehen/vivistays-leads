@@ -21,9 +21,14 @@
 
   // Live lists: each list refreshes after every change and every 15 seconds,
   // so a colleague's changes show up without reloading.
-  const subs = {};
-  async function refresh(col) {
+  // Only tell the page when something actually changed, so the screen you are
+  // reading is never rebuilt by the background refresh.
+  const subs = {}, last = {};
+  async function refresh(col, force) {
     const j = await api("list", { collection: col });
+    const sig = JSON.stringify(j.docs);
+    if (!force && last[col] === sig) return;
+    last[col] = sig;
     const docs = j.docs.map(d => ({ id: d.id, data: () => d.data }));
     (subs[col] || []).forEach(s => s.cb({ docs }));
   }
@@ -38,7 +43,7 @@
         onSnapshot(cb, err) {
           const s = { cb };
           (subs[col] = subs[col] || []).push(s);
-          refresh(col).catch(e => { if (err) err(e); });
+          refresh(col, true).catch(e => { if (err) err(e); });
           return () => { subs[col] = subs[col].filter(x => x !== s); };
         },
         doc(id) {
