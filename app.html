@@ -402,7 +402,7 @@ function fill(t,l){return t.replaceAll("[Name]",firstName(l)).replaceAll("[area]
 let db=null,sample=null,myId=null,ready=false,offline="";
 let leads=[],groups=[],posts=[],pstate={},contacts=[];let addKind="facebook";
 let view="today",selected=null,query="",filter="open",helpTab="posts",areaFilter="all";
-const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",location:"",properties:"",type:"other",dates:"",guestCount:"",purpose:"other",score:"warm",need:"",comment:"",dm:"",notes:""};
+const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",location:"",properties:"",type:"other",dates:"",guestCount:"",purpose:"other",score:"warm",need:"",comment:"",dm:"",notes:"",stayEnd:""};
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 try{const v=localStorage.getItem("vl-view");if(["today","leads","outreach","projects","help","add"].includes(v))view=v}catch(e){}
@@ -502,7 +502,7 @@ function todayView(){
     ["Closed",leads.filter(l=>l.status==="dead").length,contacts.filter(c=>c.status==="dead").length]];
   const max=Math.max(1,...stg.map(s=>s[1]+s[2]));
   const pipe=h("section",{class:"card"},
-    h("div",{class:"cardhead"},h("h3",{text:"Pipeline"}),h("span",{class:"muted small",text:(leads.length+contacts.length)+" people"})),
+    h("div",{class:"cardhead"},h("h3",{text:"Pipeline"}),h("button",{class:"btn link small",onclick:()=>{filter="archived";go("leads")}},(leads.length+contacts.length)+" active · "+((allLeads.length-leads.length)+(allContacts.length-contacts.length))+" archived")),
     h("div",{class:"bars"},...stg.map(([lab,a,b])=>h("div",{class:"barrow"},h("span",{text:lab}),
       h("div",{class:"track",style:"display:flex"},h("div",{class:"fill",style:"width:"+(a/max*100)+"%;border-radius:0"}),h("div",{class:"fill g",style:"width:"+(b/max*100)+"%;border-radius:0"})),
       h("b",{class:"num",text:a+b})))),
@@ -540,7 +540,7 @@ function step(n,title,text,a,b,done){return h("section",{class:"step"+(done?" do
 /* ---------- LEADS ---------- */
 function leadRow(l,onclick){
   const late=!CLOSED.has(l.status)&&l.status!=="new"&&l.nextFollowUp&&l.nextFollowUp<today();
-  const right=CLOSED.has(l.status)?STATUS_LABEL[l.status]:l.status==="new"?"New":late?"Overdue":niceDate(l.nextFollowUp)||STATUS_LABEL[l.status];
+  const right=l.archived?"Archived":CLOSED.has(l.status)?STATUS_LABEL[l.status]:l.status==="new"?"New":late?"Overdue":niceDate(l.nextFollowUp)||STATUS_LABEL[l.status];
   const g=kindOf(l)==="guest";
   const sub=g?["Guest",l.location,l.dates]:["Owner",l.location,l.need||TYPE_LABEL[l.type]];
   return h("button",{class:"row","aria-selected":String(selected===l.id),onclick},
@@ -550,7 +550,7 @@ function leadRow(l,onclick){
     h("span",{class:"sub",text:sub.filter(Boolean).join(" · ")}));
 }
 function leadsView(){
-  const F=[["open","To do"],["owner","Owners"],["guest","Guests"],["talking","Talking"],["won","Won"],["closed","Closed"]];
+  const F=[["open","To do"],["owner","Owners"],["guest","Guests"],["talking","Talking"],["won","Won"],["archived","Archived"+(allLeads.length-leads.length?" "+(allLeads.length-leads.length):"")]];
   const listcol=h("div",{class:"listcol",style:"display:flex;flex-direction:column;gap:12px;min-width:0"},
     h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Leads"}),h("span",{class:"muted small",text:leads.filter(l=>!CLOSED.has(l.status)).length+" open"})),
     h("div",{class:"chips",role:"group","aria-label":"Show"},...F.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(filter===k),onclick:()=>{filter=k;render()}},t))),
@@ -560,14 +560,13 @@ function leadsView(){
 }
 function filteredLeads(){
   const q=query.trim().toLowerCase();
-  return leads.filter(l=>{
+  return(filter==="archived"?allLeads.filter(l=>l.archived):leads).filter(l=>{
     if(filter==="open"&&CLOSED.has(l.status))return false;
     if(filter==="owner"&&(kindOf(l)!=="owner"||CLOSED.has(l.status)))return false;
     if(filter==="guest"&&(kindOf(l)!=="guest"||CLOSED.has(l.status)))return false;
     if(filter==="talking"&&!TALKING.has(l.status))return false;
     if(filter==="won"&&!WON.has(l.status))return false;
-    if(filter==="closed"&&l.status!=="dead")return false;
-    return!q||[l.name,l.location,l.group,l.need,l.notes,l.properties,l.dates].join(" ").toLowerCase().includes(q)}).sort(filter==="open"?byPriority:byNewest);
+    return!q||[l.name,l.location,l.group,l.need,l.notes,l.properties,l.dates].join(" ").toLowerCase().includes(q)}).sort(filter==="open"?byPriority:filter==="archived"?(a,b)=>(b.archivedAt||"").localeCompare(a.archivedAt||""):byNewest);
 }
 function rowsOrEmptyList(list){
   if(!ready&&!offline)return[h("div",{class:"empty"},h("p",{text:"Loading leads…"}))];
@@ -577,7 +576,7 @@ function rowsOrEmptyList(list){
 }
 
 function detail(){
-  const l=leads.find(x=>x.id===selected);
+  const l=allLeads.find(x=>x.id===selected);
   if(!l)return h("div",{class:"detail"},h("div",{class:"empty"},h("h3",{text:"Pick someone from the list"}),h("p",{text:"You'll see exactly what to send them next, ready to copy."})));
   const g=kindOf(l)==="guest";
   const fld=(label,key,ph,wide)=>h("div",{class:"field"+(wide?" wide":"")},h("label",{for:"d-"+key,text:label}),h("input",{id:"d-"+key,value:l[key]||"",placeholder:ph||"",onchange:e=>save(l,{[key]:e.target.value.trim()})}));
@@ -586,7 +585,8 @@ function detail(){
     h("button",{class:"back",onclick:()=>{selected=null;render()}},"‹ All leads"),
     h("div",{style:"display:flex;flex-direction:column;gap:8px"},h("h1",{text:l.name||(g?"Guest enquiry":"Unnamed lead")}),
       h("div",{class:"btns"},h("span",{class:"pill "+(l.score==="hot"?"hot":l.score==="cold"?"":"warm"),text:SCORE_LABEL[l.score]||"Warm"}),h("span",{class:"pill accent",text:g?"Guest":"Owner"}),h("span",{class:"pill",text:STATUS_LABEL[l.status]||"New"}),l.location?h("span",{class:"pill",text:l.location}):null)),
-    nextCard(l),
+    archiveCard(l,false),
+    l.archived?null:nextCard(l),
     l.need?h("div",{class:"card"},h("h3",{text:g?"What they're looking for":"What they need"}),h("p",{class:"text",text:l.need})):null,
     (l.postText||safeUrl(l.postUrl)||safeUrl(l.profileUrl))?h("details",{class:"card"},h("summary",{},"Their Facebook post"),
       l.postText?h("p",{class:"text muted small",text:l.postText}):null,
@@ -595,10 +595,11 @@ function detail(){
     h("details",{class:"card"},h("summary",{},"Edit details"),
       h("div",{class:"form"},fld("Name","name"),fld(g?"Area":"Location","location"),
         g?fld("Dates","dates","Ask them"):fld("Properties","properties"),g?fld("Number of guests","guestCount","Ask them"):fld("Group","group"),
+        g?h("div",{class:"field"},h("label",{for:"d-se",text:"Stay ends (archives after this date)"}),h("input",{type:"date",id:"d-se",value:l.stayEnd||((parseDates(l.dates,l.created)||{}).end)||"",onchange:e=>save(l,{stayEnd:e.target.value||null})})):null,
         sel("Where they are",  "status",g?GUEST_STATUSES:OWNER_STATUSES,l.status||"new",v=>setStatus(l,v)),
         sel("How likely","score",[["hot","Hot"],["warm","Warm"],["cold","Cold"]],l.score||"warm",v=>{save(l,{score:v});render()}),
         h("div",{class:"field"},h("label",{for:"d-nf",text:"Next follow-up"}),h("input",{type:"date",id:"d-nf",value:l.nextFollowUp||"",onchange:e=>save(l,{nextFollowUp:e.target.value||null})}))),
-      h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>{save(l,{kind:g?"owner":"guest",status:"new",nextFollowUp:today()});render()}},g?"This is actually an owner":"This is actually a guest"),deleteBtn(l))),
+      h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>{save(l,{kind:g?"owner":"guest",status:"new",nextFollowUp:today()});render()}},g?"This is actually an owner":"This is actually a guest"),archiveBtn(l,false),deleteBtn(l))),
     h("p",{class:"muted small",text:"Added "+(l.created?niceDate(l.created.slice(0,10)):"")+(l.group?" from "+l.group:"")}));
 }
 function deleteBtn(l){const b=h("button",{class:"btn danger"},"Delete lead");b.addEventListener("click",()=>{if(b.dataset.armed){del(l);return}b.dataset.armed="1";b.textContent="Tap again to delete";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="Delete lead"}},3000)});return b}
@@ -690,6 +691,7 @@ Read this Facebook group post${draft.group?` from the group "${draft.group}"`:""
 "properties": owners only, short description of their property if mentioned, else "",
 "type": owners only, one of "cohost","recommend","frustrated","new_host","selling","other",
 "dates": guests only, dates or timing if mentioned, else "",
+"stayEnd": guests only, the last night of the stay as YYYY-MM-DD if it can be worked out (today is ${today()}), else "",
 "guestCount": guests only, number of people if mentioned, else "",
 "purpose": guests only, one of "holiday","work","family","relocation","other",
 "comment": a short public reply under their post, addressed to them by first name. For guests: name the nearest Vivistays town that fits their request (if any) and say you have sent them a message. For owners: one specific, useful tip about their problem, then offer to message them,
@@ -697,7 +699,7 @@ Read this Facebook group post${draft.group?` from the group "${draft.group}"`:""
 
 POST:
 """${draft.post.slice(0,6000)}"""`,{modelTier:"default"});
-    for(const k of["name","location","properties","need","comment","dm","dates","guestCount"])if(typeof r[k]==="string"&&r[k])draft[k]=r[k];
+    for(const k of["name","location","properties","need","comment","dm","dates","guestCount","stayEnd"])if(typeof r[k]==="string"&&r[k])draft[k]=r[k];
     if(r.kind==="guest"||r.kind==="owner")draft.kind=r.kind;
     if(TYPE_LABEL[r.type])draft.type=r.type;if(PURPOSE_LABEL[r.purpose])draft.purpose=r.purpose;if(SCORE_LABEL[r.score])draft.score=r.score;
     aiNote=(draft.kind==="guest"?"This is a guest looking to stay. ":"This is a property owner. ")+(r.reason?SCORE_LABEL[draft.score]+": "+r.reason:"Check the details below.");
@@ -795,7 +797,7 @@ async function saveLead(){
   if(sample&&draft.post.trim()&&!aiDone&&!draft.dm.trim()&&!draft.comment.trim()){const ok=await analyse();if(!ok){toast("AI couldn't read it. Check the form, then save again.");aiDone=true;return}}
   const now=new Date().toISOString();const g=draft.kind==="guest";
   const data={kind:draft.kind,name:draft.name.trim(),profileUrl:draft.profileUrl.trim(),postUrl:draft.postUrl.trim(),group:draft.group.trim(),location:draft.location.trim(),score:draft.score,need:draft.need.trim(),postText:draft.post.trim(),commentDraft:draft.comment.trim(),dmDraft:draft.dm.trim(),notes:draft.notes.trim(),status:"new",nextFollowUp:today(),created:now,updated:now,createdBy:myId||null,
-    ...(g?{dates:draft.dates.trim(),guestCount:String(draft.guestCount).trim(),purpose:draft.purpose}:{properties:draft.properties.trim(),type:draft.type})};
+    ...(g?{stayEnd:/^\d{4}-\d{2}-\d{2}$/.test(draft.stayEnd||"")?draft.stayEnd:((parseDates(draft.dates,today())||{}).end||null),dates:draft.dates.trim(),guestCount:String(draft.guestCount).trim(),purpose:draft.purpose}:{properties:draft.properties.trim(),type:draft.type})};
   try{const ref=await db.collection("leads").add(data);ensureGroup(data.group,data.postUrl);draft={...BLANK};aiNote="";aiDone=false;toast(g?"Saved. Reply to them today.":"Lead saved");go("leads",ref.id)}
   catch(err){toast(err&&err.code==="quota_exceeded"?"The tracker is full. Delete closed leads to make room.":"Couldn't save. Try again.");render()}
 }
@@ -995,7 +997,7 @@ function oPlan(c){
 
 function contactRow(c,onclick){
   const late=!O_CLOSED.has(c.status)&&(c.status||"new")!=="new"&&c.nextFollowUp&&c.nextFollowUp<today();
-  const right=O_CLOSED.has(c.status)?oLabel(c):(c.status||"new")==="new"?"New":late?"Overdue":niceDate(c.nextFollowUp)||oLabel(c);
+  const right=c.archived?"Archived":O_CLOSED.has(c.status)?oLabel(c):(c.status||"new")==="new"?"New":late?"Overdue":niceDate(c.nextFollowUp)||oLabel(c);
   const p=projById(c.projectId);
   const sub=[CHANNEL_LABEL[chOf(c)],c.kind==="event"?"Event: "+(c.eventName||""):p?p.name:"",c.name&&c.company?c.company:""];
   return h("button",{class:"row","aria-selected":String(selected===c.id),onclick},
@@ -1007,18 +1009,17 @@ function contactRow(c,onclick){
 let oFilter="open";
 function filteredContacts(){
   const q=query.trim().toLowerCase();
-  return contacts.filter(c=>{
+  return(oFilter==="archived"?allContacts.filter(c=>c.archived):contacts).filter(c=>{
     if(oFilter==="open"&&O_CLOSED.has(c.status))return false;
     if(oFilter==="due"&&!oDue(c))return false;
     if(oFilter==="project"&&(c.kind==="event"||O_CLOSED.has(c.status)))return false;
     if(oFilter==="event"&&(c.kind!=="event"||O_CLOSED.has(c.status)))return false;
     if(oFilter==="replied"&&c.status!=="replied")return false;
-    if(oFilter==="closed"&&!O_CLOSED.has(c.status))return false;
-    return!q||[c.name,c.company,c.role,c.email,c.eventName,c.eventTown,(projById(c.projectId)||{}).name,c.notes].join(" ").toLowerCase().includes(q)})
+        return!q||[c.name,c.company,c.role,c.email,c.eventName,c.eventTown,(projById(c.projectId)||{}).name,c.notes].join(" ").toLowerCase().includes(q)})
   .sort((a,b)=>oDue(b)-oDue(a)||(a.nextFollowUp||"").localeCompare(b.nextFollowUp||""));
 }
 function outreachView(){
-  const F=[["open","All open"],["due","To do today"],["project","Projects"],["event","Events"],["replied","Replied"],["closed","Closed"]];
+  const F=[["open","All open"],["due","To do today"],["project","Projects"],["event","Events"],["replied","Replied"],["archived","Archived"+(allContacts.length-contacts.length?" "+(allContacts.length-contacts.length):"")]];
   const rows=list=>{
     if(!ready&&!offline)return[h("div",{class:"empty"},h("p",{text:"Loading…"}))];
     if(offline)return[h("div",{class:"empty"},h("h3",{text:"Sign in to see contacts"}),h("p",{text:offline}))];
@@ -1033,7 +1034,7 @@ function outreachView(){
   return[h("div",{class:"split"+(selected?" open":"")},listcol,contactDetail())];
 }
 function contactDetail(){
-  const c=contacts.find(x=>x.id===selected);
+  const c=allContacts.find(x=>x.id===selected);
   if(!c)return h("div",{class:"detail"},h("div",{class:"empty"},h("h3",{text:"Pick someone from the list"}),h("p",{text:"You'll see exactly what to send them next, ready to copy."})));
   const p=projById(c.projectId);const ev=c.kind==="event";
   const plan=oPlan(c);const s=c.status||"new";
@@ -1053,7 +1054,8 @@ function contactDetail(){
     h("button",{class:"back",onclick:()=>{selected=null;render()}},"‹ Outreach"),
     h("div",{style:"display:flex;flex-direction:column;gap:8px"},h("h1",{text:cTitle(c)}),
       h("div",{class:"btns"},h("span",{class:"pill accent",text:CHANNEL_LABEL[chOf(c)]}),h("span",{class:"pill",text:oLabel(c)}),ev?h("span",{class:"pill warm",text:"Event"}):p?h("span",{class:"pill",text:p.name}):null)),
-    next,
+    archiveCard(c,true),
+    c.archived?null:next,
     h("div",{class:"card"},h("h3",{text:"Who they are"}),
       h("dl",{class:"facts",style:"border-top:0;padding-top:0"},
         c.name?[h("dt",{text:"Name"}),h("dd",{text:c.name})]:null,
@@ -1072,7 +1074,7 @@ function contactDetail(){
         ev?fld("Event dates","eventDate"):null,ev?fld("Event town","eventTown"):null,
         ev?sel("Our nearest properties","area",Object.entries(AREAS).map(([k,v])=>[k,v.name]),c.area||"edinburgh",v=>{saveC(c,{area:v});render()}):null,
         h("div",{class:"field"},h("label",{for:"c-nf",text:"Next follow-up"}),h("input",{type:"date",id:"c-nf",value:c.nextFollowUp||"",onchange:e=>saveC(c,{nextFollowUp:e.target.value||null})}))),
-      h("div",{class:"btns"},deleteCBtn(c))),
+      h("div",{class:"btns"},archiveBtn(c,true),deleteCBtn(c))),
     h("p",{class:"muted small",text:"Added "+(c.created?niceDate(c.created.slice(0,10)):"")}));
 }
 function deleteCBtn(c){const b=h("button",{class:"btn danger"},"Delete contact");b.addEventListener("click",async()=>{if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Tap again to delete";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="Delete contact"}},3000);return}
@@ -1254,6 +1256,88 @@ function groupsView(){
     h("div",{class:"card"},h("h3",{text:"Add a group you joined"}),h("div",{class:"btns",style:"align-items:flex-end"},h("div",{class:"field",style:"flex:1;min-width:200px"},h("label",{for:"g-name",text:"Group name"}),h("input",{id:"g-name",placeholder:"As it appears on Facebook",oninput:e=>nf.name=e.target.value})),h("button",{class:"btn primary",onclick:addOwn},"Add group")))];
 }
 
+/* ---------- ARCHIVE: keep lists to people who still matter ---------- */
+/* Rules (checked every time the lists load):
+   Guests: stay dates have passed (unless booked) · no reply 14 days after we first contacted them, when they gave no dates.
+   Owners: no reply after both follow-ups · closed.
+   Outreach: event has passed · no reply 7 days after the follow-up · LinkedIn request not accepted after 14 days · closed.
+   Won leads and bookings are never archived. Restoring someone stops the rules for them. */
+let allLeads=[],allContacts=[];
+const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,sept:8,oct:9,nov:10,dec:11};
+const DAYS=["sun","mon","tue","wed","thu","fri","sat"];
+const isoOf=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+/* Read dates out of free text such as "14–16 Nov", "12/10/2026", "from Monday for a week", "this weekend". Returns {start,end} as yyyy-mm-dd, or null. */
+function parseDates(text,refIso){
+  const t=String(text||"").toLowerCase();if(!t.trim())return null;
+  const ref=refIso?new Date(refIso.slice(0,10)+"T12:00:00"):new Date();
+  const found=[];
+  const mk=(y,m,d)=>{let dt=new Date(y==null?ref.getFullYear():y,m,d,12);if(y==null&&dt<new Date(ref.getTime()-30*864e5))dt.setFullYear(dt.getFullYear()+1);if(!isNaN(dt))found.push(dt)};
+  const mon="(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sept?(?:ember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)";
+  const yr="(?:,?\\s*(\\d{4}))?";
+  let m,re;
+  re=new RegExp("(\\d{1,2})(?:st|nd|rd|th)?\\s*(?:-|–|to|until|till)\\s*(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?"+mon+yr,"g");
+  while((m=re.exec(t))){const mo=MONTHS[m[3].slice(0,m[3].startsWith("sept")?4:3)];const y=m[4]?+m[4]:null;mk(y,mo,+m[1]);mk(y,mo,+m[2])}
+  re=new RegExp("(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?"+mon+yr,"g");
+  while((m=re.exec(t))){mk(m[3]?+m[3]:null,MONTHS[m[2].slice(0,m[2].startsWith("sept")?4:3)],+m[1])}
+  re=new RegExp(mon+"\\s+(\\d{1,2})(?!\\d)(?:st|nd|rd|th)?"+yr,"g");
+  while((m=re.exec(t))){mk(m[3]?+m[3]:null,MONTHS[m[1].slice(0,m[1].startsWith("sept")?4:3)],+m[2])}
+  re=/\b(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?\b/g;
+  while((m=re.exec(t))){const d=+m[1],mo=+m[2]-1;if(mo>11||d>31)continue;let y=m[3]?+m[3]:null;if(y&&y<100)y+=2000;mk(y,mo,d)}
+  if(!found.length){
+    const add=n=>new Date(ref.getTime()+n*864e5);
+    if(/\btonight\b|\btoday\b/.test(t))found.push(add(0));
+    if(/\btomorrow\b/.test(t))found.push(add(1));
+    if(/\bthis weekend\b/.test(t)){const s=(6-ref.getDay()+7)%7;found.push(add(s),add(s+1))}
+    if(/\bnext week\b/.test(t)){const s=(8-ref.getDay())%7||7;found.push(add(s),add(s+6))}
+    DAYS.forEach((d,i)=>{if(new RegExp("\\b"+d+"(day)?\\b").test(t)){found.push(add((i-ref.getDay()+7)%7||7))}});
+  }
+  if(found.length===1){const w=t.match(/(\d+|a|one|two|three|four|five|six)\s+(night|day|week|month)s?/);
+    if(w){const n={a:1,one:1,two:2,three:3,four:4,five:5,six:6}[w[1]]||+w[1];const per={night:1,day:1,week:7,month:30}[w[2]];found.push(new Date(found[0].getTime()+n*per*864e5))}}
+  if(!found.length)return null;
+  found.sort((a,b)=>a-b);return{start:isoOf(found[0]),end:isoOf(found[found.length-1])};
+}
+const daysSince=iso=>iso?Math.floor((new Date(today()+"T12:00:00")-new Date(String(iso).slice(0,10)+"T12:00:00"))/864e5):0;
+function leadArchiveReason(l){
+  if(l.archived||l.keep||WON.has(l.status))return null;
+  if(l.status==="dead")return"Closed";
+  if(kindOf(l)==="guest"){
+    const d=l.stayEnd?{end:l.stayEnd}:parseDates(l.dates,l.created);
+    if(d&&d.end<today())return"Stay dates have passed";
+    if(!d&&!TALKING.has(l.status)&&l.status!=="new"&&daysSince(l.created)>14)return"No reply after 14 days";
+    if(!d&&l.status==="new"&&daysSince(l.created)>21)return"Not contacted for 3 weeks";
+    return null;
+  }
+  if(l.status==="fu2"&&l.nextFollowUp&&l.nextFollowUp<today())return"No reply after both follow-ups";
+  if(l.status==="new"&&daysSince(l.created)>30)return"Not contacted for a month";
+  return null;
+}
+function contactArchiveReason(c){
+  if(c.archived||c.keep||c.status==="booked")return null;
+  if(c.status==="dead")return"Closed";
+  if(c.kind==="event"){const d=parseDates(c.eventDate,c.created);if(d&&d.end<today())return"Event has passed"}
+  if(c.status==="fu"&&c.nextFollowUp&&daysSince(c.nextFollowUp)>7)return"No reply after the follow-up";
+  if(c.status==="invited"&&daysSince(c.nextFollowUp)>11)return"LinkedIn request not accepted";
+  return null;
+}
+const archiving=new Set();
+function autoArchive(){
+  if(!db)return;
+  for(const l of allLeads){const r=leadArchiveReason(l);if(r&&!archiving.has(l.id)){archiving.add(l.id);db.collection("leads").doc(l.id).update({archived:true,archivedReason:r,archivedAt:today()}).catch(()=>archiving.delete(l.id))}}
+  for(const c of allContacts){const r=contactArchiveReason(c);if(r&&!archiving.has(c.id)){archiving.add(c.id);db.collection("contacts").doc(c.id).update({archived:true,archivedReason:r,archivedAt:today()}).catch(()=>archiving.delete(c.id))}}
+}
+function archiveCard(x,isContact){
+  if(!x.archived)return null;
+  const restore=()=>{const p={archived:false,archivedReason:null,archivedAt:null,keep:true,status:O_CLOSED.has(x.status)||CLOSED.has(x.status)?"new":x.status,nextFollowUp:today()};
+    (isContact?saveC:save)(x,p);archiving.delete(x.id);toast("Restored. It's back in your list.");render()};
+  return h("div",{class:"banner",style:"display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"},
+    h("span",{},h("b",{text:"Archived"}),"  "+(x.archivedReason||"")+(x.archivedAt?" · "+niceDate(x.archivedAt):"")),
+    h("button",{class:"btn primary",onclick:restore},"Restore"));
+}
+function archiveBtn(x,isContact){
+  if(x.archived)return null;
+  return h("button",{class:"btn",onclick:()=>{(isContact?saveC:save)(x,{archived:true,archivedReason:"Archived by hand",archivedAt:today()});selected=null;toast("Archived");render()}},"Archive");
+}
+
 /* ---------- boot ---------- */
 $("#addtop").addEventListener("click",()=>go("add"));
 render();
@@ -1265,10 +1349,10 @@ render();
   if(u){try{myId=await u.id()}catch(e){}}
   if(!db){offline="Sign in to claude.ai to save and see leads.";render();return}
   const busy=()=>{const a=document.activeElement;return a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&a.closest("#main")};
-  db.collection("leads").onSnapshot(snap=>{leads=snap.docs.map(x=>({id:x.id,...x.data()}));ready=true;if(selected&&!leads.some(l=>l.id===selected))selected=null;if(busy())renderTabs();else render()},()=>{offline="Lost connection to the lead list. Reload the page.";render()});
+  db.collection("leads").onSnapshot(snap=>{allLeads=snap.docs.map(x=>({id:x.id,...x.data()}));leads=allLeads.filter(l=>!l.archived);ready=true;if(selected&&view==="leads"&&!allLeads.some(l=>l.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{offline="Lost connection to the lead list. Reload the page.";render()});
   db.collection("posts").onSnapshot(snap=>{posts=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="help"&&!busy())render()},()=>{});
   db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});
-  db.collection("contacts").onSnapshot(snap=>{contacts=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="outreach"&&selected&&!contacts.some(c=>c.id===selected))selected=null;if(busy())renderTabs();else render()},()=>{});
+  db.collection("contacts").onSnapshot(snap=>{allContacts=snap.docs.map(x=>({id:x.id,...x.data()}));contacts=allContacts.filter(c=>!c.archived);if(view==="outreach"&&selected&&!allContacts.some(c=>c.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{});
 })();
 })();
 </script>
