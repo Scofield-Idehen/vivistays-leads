@@ -1,0 +1,4 @@
+config.local.php
+data/*.sqlite*
+data/seed.imported-*
+.DS_Store

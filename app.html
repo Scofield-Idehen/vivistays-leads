@@ -1,0 +1,1052 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}.signout{font-size:14px;color:var(--ink2);text-decoration:none;white-space:nowrap}.signout:hover{color:var(--accent)}</style></head><body>
+<title>Vivistays Owner Leads</title>
+<style>
+/* Layout: Apple-style. Frosted top bar with a segmented control; light grey page; white grouped cards with soft radii; system blue for actions; iOS system colours for status. Today = numbered routine. Leads = list + detail. Projects = contractor work near our properties. How-to = posts, messages, groups. */
+:root{
+  --bg:#F5F5F7; --surface:#FFFFFF; --sunk:#F2F2F7; --line:rgba(60,60,67,.12); --bar:rgba(245,245,247,.8);
+  --ink:#1D1D1F; --ink2:#6E6E73; --ink3:#AEAEB2;
+  --accent:#0071E3; --accent-ink:#FFFFFF; --accent-soft:rgba(0,113,227,.10);
+  --hot:#FF3B30; --warm:#FF9500; --cold:#8E8E93; --good:#34C759;
+  --hot-soft:rgba(255,59,48,.12); --warm-soft:rgba(255,149,0,.14); --good-soft:rgba(52,199,89,.14);
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --r:18px; --r-sm:12px; --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --line:rgba(84,84,88,.5); --bar:rgba(22,22,23,.8);
+  --ink:#F5F5F7; --ink2:#98989D; --ink3:#636366;
+  --accent:#2997FF; --accent-ink:#FFFFFF; --accent-soft:rgba(41,151,255,.16);
+  --hot:#FF453A; --warm:#FF9F0A; --cold:#8E8E93; --good:#30D158;
+  --hot-soft:rgba(255,69,58,.16); --warm-soft:rgba(255,159,10,.16); --good-soft:rgba(48,209,88,.16);
+  --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --line:rgba(84,84,88,.5); --bar:rgba(22,22,23,.8);
+  --ink:#F5F5F7; --ink2:#98989D; --ink3:#636366;
+  --accent:#2997FF; --accent-ink:#FFFFFF; --accent-soft:rgba(41,151,255,.16);
+  --hot:#FF453A; --warm:#FF9F0A; --cold:#8E8E93; --good:#30D158;
+  --hot-soft:rgba(255,69,58,.16); --warm-soft:rgba(255,159,10,.16); --good-soft:rgba(48,209,88,.16);
+  --shadow:none; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.47 var(--body);letter-spacing:-.022em;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px;border-radius:8px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;font-weight:600}
+h1{font-size:40px;line-height:1.1;letter-spacing:-.03em;font-weight:700}
+h2{font-size:24px;line-height:1.17;letter-spacing:-.02em}
+h3{font-size:19px;line-height:1.25;letter-spacing:-.015em}
+p{margin:0}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.topin{max-width:1080px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.02em;margin-right:auto}
+.brand span{color:var(--ink2);font-weight:400}
+.tabs{display:flex;gap:2px;background:var(--sunk);padding:2px;border-radius:9px;overflow-x:auto;max-width:100%}
+.tab{border:0;background:none;padding:6px 16px;border-radius:7px;font-weight:500;font-size:14px;cursor:pointer;white-space:nowrap;color:var(--ink);display:flex;align-items:center;gap:6px}
+.tab[aria-current="true"]{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+.tab .n{font-size:12px;font-weight:600;background:var(--hot);color:#fff;border-radius:99px;padding:0 6px;line-height:17px;min-width:17px;text-align:center}
+.addbtn{border:0;background:var(--accent);color:var(--accent-ink);padding:7px 16px;border-radius:99px;font-weight:500;font-size:14px;cursor:pointer;white-space:nowrap}
+
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:36px 80px;display:flex;flex-direction:column;gap:28px}
+.narrow{max-width:760px}
+.lede{color:var(--ink2);max-width:60ch;font-size:19px;line-height:1.42}
+.banner{background:var(--warm-soft);color:var(--ink);border-radius:var(--r-sm);padding:12px 16px;font-size:15px}
+
+/* steps on Today */
+.steps{display:flex;flex-direction:column;gap:16px}
+.step{background:var(--surface);border-radius:var(--r);padding:24px;display:grid;grid-template-columns:44px minmax(0,1fr);gap:6px 16px;box-shadow:var(--shadow)}
+.step .num{grid-row:span 3;width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;font:600 17px/36px var(--display);text-align:center}
+.step.done .num{background:var(--good)}
+.step p{color:var(--ink2);font-size:16px}
+.step .body{display:flex;flex-direction:column;gap:14px;margin-top:10px;min-width:0}
+
+/* rows — inset grouped list */
+.list{background:var(--surface);border-radius:var(--r-sm);overflow:hidden;box-shadow:var(--shadow)}
+.step .list{box-shadow:none;background:var(--sunk)}
+.row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:1px 12px;align-items:start;width:100%;text-align:left;padding:12px 16px;border:0;background:none;cursor:pointer;position:relative}
+.row+.row::before{content:"";position:absolute;top:0;left:38px;right:0;height:.5px;background:var(--line)}
+.row:hover{background:rgba(120,120,128,.08)}
+.row[aria-selected="true"]{background:var(--accent);color:#fff}
+.row[aria-selected="true"] .sub,.row[aria-selected="true"] .when{color:rgba(255,255,255,.85)}
+.row[aria-selected="true"]::before,.row[aria-selected="true"]+.row::before{display:none}
+.row .nm{font-weight:600;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .sub{grid-column:2/4;font-size:14px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .when{font-size:14px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.row .when.late{color:var(--hot);font-weight:500}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:7px;background:var(--cold)}
+.dot.hot{background:var(--hot)}.dot.warm{background:var(--warm)}
+
+/* segmented filters */
+.chips{display:inline-flex;gap:2px;flex-wrap:wrap;background:var(--sunk);padding:2px;border-radius:9px;align-self:flex-start;max-width:100%}
+.chip{border:0;background:none;border-radius:7px;padding:5px 14px;font-size:14px;font-weight:500;cursor:pointer;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;border-radius:99px;padding:3px 10px;background:var(--sunk);color:var(--ink2);white-space:nowrap}
+.pill.hot{background:var(--hot-soft);color:var(--hot)}.pill.warm{background:var(--warm-soft);color:var(--warm)}.pill.good{background:var(--good-soft);color:var(--good)}.pill.accent{background:var(--accent-soft);color:var(--accent)}
+
+/* leads layout */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:24px;align-items:start}
+.search{width:100%;border:0;background:rgba(118,118,128,.12);border-radius:10px;padding:8px 12px 8px 34px;outline:none;font-size:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='m11 11 3.5 3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:11px 50%}
+.search::placeholder{color:var(--ink2)}
+.detail{display:flex;flex-direction:column;gap:20px;min-width:0}
+.back{display:none;border:0;background:none;color:var(--accent);padding:0;cursor:pointer;align-self:flex-start;font-size:17px}
+
+/* next step */
+.next{background:var(--surface);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.eyebrow{font-size:13px;font-weight:600;color:var(--accent)}
+.eyebrow.late{color:var(--hot)}
+.msg{background:var(--sunk);border-radius:var(--r-sm);padding:14px 16px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px;line-height:1.5}
+.btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{border:0;background:rgba(118,118,128,.12);color:var(--accent);border-radius:99px;padding:9px 18px;font-weight:500;font-size:15px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:rgba(118,118,128,.18)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.link{background:none;padding-inline:4px}
+.btn.link:hover{text-decoration:underline}
+.btn.danger{color:var(--hot)}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* cards and forms */
+.card{background:var(--surface);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0;box-shadow:var(--shadow)}
+.card h3{font-size:17px}
+.muted{color:var(--ink2)}
+.small{font-size:14px}
+.text{white-space:pre-wrap;overflow-wrap:anywhere}
+details.card>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}
+details.card>summary::after{content:"Show";font-weight:400;color:var(--accent);font-size:15px}
+details.card[open]>summary::after{content:"Hide"}
+details.card>summary::-webkit-details-marker{display:none}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.wide{grid-column:1/-1}
+.field label{font-size:13px;font-weight:500;color:var(--ink2)}
+.field input,.field select,.field textarea{border:0;background:rgba(118,118,128,.12);border-radius:10px;padding:10px 12px;outline:none;width:100%;min-width:0;font-size:16px}
+.field input:focus,.field select:focus,.field textarea:focus{box-shadow:0 0 0 3px var(--accent-soft)}
+.field textarea{resize:vertical;line-height:1.5}
+.toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toggle button{border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--surface);border-radius:var(--r-sm);padding:14px 16px;text-align:left;cursor:pointer}
+.toggle button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+.toggle b{display:block;font-weight:600}
+.toggle span{font-size:14px;color:var(--ink2)}
+
+/* projects */
+.proj{background:var(--surface);border-radius:var(--r);padding:22px 24px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.proj .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.proj .head h3{display:flex;align-items:center;gap:10px}
+.proj .head h3::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--cold);flex:none}
+.proj.A .head h3::before{background:var(--hot)}.proj.B .head h3::before{background:var(--warm)}
+.facts{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 16px;font-size:16px;margin:0;padding-top:12px;border-top:.5px solid var(--line)}
+.facts dt{color:var(--ink2)}
+.facts dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.props{display:flex;flex-wrap:wrap;gap:6px}
+.props span{font-size:13px;background:var(--sunk);border-radius:8px;padding:3px 9px}
+.tipbox{background:var(--accent-soft);border-radius:var(--r-sm);padding:12px 14px;font-size:15px}
+.areas{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.area{background:var(--surface);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;gap:2px;box-shadow:var(--shadow)}
+.area b{font-family:var(--display);font-size:34px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.area .muted{font-size:14px}
+
+.kw{display:flex;flex-wrap:wrap;gap:6px}
+.kw span{font-size:14px;background:var(--sunk);border-radius:99px;padding:4px 12px}
+.empty{background:var(--surface);border-radius:var(--r);padding:44px 24px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;box-shadow:var(--shadow)}
+.empty p{color:var(--ink2);max-width:40ch}
+.toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(29,29,31,.88);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fff;padding:10px 20px;border-radius:99px;font-size:15px;z-index:30}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+
+@media (max-width:820px){
+  .split{grid-template-columns:minmax(0,1fr)}
+  .split.open .listcol{display:none}
+  .split:not(.open) .detail{display:none}
+  .back{display:inline-block}
+  .form{grid-template-columns:minmax(0,1fr)}
+  h1{font-size:32px}
+  .facts{grid-template-columns:minmax(0,1fr)}
+  .facts dt{margin-top:6px}
+  .addbtn{order:2}
+  .tabs{order:3;width:100%}
+}
+.dot.good{background:var(--good)}
+.choose{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.choose button{border:0;box-shadow:inset 0 0 0 1px var(--line);background:var(--surface);border-radius:var(--r-sm);padding:14px 16px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.choose button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+.choose b{font-weight:600}
+.choose span{font-size:13px;color:var(--ink2)}
+.guide{display:flex;flex-direction:column;gap:14px}
+.guide ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px}
+@media (max-width:820px){.choose{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+
+<header class="top"><div class="topin">
+  <div class="brand">Vivistays <span>Leads</span></div>
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+  <button class="addbtn" id="addtop">+ Add</button>
+</div></header>
+<main class="wrap" id="main"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- lead settings ---------- */
+const STATUSES=[["new","New"],["commented","Commented"],["messaged","Messaged"],["fu1","Follow-up 1 sent"],["fu2","Follow-up 2 sent"],["replied","Replied"],["call","Call booked"],["quoted","Options sent"],["signed","Signed"],["booked","Booked"],["dead","Closed"]];
+const STATUS_LABEL=Object.fromEntries(STATUSES);
+const OWNER_STATUSES=STATUSES.filter(([k])=>!["quoted","booked"].includes(k));
+const GUEST_STATUSES=STATUSES.filter(([k])=>["new","commented","messaged","replied","quoted","booked","dead"].includes(k));
+const CLOSED=new Set(["signed","booked","dead"]);
+const TALKING=new Set(["replied","call","quoted"]);
+const WON=new Set(["signed","booked"]);
+const TYPES=[["cohost","Wants a co-host"],["recommend","Asking for recommendations"],["frustrated","Unhappy with current setup"],["new_host","New to short lets"],["selling","Selling or letting long-term"],["other","Other"]];
+const TYPE_LABEL=Object.fromEntries(TYPES);
+const PURPOSES=[["holiday","Holiday / leisure"],["work","Work / contractors"],["family","Family visit or event"],["relocation","Relocation / longer stay"],["other","Other"]];
+const PURPOSE_LABEL=Object.fromEntries(PURPOSES);
+const SCORE_LABEL={hot:"Hot",warm:"Warm",cold:"Cold"};
+const NEXT_DAYS={owner:{new:0,commented:1,messaged:3,fu1:4,fu2:3,replied:1,call:null,signed:null,dead:null},guest:{new:0,commented:0,messaged:1,replied:0,quoted:1,booked:null,dead:null}};
+const kindOf=l=>l.kind==="guest"?"guest":"owner";
+
+/* ---------- our properties (from the Guesty listing export, 09/10/2026) ---------- */
+const AREAS={
+  borders:{ev:"hawick",name:"Hawick, Selkirk & Galashiels",props:[["Flat 3 Brougham Place","Hawick","3 bed, sleeps 5"],["19B Oliver Crescent","Hawick","2 bed"],["45C High Street","Hawick","4 bed, sleeps 13"],["9 Princes Street","Hawick","2 bed"],["Flat 1 Drumlanrig Square","Hawick","3 bed, sleeps 6"],["49 Curror Street","Selkirk","1 bed, sleeps 4"],["16A 1 Hall Place","Galashiels","5 bed"],["16A 2 Hall Place","Galashiels","5 bed"],["26 Victoria Park","Peebles","3 bed"]]},
+  dunbar:{ev:"dunbar",name:"Dunbar & Pease Bay",props:[["32 Silver Birch Mews","Thurston Manor, Dunbar","3 bed caravan, sleeps 8"],["64 Ponymeadows","Thurston Manor, Dunbar","3 bed caravan, sleeps 6"],["2 East Shore","Pease Bay","2 bed, sleeps 6"],["58 Anchor Bay","Pease Bay","3 bed caravan, sleeps 7"]]},
+  seton:{ev:"prestonpans",name:"Port Seton, Prestonpans & Tranent",props:[["86 Cockenzie","Cockenzie","1 bed"],["49 Fowlers Court","Prestonpans","3 bed"],["21 Preston Crescent","Prestonpans","2 bed"],["33 Forth View","Tranent","4 bed, hot tub"],["Seton Sands caravans (29)","Port Seton","2–3 bed caravans"]]},
+  midlothian:{ev:"dalkeith",name:"Dalkeith, Bonnyrigg & Gorebridge",props:[["Lodge Cottage @ Craigesk","Dalkeith","2 bed, hot tub"],["1 Baronet","Dalkeith","3 bed, sleeps 8"],["36 Auld Coal Road","Bonnyrigg","3 bed"],["191 Cameron Crescent","Bonnyrigg","3 bed"],["31 Engine Road","Gorebridge","2 bed"]]},
+  peterhead:{ev:"peterhead",name:"Peterhead & Aberdeenshire",props:[["4 Buchan Braes","Peterhead","2 bed, sleeps 5"],["79 Broad Street","Peterhead","2 bed"],["14 Falconer Place","Inverurie","2 bed"],["21 Ann Street","Stonehaven","2 bed"]]},
+  aberdeen:{ev:"aberdeen",name:"Aberdeen city",props:[["136 Bankhead Road","Dyce, near airport","3 bed"],["19 Calender Place","Aberdeen","3 bed"],["22 Mayfield Gardens","Aberdeen","3 bed"],["292 Hardgate","Aberdeen","2 bed"],["67 Strawberrybank","Aberdeen","2 bed"],["69 Grampian Road","Aberdeen","2 bed"],["89C Urquhart Road","Aberdeen","1 bed"]]},
+  fife:{ev:"dunfermline",name:"Rosyth, Dunfermline & Fife",props:[["56 Syme Place","Rosyth","2 bed"],["63 Trondheim","Dunfermline","3 bed, sleeps 6"],["110 Wardlaw Way","Oakley","3 bed, sleeps 6"],["74 Kidd Street","Kirkcaldy","2 bed"],["43 Main Street","Methil","2 bed"]]},
+  falkirk:{ev:"falkirk",name:"Falkirk, Grangemouth & Bo'ness",props:[["17 Oswald Ave","Grangemouth","2 bed"],["36 Bankhead Crescent","Falkirk","4 bed, sleeps 6"],["4D Commissioner Street","Bo'ness","3 bed"]]},
+  durham:{ev:"consett",name:"Consett & Durham",props:[["67 Surrey Crescent","Consett","3 bed, sleeps 6"],["42 Park Ave","Coxhoe","2 bed, sleeps 5"]]},
+  barrow:{ev:"barrow-in-furness",name:"Barrow-in-Furness",props:[["103 Ainslie Street","Barrow","3 bed"],["89 Greengate Street","Barrow","4 bed"]]},
+  blackpool:{ev:"blackpool",name:"Blackpool",props:[["147 Red Bank Road","Bispham","4 bed, sleeps 9"],["23 Kensington","Marton Mere","3 bed lodge"]]},
+  tyne:{ev:"newcastle-upon-tyne",name:"Newcastle & Sunderland",props:[["17 Walter Street","Brunswick Village","3 bed"],["191 Garth Twenty Four","Killingworth","sleeps 9"],["51 Macadam Street","Gateshead","3 bed"],["72 Sea Road","Sunderland","3 bed"]]},
+  edinburgh:{ev:"edinburgh",name:"Edinburgh & West Lothian",props:[["115 Barclay Way","Livingston","3 bed"],["8 Stonebank","Livingston","4 bed, sleeps 8"],["66 Henderson Crescent","Broxburn","3 bed"],["Edinburgh city flats (9)","Edinburgh","1–2 bed"]]},
+  glasgow:{ev:"glasgow",name:"Glasgow & Paisley",props:[["398 St Vincent Street","Glasgow","1 bed"],["8E Grove Park","Glasgow","2 bed"],["22 New Street","Paisley","2 bed"]]}
+};
+
+/* ---------- projects that bring work crews near our properties ---------- */
+const PROJECTS=[
+  {id:"centerparcs",li:["Wills Bros","RJ McLeod"],rating:"A",name:"Center Parcs Scottish Borders",area:"borders",place:"Between Hawick and Selkirk, off the A7",
+   what:"£450m holiday village with up to 700 lodges. About 800 construction jobs; opens summer 2029.",when:"On site now. Lodge and village-centre contracts still to be awarded, so the peak is likely 2027–28.",
+   who:"Wills Bros (infrastructure, on site since June 2026) · RJ McLeod (access road and A7 junction) · D.E. Fencing (local firm, low need)",
+   tip:"Start with Wills Bros. They are an Irish contractor and likely bringing their own crews. Our Hawick flats are minutes from the site.",
+   src:[["Project Scotland","https://projectscot.com/2026/05/contractors-announced-for-first-phase-of-center-parcs-450m-scottish-resort-build/"],["Wills Bros","https://willsbros.com/?p=25132"],["Scottish Borders Council","https://www.scotborders.gov.uk/news/article/4886/byelaw-for-center-parcs-development-moves-forward"]]},
+  {id:"egl1",li:["Cidon Construction","Ground Developments","METLEN"],rating:"A",name:"Eastern Green Link 1 – Torness",area:"dunbar",place:"Torness, near Dunbar",
+   what:"Converter station and 10km onshore cable for a subsea power link. Completion 2029.",when:"Under construction now.",
+   who:"METLEN Energy & Metals (lead) · GE Vernova · Cidon Construction (civils) · Ground Developments Ltd (earthworks)",
+   tip:"Our Thurston Manor caravans are a few miles from Torness. Check the park allows work bookings before offering them.",
+   src:[["Cidon","https://www.cidon.co.uk/about/news/works-commence-at-torness-converter-station-for-egl1-project"]]},
+  {id:"berwickbank",li:["SSE Renewables Berwick Bank"],rating:"A",name:"Berwick Bank wind farm – onshore works",area:"dunbar",place:"Skateraw to Branxton, East Lothian",
+   what:"Cable route and new substation for one of the largest offshore wind farms planned in the UK.",when:"Onshore contractors not named yet.",
+   who:"SSE Renewables (ask for the supply-chain or accommodation contact)",
+   tip:"Get in touch before contractors are appointed, so we are first on their list.",
+   src:[["East Lothian Council report","https://www.eastlothian.gov.uk/sites/default/files/2026-03/PLA20260331%2002%202501386AMM%20Berwick%20Bank.pdf"]]},
+  {id:"cockenzie",rating:"B",name:"Former Cockenzie power station site",area:"seton",place:"Cockenzie, next to Port Seton",
+   what:"Plans for a data centre, battery storage and a wind farm substation.",when:"Early stage. Watch for contractor news.",
+   who:"East Lothian Council and its data-centre partner",tip:"Right beside our Cockenzie, Prestonpans and Seton Sands properties.",
+   src:[["East Lothian Council","https://www.eastlothian.gov.uk/news/210547/planning_and_building_standards"]]},
+  {id:"netherton",li:["Balfour Beatty Netherton"],rating:"A",name:"Netherton Hub converter station",area:"peterhead",place:"Near Peterhead, Aberdeenshire",
+   what:"Grid converter station. About 800 workers at peak.",when:"Main construction from early 2026.",
+   who:"Balfour Beatty",tip:"SSEN invites local suppliers through the email below. Balfour Beatty and SSEN share a site office at Harbour House, Seagate, Peterhead. Aberdeen flats are the backup when Peterhead is full.",
+   src:[["Construction Index","https://www.theconstructionindex.co.uk/news/view/balfour-beatty-moves-forward-on-netherton-hub?amp=1"]]},
+  {id:"egl2",li:["BAM Nuttall","Hitachi Energy EGL2"],rating:"A",name:"Eastern Green Link 2 – Peterhead",area:"peterhead",place:"Peterhead",
+   what:"Converter station for the subsea power link from Peterhead to Yorkshire.",when:"Under construction.",
+   who:"BAM with Hitachi Energy",tip:"Same area as Netherton Hub, so one pitch can cover both.",src:[]},
+  {id:"peterheadccs",rating:"B",name:"Peterhead carbon capture power station",area:"peterhead",place:"Peterhead",
+   what:"910MW gas power station with carbon capture. About 1,000 construction jobs.",when:"Waiting for the go-ahead (final investment decision).",
+   who:"SSE Thermal and Equinor",tip:"Not yet. Check for news each month.",
+   src:[["Energy Voice","https://energyvoice.com/?p=399875"]]},
+  {id:"smeaton",li:["M Group"],rating:"B",name:"Strathaven to Smeaton power line",area:"midlothian",place:"Ends at Smeaton, near Dalkeith",
+   what:"New overhead power line and substation work.",when:"In the 01/10 Scotland leads report.",
+   who:"M Group",tip:"Our Dalkeith, Bonnyrigg and Gorebridge houses are close to the Smeaton end.",src:[]},
+  {id:"rosyth",li:["Babcock Rosyth"],rating:"B",name:"Rosyth dockyard – Type 31 frigates",area:"fife",place:"Rosyth",
+   what:"Babcock is building the Royal Navy's Type 31 frigates and has been adding over 1,000 jobs.",when:"Ongoing.",
+   who:"Babcock and its subcontractors",tip:"63 Trondheim is already listed as near the dockyard. Ask Babcock's site teams about visiting contractors.",
+   src:[["Marine Link","https://ws19.marinelink.com/news/ramping-warship-production-shipbuilder-512005"]]},
+  {id:"shotley",rating:"B",name:"New Shotley Bridge Hospital",area:"durham",place:"Former steelworks site, Consett",
+   what:"New community hospital with a £500m budget for the wider programme.",when:"Site preparation started 7 September 2026. Main build expected mid-2027.",
+   who:"County Durham and Darlington NHS Trust (developer not yet named)",tip:"Our Consett house is a short drive away. Watch for the main contractor announcement.",
+   src:[["NHS Trust","https://www.cddft.nhs.uk/about-us/news/new-shotley-bridge-hospital-project-reaches-key-milestone"],["Place North East","https://www.placenortheast.co.uk/contractors-shortlisted-for-new-hospital-programme/"]]},
+  {id:"anchorsholme",li:["Balfour Beatty Blackpool"],rating:"B",name:"Anchorsholme coast protection",area:"blackpool",place:"Anchorsholme, north Blackpool",
+   what:"Five rock groynes and a rock wall along the seafront. £11m.",when:"Beach works from May 2026.",
+   who:"Balfour Beatty",tip:"147 Red Bank Road in Bispham is close and sleeps 9.",
+   src:[["Baird Maritime","https://www.bairdmaritime.com/amp/story/marine-projects/dredging/blackpool-coast-protection-project-begins-early-stages"]]},
+  {id:"barrow",li:["BAE Systems Barrow"],rating:"B",name:"BAE Systems submarine shipyard",area:"barrow",place:"Barrow-in-Furness",
+   what:"Submarine building, including the AUKUS programme. Steady demand for visiting contractors.",when:"Ongoing.",
+   who:"BAE Systems and its contractors (names to confirm)",tip:"Both Barrow listings already target BAE contractors. Find which firms are working on site now.",
+   src:[["SSN-AUKUS","https://en.wikipedia.org/wiki/SSN-AUKUS"]]},
+  {id:"grangemouth",rating:"C",name:"Grangemouth – Project Willow",area:"falkirk",place:"Grangemouth",
+   what:"Proposed recycling, biofuel and low-carbon chemical plants after the refinery closure.",when:"Proposals from 2028 onwards. Nothing confirmed.",
+   who:"No contractors yet",tip:"Not yet. 17 Oswald Ave is in Grangemouth for when it starts.",
+   src:[["Energy Voice","https://energyvoice.com/?p=568195"]]},
+  {id:"aesc",rating:"C",name:"AESC battery gigafactory",area:"tyne",place:"Sunderland",
+   what:"£1bn electric car battery factory next to Nissan.",when:"Build status not confirmed. Check before pitching.",
+   who:"AESC (contractors not confirmed)",tip:"Check whether construction is still running.",
+   src:[["Charged EVs","https://chargedevs.com/?p=454007"]]}
+];
+const PSTATUS=[["todo","Not contacted"],["emailed","Emailed"],["replied","Replied"],["booked","Booked"],["later","Not yet"]];
+const PSTATUS_LABEL=Object.fromEntries(PSTATUS);
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+function h(tag,attrs,...kids){const n=document.createElement(tag);if(attrs)for(const[k,v]of Object.entries(attrs)){if(v==null||v===false)continue;if(k==="class")n.className=v;else if(k==="text")n.textContent=v;else if(k.startsWith("on"))n.addEventListener(k.slice(2),v);else n.setAttribute(k,v===true?"":v)}for(const c of kids.flat())if(c!=null&&c!==false)n.append(c.nodeType?c:document.createTextNode(String(c)));return n}
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const today=()=>iso(new Date());
+const addDays=n=>{const d=new Date();d.setDate(d.getDate()+n);return iso(d)};
+function niceDate(s){if(!s)return"";const[y,m,d]=s.split("-").map(Number);const dt=new Date(y,m-1,d);const diff=Math.round((dt-new Date(new Date().toDateString()))/864e5);if(diff===0)return"Today";if(diff===1)return"Tomorrow";if(diff===-1)return"Yesterday";return dt.toLocaleDateString("en-GB",{day:"numeric",month:"short"})}
+const safeUrl=u=>{try{const x=new URL(u);return/^https?:$/.test(x.protocol)?x.href:null}catch(e){return null}};
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2400)}
+async function copy(text){try{await navigator.clipboard.writeText(text);toast("Copied")}catch(e){const a=h("textarea");a.value=text;a.style.cssText="position:fixed;opacity:0";document.body.append(a);a.select();try{document.execCommand("copy");toast("Copied")}catch(_){toast("Select the text to copy it")}a.remove()}}
+const firstName=l=>(l.name||"").trim().split(/\s+/)[0]||"there";
+function fill(t,l){return t.replaceAll("[Name]",firstName(l)).replaceAll("[area]",l.location||"[area]").replaceAll("[group]",l.group||"[group]").replaceAll("[property]",l.properties||"property").replaceAll("[dates]",l.dates||"your dates")}
+
+/* ---------- state ---------- */
+let db=null,sample=null,myId=null,ready=false,offline="";
+let leads=[],groups=[],posts=[],pstate={},contacts=[];let addKind="facebook";
+let view="today",selected=null,query="",filter="open",helpTab="posts",areaFilter="all";
+const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",location:"",properties:"",type:"other",dates:"",guestCount:"",purpose:"other",score:"warm",need:"",comment:"",dm:"",notes:""};
+let draft={...BLANK};
+let aiBusy=false,aiNote="",aiDone=false,openPost=null;
+try{const v=localStorage.getItem("vl-view");if(["today","leads","outreach","projects","help","add"].includes(v))view=v}catch(e){}
+
+const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
+const rank={hot:0,warm:1,cold:2};
+const byPriority=(a,b)=>(kindOf(b)==="guest")-(kindOf(a)==="guest")||(rank[a.score]??1)-(rank[b.score]??1)||(a.nextFollowUp||"").localeCompare(b.nextFollowUp||"");
+const byNewest=(a,b)=>(b.created||"").localeCompare(a.created||"");
+const pStatus=p=>(pstate[p.id]&&pstate[p.id].status)||"todo";
+
+function go(v,sel){view=v;selected=sel||null;query="";try{localStorage.setItem("vl-view",v)}catch(e){}render();window.scrollTo(0,0)}
+
+/* ---------- top nav ---------- */
+function renderTabs(){
+  const due=leads.filter(isDue).length+contacts.filter(oDue).length;
+  const t=[["today","Today",due],["leads","Leads"],["outreach","Outreach"],["projects","Projects"],["help","How-to"]];
+  $("#tabs").replaceChildren(...t.map(([id,label,n])=>h("button",{class:"tab","aria-current":String(view===id),onclick:()=>go(id)},label,n?h("span",{class:"n",text:n}):null)));
+}
+
+function render(){
+  renderTabs();
+  const m=$("#main");
+  m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
+  const parts=view==="today"?todayView():view==="leads"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="add"?addAnyView():helpView();
+  m.replaceChildren(...[].concat(parts).filter(Boolean));
+}
+
+/* ---------- TODAY ---------- */
+function todayView(){
+  const due=leads.filter(isDue).sort(byPriority);
+  const odue=contacts.filter(oDue).sort((a,b)=>(a.status==="new")-(b.status==="new")||(a.nextFollowUp||"").localeCompare(b.nextFollowUp||""));
+  const date=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+  return[
+    h("div",{style:"display:flex;flex-direction:column;gap:6px"},h("p",{class:"muted small",text:date}),h("h1",{text:"Your three jobs for today"}),h("p",{class:"lede",text:"Work through them in order. Each one takes 10 to 20 minutes, and every message is written for you."})),
+    offline?h("div",{class:"banner",text:offline}):null,
+    h("div",{class:"steps"},
+      step(1,"Reply to people waiting on you",due.length?due.length+" "+(due.length===1?"person needs":"people need")+" a message today. Guests come first because they book with whoever answers first.":"Nobody is waiting on you. Move on to step 2.",
+        due.length?h("div",{class:"list"},...due.slice(0,6).map(l=>leadRow(l,()=>go("leads",l.id)))):null,
+        due.length>6?h("button",{class:"btn link",onclick:()=>go("leads"),style:"align-self:flex-start"},"See all "+due.length):null,!due.length),
+      step(2,"Find new people in Facebook groups","Open two or three groups you've joined. Search inside each group for the words below. When a post looks like someone who needs us, copy it and add it here.",
+        h("div",{class:"kw"},...["co-host","property manager","anyone manage","recommend","bad reviews","looking for accommodation","need somewhere to stay","contractor accommodation"].map(k=>h("span",{text:k}))),
+        h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>{addKind="facebook";go("add")}},"+ Add a lead"),h("button",{class:"btn",onclick:()=>{helpTab="groups";go("help")}},"See my groups"))),
+      step(3,"Message project and event contacts",odue.length?odue.length+" "+(odue.length===1?"contact needs":"contacts need")+" a message today: contractors working near our properties, and event organisers.":"No one is waiting. Add one new person from LinkedIn or Eventbrite.",
+        odue.length?h("div",{class:"list"},...odue.slice(0,6).map(c=>contactRow(c,()=>go("outreach",c.id)))):null,
+        h("div",{class:"btns"},odue.length>6?h("button",{class:"btn link",onclick:()=>{oFilter="due";go("outreach")}},"See all "+odue.length):null,h("button",{class:odue.length?"btn":"btn primary",onclick:()=>{addKind="linkedin";go("add")}},"+ LinkedIn person"),h("button",{class:"btn",onclick:()=>{addKind="event";go("add")}},"+ Event")),!odue.length&&contacts.length>0)
+    )
+  ];
+}
+function step(n,title,text,a,b,done){return h("section",{class:"step"+(done?" done":"")},h("div",{class:"num",text:done?"✓":n}),h("h2",{text:title}),h("p",{text}),h("div",{class:"body"},a,b))}
+
+/* ---------- LEADS ---------- */
+function leadRow(l,onclick){
+  const late=!CLOSED.has(l.status)&&l.status!=="new"&&l.nextFollowUp&&l.nextFollowUp<today();
+  const right=CLOSED.has(l.status)?STATUS_LABEL[l.status]:l.status==="new"?"New":late?"Overdue":niceDate(l.nextFollowUp)||STATUS_LABEL[l.status];
+  const g=kindOf(l)==="guest";
+  const sub=g?["Guest",l.location,l.dates]:["Owner",l.location,l.need||TYPE_LABEL[l.type]];
+  return h("button",{class:"row","aria-selected":String(selected===l.id),onclick},
+    h("span",{class:"dot "+(l.score||"warm"),"aria-label":SCORE_LABEL[l.score]||"Warm"}),
+    h("span",{class:"nm",text:l.name||(g?"Guest enquiry":"Unnamed lead")}),
+    h("span",{class:"when"+(late?" late":""),text:right}),
+    h("span",{class:"sub",text:sub.filter(Boolean).join(" · ")}));
+}
+function leadsView(){
+  const F=[["open","To do"],["owner","Owners"],["guest","Guests"],["talking","Talking"],["won","Won"],["closed","Closed"]];
+  const listcol=h("div",{class:"listcol",style:"display:flex;flex-direction:column;gap:12px;min-width:0"},
+    h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Leads"}),h("span",{class:"muted small",text:leads.filter(l=>!CLOSED.has(l.status)).length+" open"})),
+    h("div",{class:"chips",role:"group","aria-label":"Show"},...F.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(filter===k),onclick:()=>{filter=k;render()}},t))),
+    h("input",{class:"search",id:"q",type:"search",placeholder:"Search name, town or group",value:query,oninput:e=>{query=e.target.value;const r=$("#rows");if(r)r.replaceChildren(...rowsOrEmptyList(filteredLeads()))}}),
+    h("div",{id:"rows",style:"display:flex;flex-direction:column"},...rowsOrEmptyList(filteredLeads())));
+  return[h("div",{class:"split"+(selected?" open":"")},listcol,detail())];
+}
+function filteredLeads(){
+  const q=query.trim().toLowerCase();
+  return leads.filter(l=>{
+    if(filter==="open"&&CLOSED.has(l.status))return false;
+    if(filter==="owner"&&(kindOf(l)!=="owner"||CLOSED.has(l.status)))return false;
+    if(filter==="guest"&&(kindOf(l)!=="guest"||CLOSED.has(l.status)))return false;
+    if(filter==="talking"&&!TALKING.has(l.status))return false;
+    if(filter==="won"&&!WON.has(l.status))return false;
+    if(filter==="closed"&&l.status!=="dead")return false;
+    return!q||[l.name,l.location,l.group,l.need,l.notes,l.properties,l.dates].join(" ").toLowerCase().includes(q)}).sort(filter==="open"?byPriority:byNewest);
+}
+function rowsOrEmptyList(list){
+  if(!ready&&!offline)return[h("div",{class:"empty"},h("p",{text:"Loading leads…"}))];
+  if(offline)return[h("div",{class:"empty"},h("h3",{text:"Sign in to see leads"}),h("p",{text:offline}))];
+  if(!list.length)return[h("div",{class:"empty"},h("h3",{text:leads.length?"Nothing here":"No leads yet"}),h("p",{text:leads.length?"Try another filter or search.":"Copy a Facebook post and press Add lead to create your first one."}),!leads.length?h("button",{class:"btn primary",onclick:()=>go("add")},"+ Add lead"):null)];
+  return[h("div",{class:"list"},...list.map(l=>leadRow(l,()=>{selected=l.id;render();window.scrollTo(0,0)})))];
+}
+
+function detail(){
+  const l=leads.find(x=>x.id===selected);
+  if(!l)return h("div",{class:"detail"},h("div",{class:"empty"},h("h3",{text:"Pick someone from the list"}),h("p",{text:"You'll see exactly what to send them next, ready to copy."})));
+  const g=kindOf(l)==="guest";
+  const fld=(label,key,ph,wide)=>h("div",{class:"field"+(wide?" wide":"")},h("label",{for:"d-"+key,text:label}),h("input",{id:"d-"+key,value:l[key]||"",placeholder:ph||"",onchange:e=>save(l,{[key]:e.target.value.trim()})}));
+  const sel=(label,key,opts,val,on)=>{const s=h("select",{id:"d-"+key,onchange:e=>on(e.target.value)},...opts.map(([v,t])=>h("option",{value:v,text:t})));s.value=val;return h("div",{class:"field"},h("label",{for:"d-"+key,text:label}),s)};
+  return h("div",{class:"detail"},
+    h("button",{class:"back",onclick:()=>{selected=null;render()}},"‹ All leads"),
+    h("div",{style:"display:flex;flex-direction:column;gap:8px"},h("h1",{text:l.name||(g?"Guest enquiry":"Unnamed lead")}),
+      h("div",{class:"btns"},h("span",{class:"pill "+(l.score==="hot"?"hot":l.score==="cold"?"":"warm"),text:SCORE_LABEL[l.score]||"Warm"}),h("span",{class:"pill accent",text:g?"Guest":"Owner"}),h("span",{class:"pill",text:STATUS_LABEL[l.status]||"New"}),l.location?h("span",{class:"pill",text:l.location}):null)),
+    nextCard(l),
+    l.need?h("div",{class:"card"},h("h3",{text:g?"What they're looking for":"What they need"}),h("p",{class:"text",text:l.need})):null,
+    (l.postText||safeUrl(l.postUrl)||safeUrl(l.profileUrl))?h("details",{class:"card"},h("summary",{},"Their Facebook post"),
+      l.postText?h("p",{class:"text muted small",text:l.postText}):null,
+      h("div",{class:"btns"},safeUrl(l.postUrl)?h("a",{class:"btn",href:safeUrl(l.postUrl),target:"_blank",rel:"noopener"},"Open post"):null,safeUrl(l.profileUrl)?h("a",{class:"btn",href:safeUrl(l.profileUrl),target:"_blank",rel:"noopener"},"Open profile"):null)):null,
+    h("div",{class:"card"},h("h3",{text:"Notes"}),h("div",{class:"field"},h("textarea",{id:"d-notes",rows:"3","aria-label":"Notes",placeholder:g?"Dates, budget, what you offered":"What they said, next step",onchange:e=>save(l,{notes:e.target.value})},l.notes||""))),
+    h("details",{class:"card"},h("summary",{},"Edit details"),
+      h("div",{class:"form"},fld("Name","name"),fld(g?"Area":"Location","location"),
+        g?fld("Dates","dates","Ask them"):fld("Properties","properties"),g?fld("Number of guests","guestCount","Ask them"):fld("Group","group"),
+        sel("Where they are",  "status",g?GUEST_STATUSES:OWNER_STATUSES,l.status||"new",v=>setStatus(l,v)),
+        sel("How likely","score",[["hot","Hot"],["warm","Warm"],["cold","Cold"]],l.score||"warm",v=>{save(l,{score:v});render()}),
+        h("div",{class:"field"},h("label",{for:"d-nf",text:"Next follow-up"}),h("input",{type:"date",id:"d-nf",value:l.nextFollowUp||"",onchange:e=>save(l,{nextFollowUp:e.target.value||null})}))),
+      h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>{save(l,{kind:g?"owner":"guest",status:"new",nextFollowUp:today()});render()}},g?"This is actually an owner":"This is actually a guest"),deleteBtn(l))),
+    h("p",{class:"muted small",text:"Added "+(l.created?niceDate(l.created.slice(0,10)):"")+(l.group?" from "+l.group:"")}));
+}
+function deleteBtn(l){const b=h("button",{class:"btn danger"},"Delete lead");b.addEventListener("click",()=>{if(b.dataset.armed){del(l);return}b.dataset.armed="1";b.textContent="Tap again to delete";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="Delete lead"}},3000)});return b}
+
+function ownerPlan(l){
+  const s=l.status||"new";
+  return{
+    new:{h:l.commentDraft?"Comment on their post":"Send your first message",how:l.commentDraft?"Paste this as a reply under their Facebook post.":"Send this in Facebook Messenger.",msg:l.commentDraft||l.dmDraft,copy:l.commentDraft?"Copy comment":"Copy message",done:l.commentDraft?["I've commented","commented"]:["I've sent it","messaged"]},
+    commented:{h:"Send your first message",how:"Send this in Facebook Messenger.",msg:l.dmDraft,copy:"Copy message",done:["I've sent it","messaged"]},
+    messaged:{h:"Send follow-up 1",how:"They haven't replied yet. Send this short nudge.",msg:l.followUpDraft||fill(TPL.fu1.text,l),copy:"Copy follow-up",done:["I've sent it","fu1"]},
+    fu1:{h:"Send the last follow-up",how:"This is the final message. After this, we leave them alone.",msg:l.followUpDraft||fill(TPL.fu2.text,l),copy:"Copy follow-up",done:["I've sent it","fu2"]},
+    fu2:{h:"Wait for a reply",how:"You've sent both follow-ups. If nothing comes back by the follow-up date, close this lead.",msg:"",done:["Close lead","dead"]},
+    replied:{h:"Book a call",how:"They replied. Move the chat to a call or WhatsApp.",msg:l.followUpDraft||fill(TPL.move.text,l),copy:"Copy message",done:["Call booked","call"]},
+    call:{h:"Have the call",how:"After the call, mark them signed or close the lead.",msg:"",done:["They signed","signed"]}}[s]||null;
+}
+function guestPlan(l){
+  const s=l.status||"new";
+  return{
+    new:{h:"Reply on their post",how:"Do this today. Guests usually book with whoever answers first.",msg:l.commentDraft||fill(TPL.gcomment.text,l),copy:"Copy comment",done:["I've commented","commented"]},
+    commented:{h:"Message them for details",how:"Send this in Facebook Messenger.",msg:l.dmDraft||fill(TPL.gdm.text,l),copy:"Copy message",done:["I've sent it","messaged"]},
+    messaged:{h:"Nudge for their dates",how:"If they still don't answer after this, close the lead.",msg:l.followUpDraft||fill(TPL.gfu.text,l),copy:"Copy follow-up",done:["Close lead","dead"]},
+    replied:{h:"Check Guesty, then send options",how:"Look in Guesty for a free property in or near "+(l.location||"their area")+(l.dates?" for "+l.dates:"")+". Fill in the brackets with what's actually free.",msg:l.followUpDraft||fill(TPL.goptions.text,l),copy:"Copy message",done:["Options sent","quoted"]},
+    quoted:{h:"Follow up on the options",how:"Send this a day after the options.",msg:l.followUpDraft||fill(TPL.gchase.text,l),copy:"Copy follow-up",done:["They booked","booked"]}}[s]||null;
+}
+function nextCard(l){
+  const s=l.status||"new";const g=kindOf(l)==="guest";const plan=g?guestPlan(l):ownerPlan(l);
+  if(!plan)return h("div",{class:"next"},h("div",{class:"eyebrow",text:"Finished"}),h("h2",{text:s==="signed"?"Signed. Hand over to onboarding.":s==="booked"?"Booked. Make sure the reservation is in Guesty.":"This lead is closed."}),h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>setStatus(l,"new")},"Reopen lead")));
+  const late=l.nextFollowUp&&l.nextFollowUp<today()&&s!=="new";
+  const ai=h("button",{class:"btn link"},"Rewrite with AI");ai.addEventListener("click",()=>draftNext(l,ai));
+  return h("div",{class:"next"},
+    h("div",{class:"eyebrow"+(late?" late":""),text:late?"Overdue":isDue(l)?"Do this today":"Next step · "+(niceDate(l.nextFollowUp)||"no date set")}),
+    h("h2",{text:plan.h}),
+    h("p",{class:"muted",text:plan.how}),
+    plan.msg?h("div",{class:"msg",text:plan.msg}):null,
+    h("div",{class:"btns"},
+      plan.msg?h("button",{class:"btn primary",onclick:()=>copy(plan.msg)},"1. "+plan.copy):null,
+      h("button",{class:plan.msg?"btn":"btn primary",onclick:()=>setStatus(l,plan.done[1])},(plan.msg?"2. ":"")+plan.done[0])),
+    h("div",{class:"btns"},!TALKING.has(s)?h("button",{class:"btn link",onclick:()=>setStatus(l,"replied")},"They replied"):null,plan.msg&&sample?ai:null));
+}
+
+/* ---------- writes ---------- */
+async function save(l,patch){
+  if(!db){toast("Sign in to save changes");return}
+  Object.assign(l,patch);
+  try{await db.collection("leads").doc(l.id).update({...patch,updated:new Date().toISOString()})}catch(e){toast(e&&e.code==="permission_denied"?"You don't have permission to edit leads":"Couldn't save. Try again.")}
+}
+function setStatus(l,status){
+  const n=NEXT_DAYS[kindOf(l)][status];const patch={status,followUpDraft:null};
+  patch.nextFollowUp=n==null?(status==="call"?(l.nextFollowUp||null):null):addDays(n);
+  save(l,patch);render();toast("Saved"+(patch.nextFollowUp?". Next step "+niceDate(patch.nextFollowUp).toLowerCase():""));
+}
+async function del(l){if(!db)return;leads=leads.filter(x=>x.id!==l.id);selected=null;render();try{await db.collection("leads").doc(l.id).delete();toast("Lead deleted")}catch(e){toast("Couldn't delete")}}
+async function setProject(p,patch){
+  if(!db){toast("Sign in to save");return}
+  pstate[p.id]={...(pstate[p.id]||{}),...patch};render();
+  try{await db.collection("projects").doc(p.id).set({...pstate[p.id],updated:new Date().toISOString()})}catch(e){toast("Couldn't save. Try again.")}
+}
+
+/* ---------- AI ---------- */
+const CONTEXT=`You help Vivistays, a UK short-term rental management company (400+ managed properties across the UK; handles listings on Airbnb/Booking.com, pricing, guest messaging, cleaning, maintenance and damage claims). Staff find two kinds of people in Facebook groups:
+1. OWNERS who might want a manager or co-host for their property.
+2. GUESTS looking for somewhere to stay (holiday, work/contractors, family visit). Vivistays can offer them its properties and guests booking direct (website, email or WhatsApp) usually get a better rate than on Airbnb.
+Contact: team@vivistays.com, WhatsApp +44 7578 255663.
+Never claim Vivistays has a property in a specific place or free on specific dates: staff must check availability first. Message style: UK English, warm and plain, short (DM under 90 words, comment under 40 words). Reference something specific from their post. Offer help, not a hard sell. No emojis, no invented results, prices or reviews. Never pressure. Sign DMs from "[Your name], Vivistays".`;
+async function analyse(){
+  if(!draft.post.trim()){toast("Paste the post first");return false}
+  if(!sample){toast("AI isn't available here");return false}
+  aiBusy=true;aiNote="";render();let ok=false;
+  try{
+    const r=await sample.json(`${CONTEXT}
+
+Read this Facebook group post${draft.group?` from the group "${draft.group}"`:""}. The pasted text may include comments under it: the lead is the person who wrote the post, not the commenters. Return ONLY a JSON object with these keys:
+"kind": "guest" if they are looking for somewhere to stay, otherwise "owner",
+"name": the post author's name if shown, else "",
+"location": town/area if mentioned, else "",
+"score": owners: "hot" (actively looking for a manager now), "warm" (has a problem we solve) or "cold" (weak fit). Guests: "hot" (clear place and dates or urgent), "warm" (place but no dates), "cold" (vague),
+"need": one sentence on what they need,
+"reason": one short sentence explaining the score,
+"properties": owners only, short description of their property if mentioned, else "",
+"type": owners only, one of "cohost","recommend","frustrated","new_host","selling","other",
+"dates": guests only, dates or timing if mentioned, else "",
+"guestCount": guests only, number of people if mentioned, else "",
+"purpose": guests only, one of "holiday","work","family","relocation","other",
+"comment": a short public reply to the post. For guests: say we manage short stays and will check what we have near their area and message them (no promise of availability). For owners: something genuinely helpful, can invite a DM,
+"dm": the first direct message. For guests: ask for exact dates, number of guests and any must-haves (parking, pets, beds), and mention booking direct is cheaper. For owners: introduce Vivistays relevant to their problem.
+
+POST:
+"""${draft.post.slice(0,6000)}"""`,{modelTier:"default"});
+    for(const k of["name","location","properties","need","comment","dm","dates","guestCount"])if(typeof r[k]==="string"&&r[k])draft[k]=r[k];
+    if(r.kind==="guest"||r.kind==="owner")draft.kind=r.kind;
+    if(TYPE_LABEL[r.type])draft.type=r.type;if(PURPOSE_LABEL[r.purpose])draft.purpose=r.purpose;if(SCORE_LABEL[r.score])draft.score=r.score;
+    aiNote=(draft.kind==="guest"?"This is a guest looking to stay. ":"This is a property owner. ")+(r.reason?SCORE_LABEL[draft.score]+": "+r.reason:"Check the details below.");
+    aiDone=true;ok=true;
+  }catch(e){aiNote=e&&e.code==="not_granted"?"AI access was declined. Fill in the details by hand.":e&&e.code==="rate_limited"?"Too many requests. Try again in a minute.":"Couldn't read the post. Fill in the details by hand or try again."}
+  aiBusy=false;render();return ok;
+}
+async function draftNext(l,btn){
+  btn.disabled=true;btn.replaceChildren(h("span",{class:"spin"}),"Writing");
+  try{
+    const g=kindOf(l)==="guest";
+    const r=await sample(`${CONTEXT}
+
+Write the next message to this ${g?"GUEST":"OWNER"} lead. Current status: ${STATUS_LABEL[l.status]||l.status}. ${g?"If they haven't given dates and guest numbers, ask for them simply. If options were sent, follow up briefly and make booking easy (direct booking by WhatsApp or email). Never promise availability.":"If they haven't replied, write a short, low-pressure follow-up (under 60 words) that adds one useful point. If they replied or a call is booked, move toward booking or confirming a call."} Use their notes. Return only the message text.
+
+Lead: ${JSON.stringify({name:l.name,location:l.location,dates:l.dates,guests:l.guestCount,properties:l.properties,need:l.need,post:(l.postText||"").slice(0,2000),firstMessage:l.dmDraft,notes:l.notes})}`,{modelTier:"default",cache:false});
+    const text=(r.text||"").trim();if(text){await save(l,{followUpDraft:text});render()}
+  }catch(e){toast(e&&e.code==="not_granted"?"AI access was declined":"Couldn't write a message");btn.disabled=false;btn.textContent="Rewrite with AI"}
+}
+
+/* ---------- ADD LEAD ---------- */
+function addView(){
+  const bind=(k,el)=>{el.addEventListener("input",e=>draft[k]=e.target.value);return el};
+  const inp=(k,label,ph,wide,type)=>h("div",{class:"field"+(wide?" wide":"")},h("label",{for:"a-"+k,text:label}),bind(k,h("input",{id:"a-"+k,type:type||"text",value:draft[k],placeholder:ph||""})));
+  const ta=(k,label,rows,ph)=>h("div",{class:"field wide"},label?h("label",{for:"a-"+k,text:label}):null,bind(k,h("textarea",{id:"a-"+k,rows:String(rows),placeholder:ph||""},draft[k])));
+  const sel=(k,label,opts)=>{const s=h("select",{id:"a-"+k},...opts.map(([v,t])=>h("option",{value:v,text:t})));s.value=draft[k];return h("div",{class:"field"},h("label",{for:"a-"+k,text:label}),bind(k,s))};
+  const g=draft.kind==="guest";
+  return[
+    h("div",{style:"display:flex;flex-direction:column;gap:6px"},h("h1",{text:"Add a lead"}),h("p",{class:"lede",text:"Copy someone's post from a Facebook group and paste it below. AI fills in the rest and writes your first messages."})),
+    offline?h("div",{class:"banner",text:offline}):null,
+    h("div",{class:"card"},
+      h("h3",{text:"1. Paste their post"}),
+      ta("post","",7,"Paste the post here, including their name"),
+      h("div",{class:"form"},inp("postUrl","Link to the post (optional)","facebook.com/…",false,"url"),
+        h("div",{class:"field"},h("label",{for:"a-group",text:"Which group?"}),bind("group",h("input",{id:"a-group",value:draft.group,placeholder:"Group name",list:"gl"})))),
+      h("datalist",{id:"gl"},...[...new Set([...groups.map(x=>x.name),...leads.map(l=>l.group)].filter(Boolean))].map(n=>h("option",{value:n}))),
+      h("div",{class:"btns"},h("button",{class:"btn primary",disabled:aiBusy||!sample,onclick:analyse},aiBusy?[h("span",{class:"spin"}),"Reading the post…"]:aiDone?"Read it again":"2. Fill in with AI")),
+      aiNote?h("p",{class:"tipbox",text:aiNote}):h("p",{class:"muted small",text:sample?"Or skip this and fill in the boxes yourself.":"AI isn't available here. Fill in the boxes yourself."})),
+    h("div",{class:"card"},
+      h("h3",{text:"3. Check the details"}),
+      h("div",{class:"toggle",role:"group","aria-label":"Who is it"},
+        h("button",{"aria-pressed":String(!g),onclick:()=>{draft.kind="owner";render()}},h("b",{text:"Property owner"}),h("span",{text:"Might want us to manage their place"})),
+        h("button",{"aria-pressed":String(g),onclick:()=>{draft.kind="guest";render()}},h("b",{text:"Guest"}),h("span",{text:"Looking for somewhere to stay"}))),
+      h("div",{class:"form"},
+        inp("name","Their name","As shown on Facebook"),
+        inp("location",g?"Where they want to stay":"Town or area",g?"Town":"Town"),
+        g?inp("dates","Dates","If mentioned"):inp("properties","Their property","e.g. 2-bed flat"),
+        g?inp("guestCount","How many people","If mentioned"):sel("type","What kind of post",TYPES),
+        sel("score","How likely",[["hot","Hot – ready now"],["warm","Warm – maybe"],["cold","Cold – unlikely"]]),
+        inp("profileUrl","Their profile link (optional)","facebook.com/…",false,"url"),
+        ta("need",g?"What they're looking for":"What they need",2,"One line"))),
+    h("details",{class:"card",open:aiDone?true:null},h("summary",{},"4. Your messages"),
+      h("div",{class:"form"},ta("comment","Comment under their post",3),ta("dm","First private message",6),ta("notes","Notes (optional)",2)),
+      h("p",{class:"muted small",text:g?"Never promise a place before checking Guesty.":"Read both messages before you send them yourself on Facebook."})),
+    h("div",{class:"btns"},h("button",{class:"btn primary",id:"save",disabled:aiBusy,onclick:saveLead},aiBusy?"Reading the post…":"Save lead"),h("button",{class:"btn",onclick:()=>{draft={...BLANK};aiNote="";aiDone=false;render()}},"Clear"))
+  ];
+}
+async function saveLead(){
+  if(!db){toast("Sign in to claude.ai to save leads");return}
+  if(!draft.name.trim()&&!draft.post.trim()){toast("Paste the post first");return}
+  if(sample&&draft.post.trim()&&!aiDone&&!draft.dm.trim()&&!draft.comment.trim()){const ok=await analyse();if(!ok){toast("AI couldn't read it. Check the form, then save again.");aiDone=true;return}}
+  const now=new Date().toISOString();const g=draft.kind==="guest";
+  const data={kind:draft.kind,name:draft.name.trim(),profileUrl:draft.profileUrl.trim(),postUrl:draft.postUrl.trim(),group:draft.group.trim(),location:draft.location.trim(),score:draft.score,need:draft.need.trim(),postText:draft.post.trim(),commentDraft:draft.comment.trim(),dmDraft:draft.dm.trim(),notes:draft.notes.trim(),status:"new",nextFollowUp:today(),created:now,updated:now,createdBy:myId||null,
+    ...(g?{dates:draft.dates.trim(),guestCount:String(draft.guestCount).trim(),purpose:draft.purpose}:{properties:draft.properties.trim(),type:draft.type})};
+  try{const ref=await db.collection("leads").add(data);draft={...BLANK};aiNote="";aiDone=false;toast(g?"Saved. Reply to them today.":"Lead saved");go("leads",ref.id)}
+  catch(err){toast(err&&err.code==="quota_exceeded"?"The tracker is full. Delete closed leads to make room.":"Couldn't save. Try again.");render()}
+}
+
+/* ---------- PROJECTS ---------- */
+function contractorEmail(p){
+  const a=AREAS[p.area];const towns=[...new Set(a.props.map(x=>x[1].split(",").pop().trim()))].slice(0,4).join(", ");
+  const n=a.props.length;
+  return`Subject: Accommodation for your personnel – ${p.name}
+
+Dear Sir or Madam,
+
+I am writing from Vivistays, a furnished accommodation provider managing over 400 properties across the UK.
+
+We understand your organisation is working on ${p.name} (${p.place}). We manage ${n} properties nearby, in ${towns}, suitable for personnel on site. Our properties offer:
+
+• Whole homes, from 1 to 5 bedrooms
+• Free parking and fast Wi-Fi
+• Weekly and monthly stays at corporate rates
+• Invoicing for company bookings
+• One point of contact for the whole booking
+
+Availability depends on dates, so we would welcome the details of your accommodation requirements for the project.
+
+You can reach our team at team@vivistays.com or on WhatsApp at +44 7578 255663.
+
+Yours sincerely,
+
+[Your name]
+Vivistays
+www.vivistays.com`;
+}
+function projectsView(){
+  const opts=[["all","All areas"],...Object.entries(AREAS).filter(([k])=>PROJECTS.some(p=>p.area===k)).map(([k,v])=>[k,v.name])];
+  const list=PROJECTS.filter(p=>areaFilter==="all"||p.area===areaFilter);
+  const groupsR=[["A","Contact now","Work is on site or about to start near our properties."],["B","Contact soon","Starting soon, smaller, or the contractor isn't named yet."],["C","Watch","Not started or not confirmed. Check monthly."]];
+  const contacted=PROJECTS.filter(p=>contacts.some(c=>c.projectId===p.id&&(c.status||"new")!=="new")).length;
+  const areaSel=h("select",{id:"p-area","aria-label":"Area",onchange:e=>{areaFilter=e.target.value;render()}},...opts.map(([v,t])=>h("option",{value:v,text:t})));areaSel.value=areaFilter;
+  return[
+    h("div",{style:"display:flex;flex-direction:column;gap:6px"},h("h1",{text:"Projects near our properties"}),
+      h("p",{class:"lede",text:"Big building jobs bring crews who need a house for weeks or months. Each project below is near Vivistays properties. Add the people you find, and they move to Outreach with their first message ready."})),
+    h("div",{style:"display:flex;gap:12px;flex-wrap:wrap;align-items:center"},h("div",{class:"field",style:"min-width:220px"},areaSel),h("span",{class:"muted small",text:contacted+" of "+PROJECTS.length+" projects contacted · last researched 9 Oct 2026"})),
+    ...groupsR.map(([r,title,desc])=>{const ps=list.filter(p=>p.rating===r);if(!ps.length)return null;
+      return h("section",{style:"display:flex;flex-direction:column;gap:12px"},h("div",{},h("h2",{text:title}),h("p",{class:"muted small",text:desc})),...ps.map(projCard))}),
+    h("section",{style:"display:flex;flex-direction:column;gap:12px"},h("h2",{text:"Where our properties are"}),h("p",{class:"muted small",text:"From the Guesty listing export. Use this when someone asks what we have near them."}),
+      h("div",{class:"areas"},...Object.values(AREAS).map(a=>h("div",{class:"area"},h("b",{text:a.props.reduce((s,x)=>s+(+(x[0].match(/\((\d+)\)/)||[0,1])[1]),0)}),h("span",{style:"font-weight:600",text:a.name}),h("span",{class:"muted",text:[...new Set(a.props.map(x=>x[1].split(",").pop().trim()))].join(", ")}),h("a",{href:"https://www.eventbrite.co.uk/d/united-kingdom--"+a.ev+"/all-events/",target:"_blank",rel:"noopener",style:"font-size:14px;margin-top:6px",text:"Find events here on Eventbrite"})))))
+  ];
+}
+function projCard(p){
+  const a=AREAS[p.area];const people=contacts.filter(c=>c.projectId===p.id);
+  const st=people.some(c=>c.status==="booked")?["Booked","good"]:people.some(c=>c.status==="replied")?["Replied","accent"]:people.some(c=>(c.status||"new")!=="new")?["Contacted","warm"]:people.length?["Ready to contact",""]:["No contacts yet",""];
+  return h("article",{class:"proj "+p.rating,id:"p-"+p.id},
+    h("div",{class:"head"},h("div",{style:"min-width:0"},h("h3",{text:p.name}),h("p",{class:"muted small",text:p.place})),h("span",{class:"pill "+st[1],text:st[0]})),
+    h("dl",{class:"facts"},
+      h("dt",{text:"What"}),h("dd",{text:p.what}),
+      h("dt",{text:"When"}),h("dd",{text:p.when}),
+      h("dt",{text:"Companies"}),h("dd",{text:p.who}),
+      h("dt",{text:"Our properties"}),h("dd",{},h("div",{class:"props"},...a.props.map(x=>h("span",{text:x[0]+" · "+x[2]}))))),
+    h("p",{class:"tipbox",text:p.tip}),
+    h("div",{style:"display:flex;flex-direction:column;gap:10px"},h("h3",{style:"font-size:16px",text:"People we're messaging"}),
+      people.length?h("div",{class:"list",style:"box-shadow:none;background:var(--sunk)"},...people.map(c=>contactRow(c,()=>go("outreach",c.id)))):h("p",{class:"muted small",text:"No one yet. Find someone on LinkedIn or add an email you found."}),
+      h("div",{class:"btns"},...(p.li||[]).map(c=>h("a",{class:"btn",href:liSearch(c),target:"_blank",rel:"noopener"},"Find on LinkedIn: "+c)),
+        h("button",{class:"btn primary",onclick:()=>{addKind="linkedin";cdraft.liProject=p.li?p.id:cdraft.liProject;cdraft.projectId=p.id;go("add")}},"+ Add a person"))),
+    p.src.length?h("p",{class:"small muted"},"Sources: ",...p.src.flatMap(([t,u],i)=>[i?" · ":"",h("a",{href:u,target:"_blank",rel:"noopener",text:t})])):null);
+}
+
+/* ---------- OUTREACH: project contacts, LinkedIn people and event organisers ---------- */
+const CHANNELS=[["email","Email"],["linkedin","LinkedIn"],["phone","Phone"]];
+const CHANNEL_LABEL=Object.fromEntries(CHANNELS);
+const O_STATUS={
+  email:[["new","Not contacted"],["sent","Email sent"],["fu","Follow-up sent"],["replied","Replied"],["booked","Booked"],["dead","Closed"]],
+  phone:[["new","Not contacted"],["sent","Called"],["fu","Called again"],["replied","Interested"],["booked","Booked"],["dead","Closed"]],
+  linkedin:[["new","Not contacted"],["invited","Request sent"],["connected","Connected"],["sent","Message sent"],["fu","Follow-up sent"],["replied","Replied"],["booked","Booked"],["dead","Closed"]]};
+const O_NEXT={new:0,invited:3,connected:0,sent:4,fu:7,replied:1,booked:null,dead:null};
+const O_CLOSED=new Set(["booked","dead"]);
+const chOf=c=>O_STATUS[c.channel]?c.channel:"email";
+const oLabel=c=>Object.fromEntries(O_STATUS[chOf(c)])[c.status||"new"]||"Not contacted";
+const oDue=c=>!O_CLOSED.has(c.status)&&((c.status||"new")==="new"||(!!c.nextFollowUp&&c.nextFollowUp<=today()));
+const projById=id=>PROJECTS.find(p=>p.id===id);
+const townsOf=a=>[...new Set(a.props.map(x=>x[1].split(",").pop().trim()))];
+const propCount=a=>a.props.reduce((s,x)=>s+(+(x[0].match(/\((\d+)\)/)||[0,1])[1]),0);
+const cFirst=c=>{const n=(c.name||"").trim();return n&&!/team|office|contact|enquir|ssen|sse|ltd|limited|construction/i.test(n)?n.split(/\s+/)[0]:""};
+const cTitle=c=>c.name||c.company||(c.kind==="event"?c.eventName:"")||"Unnamed contact";
+function ctx(c){
+  const p=c.kind==="event"?null:projById(c.projectId);const a=AREAS[c.area||(p&&p.area)]||null;
+  return{p,a,n:a?propCount(a):0,t:a?townsOf(a).slice(0,4).join(", "):"the area",
+    what:c.kind==="event"?(c.eventName||"your event"):(p?p.name:(c.company||"your project")),
+    place:c.kind==="event"?(c.eventTown||(a?a.name:"the area")):(p?p.place:"the site")};
+}
+const SIGN="[Your name]\nVivistays\nwww.vivistays.com\nteam@vivistays.com | WhatsApp +44 7578 255663";
+const dear=c=>{const f=cFirst(c);return f?"Dear "+f+",":"Dear Sir or Madam,"};
+const T_O={
+  email:c=>{const x=ctx(c);return`Subject: Accommodation for your personnel – ${x.what}
+
+${dear(c)}
+
+I am writing from Vivistays, a furnished accommodation provider managing over 400 properties across the UK.
+
+We understand your organisation is involved in ${x.what} (${x.place}). We manage ${x.n} properties nearby, in ${x.t}, suitable for personnel working on site. Our properties offer:
+
+• Whole homes, from 1 to 5 bedrooms
+• Free parking and fast Wi-Fi
+• Weekly and monthly stays at corporate rates
+• Invoicing for company bookings
+• One point of contact for the whole booking
+
+Availability depends on dates, so we would welcome the details of your accommodation requirements. If accommodation is arranged by a colleague, I would be grateful if you could pass this on.
+
+Yours sincerely,
+
+${SIGN}`},
+  emailFu:c=>{const x=ctx(c);return`Subject: Re: Accommodation for your personnel – ${x.what}
+
+${dear(c)}
+
+I am following up on my earlier email about accommodation for personnel working on ${x.what}. We manage ${x.n} properties near the site, in ${x.t}, available for weekly and monthly stays with invoicing for company bookings.
+
+If another member of your team handles accommodation, I would be grateful for their contact details.
+
+Yours sincerely,
+
+${SIGN}`},
+  call:c=>{const x=ctx(c);return`What to say:
+
+"Good morning, my name is [Your name] from Vivistays. We manage furnished homes near ${x.place}, in ${x.t}. I understand you're working on ${x.what}. Who looks after accommodation for your site teams?"
+
+If they give you a name or email, add it under Edit details and change the channel to Email.`},
+  liInvite:c=>{const x=ctx(c);const f=cFirst(c);return`Hi${f?" "+f:""}, I work with Vivistays. We manage furnished homes near ${x.place} for teams working on ${x.what}. Would be good to connect.`},
+  liMsg:c=>{const x=ctx(c);const f=cFirst(c);return`Thanks for connecting${f?", "+f:""}. We manage ${x.n} whole homes near ${x.place} (${x.t}), with parking, Wi-Fi and invoicing for company bookings.
+
+If your team needs accommodation for people on site, who would be the best person to speak to?
+
+[Your name], Vivistays
+team@vivistays.com`},
+  liFu:c=>{const x=ctx(c);const f=cFirst(c);return`Hi${f?" "+f:""}, just following up. If accommodation for the ${x.what} team is handled by someone else, I'd be grateful for a pointer. Thanks.`},
+  event:c=>{const x=ctx(c);return`Subject: Accommodation for ${x.what} attendees
+
+${dear(c)}
+
+I am writing from Vivistays, a furnished accommodation provider managing over 400 properties across the UK.
+
+We noticed ${x.what} is taking place in ${x.place}${c.eventDate?" on "+c.eventDate:""}. We manage ${x.n} properties nearby, in ${x.t}, which may suit attendees, speakers or staff travelling in for the event. Guests get a whole home with parking and Wi-Fi, booked directly with us.
+
+Would you be open to listing Vivistays as recommended accommodation for the event? We would be happy to provide a short description and booking link for your event page or attendee emails.
+
+Yours sincerely,
+
+${SIGN}`},
+  eventFu:c=>{const x=ctx(c);return`Subject: Re: Accommodation for ${x.what} attendees
+
+${dear(c)}
+
+I am following up on my email about accommodation for people travelling to ${x.what}. If it would help, we can send a short paragraph and booking link ready to add to your event page.
+
+Yours sincerely,
+
+${SIGN}`},
+  replied:c=>{const x=ctx(c);return c.kind==="event"?`Thank you for your reply. Here is a short paragraph you can share with attendees:
+
+"Staying over? Vivistays has whole homes near ${x.place}, in ${x.t}, with parking and Wi-Fi. Book direct at www.vivistays.com, by email at team@vivistays.com or on WhatsApp at +44 7578 255663."
+
+Please let us know if you would like anything changed.
+
+Yours sincerely,
+
+${SIGN}`:`Thank you for your reply. So we can check availability and send options, could you let us know:
+
+• the dates your personnel need accommodation
+• how many people, and whether they can share a house
+• which towns suit the site
+• who we should invoice
+
+Yours sincerely,
+
+${SIGN}`}
+};
+function oPlan(c){
+  const ch=chOf(c),s=c.status||"new",ev=c.kind==="event";
+  if(ch==="linkedin")return{
+    new:{h:"Send a connection request",how:"Open their LinkedIn profile, press Connect, then Add a note and paste this.",msg:T_O.liInvite(c),copy:"Copy note",done:["Request sent","invited"]},
+    invited:{h:"Did they accept?",how:"Check LinkedIn. If they accepted, press They accepted. If there's nothing after a week, close it.",msg:"",done:["They accepted","connected"]},
+    connected:{h:"Send your message",how:"Send this as a LinkedIn message.",msg:T_O.liMsg(c),copy:"Copy message",done:["I've sent it","sent"]},
+    sent:{h:"Send a follow-up",how:"No reply yet. Send this short nudge on LinkedIn.",msg:T_O.liFu(c),copy:"Copy follow-up",done:["I've sent it","fu"]},
+    fu:{h:"Wait for a reply",how:"You've followed up once. If nothing comes back by the follow-up date, close this.",msg:"",done:["Close","dead"]},
+    replied:{h:"Get their requirements",how:"Reply on LinkedIn, or move to email if they give you one.",msg:T_O.replied(c),copy:"Copy reply",done:["They booked","booked"]}}[s];
+  if(ch==="phone")return{
+    new:{h:"Call them",how:"Ring "+(c.phone||"the number in the details")+" and ask who arranges accommodation.",msg:T_O.call(c),copy:"Copy script",done:["I've called","sent"]},
+    sent:{h:"Call again",how:"If you got an email address, add it under Edit details and change the channel to Email.",msg:"",done:["Called again","fu"]},
+    fu:{h:"Wait for a reply",how:"If nothing comes back by the follow-up date, close this.",msg:"",done:["Close","dead"]},
+    replied:{h:"Get their requirements",how:"Send this by email once you have an address.",msg:T_O.replied(c),copy:"Copy reply",done:["They booked","booked"]}}[s];
+  return{
+    new:{h:ev?"Email the organiser":"Send the email",how:c.email?"Send to "+c.email+". The first line is the subject.":"Add their email under Edit details first. On Eventbrite, you can paste this into Contact the organiser instead.",msg:ev?T_O.event(c):T_O.email(c),copy:"Copy email",done:["I've sent it","sent"]},
+    sent:{h:"Send a follow-up",how:"No reply after a few days. Reply to your first email with this.",msg:ev?T_O.eventFu(c):T_O.emailFu(c),copy:"Copy follow-up",done:["I've sent it","fu"]},
+    fu:{h:"Wait for a reply",how:"You've followed up once. If nothing comes back by the follow-up date, close this.",msg:"",done:["Close","dead"]},
+    replied:{h:ev?"Send them our listing text":"Get their requirements",how:ev?"Send this so they can add us to the event page.":"Ask for the details you need to send options.",msg:T_O.replied(c),copy:"Copy reply",done:[ev?"They listed us":"They booked","booked"]}}[s];
+}
+
+function contactRow(c,onclick){
+  const late=!O_CLOSED.has(c.status)&&(c.status||"new")!=="new"&&c.nextFollowUp&&c.nextFollowUp<today();
+  const right=O_CLOSED.has(c.status)?oLabel(c):(c.status||"new")==="new"?"New":late?"Overdue":niceDate(c.nextFollowUp)||oLabel(c);
+  const p=projById(c.projectId);
+  const sub=[CHANNEL_LABEL[chOf(c)],c.kind==="event"?"Event: "+(c.eventName||""):p?p.name:"",c.name&&c.company?c.company:""];
+  return h("button",{class:"row","aria-selected":String(selected===c.id),onclick},
+    h("span",{class:"dot "+(c.status==="replied"?"good":c.kind==="event"?"warm":"hot")}),
+    h("span",{class:"nm",text:cTitle(c)}),
+    h("span",{class:"when"+(late?" late":""),text:right}),
+    h("span",{class:"sub",text:sub.filter(Boolean).join(" · ")}));
+}
+let oFilter="open";
+function filteredContacts(){
+  const q=query.trim().toLowerCase();
+  return contacts.filter(c=>{
+    if(oFilter==="open"&&O_CLOSED.has(c.status))return false;
+    if(oFilter==="due"&&!oDue(c))return false;
+    if(oFilter==="project"&&(c.kind==="event"||O_CLOSED.has(c.status)))return false;
+    if(oFilter==="event"&&(c.kind!=="event"||O_CLOSED.has(c.status)))return false;
+    if(oFilter==="replied"&&c.status!=="replied")return false;
+    if(oFilter==="closed"&&!O_CLOSED.has(c.status))return false;
+    return!q||[c.name,c.company,c.role,c.email,c.eventName,c.eventTown,(projById(c.projectId)||{}).name,c.notes].join(" ").toLowerCase().includes(q)})
+  .sort((a,b)=>oDue(b)-oDue(a)||(a.nextFollowUp||"").localeCompare(b.nextFollowUp||""));
+}
+function outreachView(){
+  const F=[["open","All open"],["due","To do today"],["project","Projects"],["event","Events"],["replied","Replied"],["closed","Closed"]];
+  const rows=list=>{
+    if(!ready&&!offline)return[h("div",{class:"empty"},h("p",{text:"Loading…"}))];
+    if(offline)return[h("div",{class:"empty"},h("h3",{text:"Sign in to see contacts"}),h("p",{text:offline}))];
+    if(!list.length)return[h("div",{class:"empty"},h("h3",{text:contacts.length?"Nothing here":"No one yet"}),h("p",{text:"Add a LinkedIn person, an event organiser or a company email."}),h("button",{class:"btn primary",onclick:()=>{addKind="linkedin";go("add")}},"+ Add someone"))];
+    return[h("div",{class:"list"},...list.map(c=>contactRow(c,()=>{selected=c.id;render();window.scrollTo(0,0)})))]};
+  const listcol=h("div",{class:"listcol",style:"display:flex;flex-direction:column;gap:12px;min-width:0"},
+    h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Outreach"}),h("span",{class:"muted small",text:contacts.filter(c=>!O_CLOSED.has(c.status)).length+" open"})),
+    h("p",{class:"muted",text:"Everyone we're messaging about projects and events, by email, LinkedIn or phone."}),
+    h("div",{class:"chips",role:"group","aria-label":"Show"},...F.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(oFilter===k),onclick:()=>{oFilter=k;render()}},t))),
+    h("input",{class:"search",id:"oq",type:"search",placeholder:"Search name, company, project or event",value:query,oninput:e=>{query=e.target.value;const r=$("#orows");if(r)r.replaceChildren(...rows(filteredContacts()))}}),
+    h("div",{id:"orows",style:"display:flex;flex-direction:column"},...rows(filteredContacts())));
+  return[h("div",{class:"split"+(selected?" open":"")},listcol,contactDetail())];
+}
+function contactDetail(){
+  const c=contacts.find(x=>x.id===selected);
+  if(!c)return h("div",{class:"detail"},h("div",{class:"empty"},h("h3",{text:"Pick someone from the list"}),h("p",{text:"You'll see exactly what to send them next, ready to copy."})));
+  const p=projById(c.projectId);const ev=c.kind==="event";
+  const plan=oPlan(c);const s=c.status||"new";
+  const fld=(label,key,ph,type)=>h("div",{class:"field"},h("label",{for:"c-"+key,text:label}),h("input",{id:"c-"+key,type:type||"text",value:c[key]||"",placeholder:ph||"",onchange:e=>saveC(c,{[key]:e.target.value.trim()})}));
+  const sel=(label,key,opts,val,on)=>{const x=h("select",{id:"c-"+key,onchange:e=>on(e.target.value)},...opts.map(([v,t])=>h("option",{value:v,text:t})));x.value=val;return h("div",{class:"field"},h("label",{for:"c-"+key,text:label}),x)};
+  const late=c.nextFollowUp&&c.nextFollowUp<today()&&s!=="new";
+  const next=plan?h("div",{class:"next"},
+    h("div",{class:"eyebrow"+(late?" late":""),text:late?"Overdue":oDue(c)?"Do this today":"Next step · "+(niceDate(c.nextFollowUp)||"no date set")}),
+    h("h2",{text:plan.h}),h("p",{class:"muted",text:plan.how}),
+    plan.msg?h("div",{class:"msg",text:plan.msg}):null,
+    h("div",{class:"btns"},
+      plan.msg?h("button",{class:"btn primary",onclick:()=>copy(plan.msg)},"1. "+plan.copy):null,
+      h("button",{class:plan.msg?"btn":"btn primary",onclick:()=>setOStatus(c,plan.done[1])},(plan.msg?"2. ":"")+plan.done[0])),
+    h("div",{class:"btns"},s!=="replied"?h("button",{class:"btn link",onclick:()=>setOStatus(c,"replied")},"They replied"):null,s==="invited"?h("button",{class:"btn link",onclick:()=>setOStatus(c,"dead")},"They didn't accept"):null))
+    :h("div",{class:"next"},h("div",{class:"eyebrow",text:"Finished"}),h("h2",{text:s==="booked"?"Done. Make sure any booking is in Guesty.":"This contact is closed."}),h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>setOStatus(c,"new")},"Reopen")));
+  return h("div",{class:"detail"},
+    h("button",{class:"back",onclick:()=>{selected=null;render()}},"‹ Outreach"),
+    h("div",{style:"display:flex;flex-direction:column;gap:8px"},h("h1",{text:cTitle(c)}),
+      h("div",{class:"btns"},h("span",{class:"pill accent",text:CHANNEL_LABEL[chOf(c)]}),h("span",{class:"pill",text:oLabel(c)}),ev?h("span",{class:"pill warm",text:"Event"}):p?h("span",{class:"pill",text:p.name}):null)),
+    next,
+    h("div",{class:"card"},h("h3",{text:"Who they are"}),
+      h("dl",{class:"facts",style:"border-top:0;padding-top:0"},
+        c.name?[h("dt",{text:"Name"}),h("dd",{text:c.name})]:null,
+        c.role?[h("dt",{text:"Role"}),h("dd",{text:c.role})]:null,
+        c.company?[h("dt",{text:"Company"}),h("dd",{text:c.company})]:null,
+        c.email?[h("dt",{text:"Email"}),h("dd",{},c.email+" ",h("button",{class:"btn link",style:"padding:0",onclick:()=>copy(c.email)},"Copy"))]:null,
+        c.phone?[h("dt",{text:"Phone"}),h("dd",{text:c.phone})]:null,
+        ev?[h("dt",{text:"Event"}),h("dd",{text:[c.eventName,c.eventDate,c.eventTown].filter(Boolean).join(" · ")})]:p?[h("dt",{text:"Project"}),h("dd",{text:p.name+" · "+p.place})]:null),
+      safeUrl(c.url)?h("div",{class:"btns"},h("a",{class:"btn",href:safeUrl(c.url),target:"_blank",rel:"noopener"},chOf(c)==="linkedin"?"Open LinkedIn profile":ev?"Open event page":"Open link")):null),
+    h("div",{class:"card"},h("h3",{text:"Notes"}),h("div",{class:"field"},h("textarea",{id:"c-notes",rows:"3","aria-label":"Notes",placeholder:"What they said, who to ask next",onchange:e=>saveC(c,{notes:e.target.value})},c.notes||""))),
+    h("details",{class:"card"},h("summary",{},"Edit details"),
+      h("div",{class:"form"},fld("Name","name"),fld("Role","role"),fld("Company","company"),fld("Email","email","","email"),fld("Phone","phone"),fld(ev?"Event page link":"Profile or website link","url","https://…","url"),
+        sel("How we contact them","channel",CHANNELS,chOf(c),v=>{saveC(c,{channel:v,status:"new",nextFollowUp:today()});render()}),
+        sel("Where they are","status",O_STATUS[chOf(c)],s,v=>setOStatus(c,v)),
+        ev?fld("Event name","eventName"):sel("Project","projectId",[["","None"],...PROJECTS.map(x=>[x.id,x.name])],c.projectId||"",v=>{saveC(c,{projectId:v});render()}),
+        ev?fld("Event dates","eventDate"):null,ev?fld("Event town","eventTown"):null,
+        ev?sel("Our nearest properties","area",Object.entries(AREAS).map(([k,v])=>[k,v.name]),c.area||"edinburgh",v=>{saveC(c,{area:v});render()}):null,
+        h("div",{class:"field"},h("label",{for:"c-nf",text:"Next follow-up"}),h("input",{type:"date",id:"c-nf",value:c.nextFollowUp||"",onchange:e=>saveC(c,{nextFollowUp:e.target.value||null})}))),
+      h("div",{class:"btns"},deleteCBtn(c))),
+    h("p",{class:"muted small",text:"Added "+(c.created?niceDate(c.created.slice(0,10)):"")}));
+}
+function deleteCBtn(c){const b=h("button",{class:"btn danger"},"Delete contact");b.addEventListener("click",async()=>{if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Tap again to delete";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="Delete contact"}},3000);return}
+  if(!db)return;contacts=contacts.filter(x=>x.id!==c.id);selected=null;render();try{await db.collection("contacts").doc(c.id).delete();toast("Contact deleted")}catch(e){toast("Couldn't delete")}});return b}
+async function saveC(c,patch){
+  if(!db){toast("Sign in to save changes");return}
+  Object.assign(c,patch);
+  try{await db.collection("contacts").doc(c.id).update({...patch,updated:new Date().toISOString()})}catch(e){toast("Couldn't save. Try again.")}
+}
+function setOStatus(c,status){
+  const n=O_NEXT[status];const patch={status,nextFollowUp:n==null?null:addDays(n)};
+  if(status==="sent"&&!c.firstContacted)patch.firstContacted=today();
+  saveC(c,patch);render();toast("Saved"+(patch.nextFollowUp&&n>0?". Next step "+niceDate(patch.nextFollowUp).toLowerCase():""));
+}
+
+/* ---------- ADD: LinkedIn person, event organiser, company email ---------- */
+const CBLANK={paste:"",name:"",role:"",company:"",email:"",phone:"",url:"",projectId:"",eventName:"",eventDate:"",eventTown:"",area:"",notes:"",liProject:"centerparcs"};
+let cdraft={...CBLANK},cBusy=false,cNote="";
+function addChooser(){
+  const K=[["facebook","Facebook post","Owner or guest from a group"],["linkedin","LinkedIn person","Someone at a project company"],["event","Event","An organiser on Eventbrite"],["email","Company email","An email or phone number you found"]];
+  return h("div",{class:"choose"},...K.map(([k,t,d])=>h("button",{"aria-pressed":String(addKind===k),onclick:()=>{addKind=k;cNote="";render()}},h("b",{text:t}),h("span",{text:d}))));
+}
+function addAnyView(){
+  const head=h("div",{style:"display:flex;flex-direction:column;gap:6px"},h("h1",{text:"Add someone"}),h("p",{class:"lede",text:"Pick where you found them. Everything you add shows up in Leads or Outreach with the next message ready."}));
+  if(addKind==="facebook")return[head,addChooser(),...addView().slice(1)];
+  return[head,addChooser(),offline?h("div",{class:"banner",text:offline}):null,...contactForm()];
+}
+function contactForm(){
+  const bind=(k,el)=>{el.addEventListener("input",e=>cdraft[k]=e.target.value);return el};
+  const inp=(k,label,ph,type)=>h("div",{class:"field"},h("label",{for:"n-"+k,text:label}),bind(k,h("input",{id:"n-"+k,type:type||"text",value:cdraft[k],placeholder:ph||""})));
+  const sel=(k,label,opts)=>{const s=h("select",{id:"n-"+k},...opts.map(([v,t])=>h("option",{value:v,text:t})));s.value=cdraft[k];return h("div",{class:"field"},h("label",{for:"n-"+k,text:label}),bind(k,s))};
+  const projOpts=[["","Choose a project"],...PROJECTS.map(p=>[p.id,p.name])];
+  const paste=(ph)=>h("div",{class:"field wide"},bind("paste",h("textarea",{id:"n-paste",rows:"6",placeholder:ph},cdraft.paste)));
+  const aiBtn=lbl=>h("div",{class:"btns"},h("button",{class:"btn primary",disabled:cBusy||!sample,onclick:readPaste},cBusy?[h("span",{class:"spin"}),"Reading…"]:lbl),cNote?null:h("span",{class:"muted small",text:sample?"Or type the details yourself below.":"AI isn't available here. Type the details below."}));
+  const save=h("div",{class:"btns"},h("button",{class:"btn primary",id:"csave",disabled:cBusy,onclick:saveContact},"Save"),h("button",{class:"btn",onclick:()=>{cdraft={...CBLANK};cNote="";render()}},"Clear"));
+  if(addKind==="linkedin"){
+    const p=projById(cdraft.liProject)||PROJECTS[0];
+    const ps=h("select",{id:"n-liProject",onchange:e=>{cdraft.liProject=e.target.value;cdraft.projectId=e.target.value;render()}},...PROJECTS.filter(x=>x.li).map(x=>h("option",{value:x.id,text:x.name})));ps.value=p.id;
+    return[
+      h("div",{class:"card"},h("h3",{text:"1. Find someone on LinkedIn"}),h("p",{class:"muted small",text:"Choose a project. Each button opens a LinkedIn search for people at that company. Look for titles like site manager, project manager, procurement or HR."}),
+        h("div",{class:"field"},h("label",{for:"n-liProject",text:"Project"}),ps),
+        h("div",{class:"btns"},...(p.li||[]).map(c=>h("a",{class:"btn",href:liSearch(c),target:"_blank",rel:"noopener"},"Search: "+c)))),
+      h("div",{class:"card"},h("h3",{text:"2. Paste their profile"}),h("p",{class:"muted small",text:"On their profile, select the top part (name, job title, company) and copy it. Also copy the page address from your browser."}),
+        paste("Paste their name, job title and company here"),aiBtn("3. Fill in with AI"),cNote?h("p",{class:"tipbox",text:cNote}):null),
+      h("div",{class:"card"},h("h3",{text:"Check the details"}),h("div",{class:"form"},inp("name","Name"),inp("role","Job title"),inp("company","Company"),inp("url","LinkedIn profile link","linkedin.com/in/…","url"),sel("projectId","Project",projOpts),inp("notes","Notes (optional)"))),
+      save];
+  }
+  if(addKind==="event"){
+    return[
+      h("div",{class:"card"},h("h3",{text:"1. Find an event near our properties"}),h("p",{class:"muted small",text:"Each button opens Eventbrite for that area. Look for events that bring people from out of town for a night or more: conferences, festivals, sports, trade shows, weddings."}),
+        h("div",{class:"btns"},...Object.values(AREAS).map(a=>h("a",{class:"btn",href:evSearch(a),target:"_blank",rel:"noopener"},a.name)))),
+      h("div",{class:"card"},h("h3",{text:"2. Paste the event page"}),h("p",{class:"muted small",text:"Open the event, select everything on the page and copy it. The organiser's name is near the bottom of most Eventbrite pages."}),
+        paste("Paste the event page text here"),aiBtn("3. Fill in with AI"),cNote?h("p",{class:"tipbox",text:cNote}):null),
+      h("div",{class:"card"},h("h3",{text:"Check the details"}),h("div",{class:"form"},inp("eventName","Event name"),inp("eventDate","Dates"),inp("eventTown","Town"),sel("area","Our nearest properties",[["","Choose"],...Object.entries(AREAS).map(([k,v])=>[k,v.name])]),inp("name","Organiser name"),inp("email","Organiser email (if shown)","","email"),inp("url","Event page link","eventbrite.co.uk/…","url"),inp("notes","Notes (optional)")),
+        h("p",{class:"muted small",text:"No email on the page? Save anyway. You'll paste the message into Eventbrite's Contact the organiser button instead."})),
+      save];
+  }
+  return[
+    h("div",{class:"card"},h("h3",{text:"Company details"}),h("p",{class:"muted small",text:"For an email address or phone number you found on a company website, a council page or the news."}),
+      h("div",{class:"form"},inp("company","Company"),inp("name","Person's name (if known)"),inp("role","Job title (if known)"),inp("email","Email","","email"),inp("phone","Phone"),sel("projectId","Project",projOpts),inp("url","Where you found it (link)","https://…","url"),inp("notes","Notes (optional)"))),
+    save];
+}
+const liSearch=c=>"https://www.linkedin.com/search/results/people/?keywords="+encodeURIComponent(c+" site manager");
+const evSearch=a=>"https://www.eventbrite.co.uk/d/united-kingdom--"+a.ev+"/all-events/";
+async function readPaste(){
+  if(!cdraft.paste.trim()){toast("Paste the text first");return}
+  if(!sample){toast("AI isn't available here");return}
+  cBusy=true;cNote="";render();
+  try{
+    if(addKind==="linkedin"){
+      const r=await sample.json(`Extract the person's details from this text copied from a LinkedIn profile. Return ONLY JSON with keys "name","role","company","url" (the profile URL if present, else ""). Use "" for anything missing.\n\nTEXT:\n"""${cdraft.paste.slice(0,5000)}"""`,{modelTier:"quick"});
+      for(const k of["name","role","company","url"])if(typeof r[k]==="string"&&r[k])cdraft[k]=r[k];
+      if(!cdraft.projectId)cdraft.projectId=cdraft.liProject;
+      cNote="Filled in. Check the name and company below, then save.";
+    }else{
+      const areas=Object.entries(AREAS).map(([k,v])=>k+" = "+townsOf(v).join(", ")).join("\n");
+      const r=await sample.json(`Extract details from this text copied from an event page (usually Eventbrite). Return ONLY JSON with keys:\n"eventName","eventDate" (short, e.g. "14–16 Nov 2026"),"eventTown","name" (organiser name),"email" (organiser email if shown),"url" (event link if present),"area" (the key of the nearest area below, or "" if none is within about 30 miles),"note" (one sentence: is this likely to bring people from out of town who need overnight stays?).\nUse "" for anything missing.\n\nAREAS:\n${areas}\n\nTEXT:\n"""${cdraft.paste.slice(0,6000)}"""`,{modelTier:"quick"});
+      for(const k of["eventName","eventDate","eventTown","name","email","url"])if(typeof r[k]==="string"&&r[k])cdraft[k]=r[k];
+      if(AREAS[r.area])cdraft.area=r.area;
+      cNote=(r.note||"Filled in.")+(AREAS[r.area]?" Nearest properties: "+AREAS[r.area].name+".":" None of our areas looks close. Check before contacting them.");
+    }
+  }catch(e){cNote=e&&e.code==="not_granted"?"AI access was declined. Type the details by hand.":"Couldn't read it. Type the details by hand or try again."}
+  cBusy=false;render();
+}
+async function saveContact(){
+  if(!db){toast("Sign in to claude.ai to save");return}
+  const d=cdraft;const ev=addKind==="event";
+  if(!(d.name||d.company||d.eventName).trim()){toast(ev?"Add the event name first":"Add a name or company first");return}
+  const now=new Date().toISOString();
+  const data={kind:ev?"event":"project",channel:addKind==="linkedin"?"linkedin":(addKind==="email"&&!d.email.trim()&&d.phone.trim())?"phone":"email",
+    name:d.name.trim(),role:d.role.trim(),company:d.company.trim(),email:d.email.trim(),phone:d.phone.trim(),url:d.url.trim(),notes:d.notes.trim(),
+    projectId:ev?"":(d.projectId||(addKind==="linkedin"?d.liProject:"")),eventName:d.eventName.trim(),eventDate:d.eventDate.trim(),eventTown:d.eventTown.trim(),area:ev?(d.area||""):"",
+    status:"new",nextFollowUp:today(),created:now,updated:now,createdBy:myId||null};
+  try{const ref=await db.collection("contacts").add(data);cdraft={...CBLANK,liProject:d.liProject};cNote="";toast("Saved. Your first message is ready.");oFilter="open";go("outreach",ref.id)}
+  catch(e){toast("Couldn't save. Try again.")}
+}
+
+/* ---------- HOW-TO ---------- */
+function liGuide(){return[h("div",{class:"card guide"},h("h3",{text:"Why LinkedIn"}),h("p",{class:"muted",text:"Company emails like enquiries@ often go unanswered. On LinkedIn you can reach the actual people who book rooms for site crews: site managers, project managers, procurement and HR at the companies building near our properties."}),
+  h("h3",{text:"How it works"}),h("ol",{},h("li",{text:"Press + Add, then LinkedIn person. Choose a project."}),h("li",{text:"Press a Search button. LinkedIn opens with people at that company. Open someone with a title like site manager or procurement."}),h("li",{text:"Copy the top of their profile (name, job title, company) and paste it in. Press Fill in with AI, check it, and save."}),h("li",{text:"They appear in Outreach. Step 1 gives you a short note to send with your connection request."}),h("li",{text:"When they accept, press They accepted. You get the message to send next, then a follow-up a few days later."})),
+  h("p",{class:"tipbox",text:"Send 5 to 10 connection requests a day at most. More than that and LinkedIn may restrict the account."}))]}
+function evGuide(){return[h("div",{class:"card guide"},h("h3",{text:"Why Eventbrite"}),h("p",{class:"muted",text:"Events bring people from out of town who need somewhere to sleep. One organiser who lists us as recommended accommodation can send many bookings, so we contact the organiser, not each attendee."}),
+  h("h3",{text:"How it works"}),h("ol",{},h("li",{text:"Press + Add, then Event. Press an area to open Eventbrite's events there."}),h("li",{text:"Pick events that last more than a day or draw people from far away: conferences, festivals, sports, trade shows. Skip small local classes and meetups."}),h("li",{text:"Open the event, copy the whole page and paste it in. Press Fill in with AI. It finds the event name, dates, town and organiser, and picks our nearest properties."}),h("li",{text:"Save. In Outreach you get an email to the organiser asking to list Vivistays as recommended accommodation."}),h("li",{text:"If there's no email on the page, use Eventbrite's Contact the organiser button and paste the same message there."})),
+  h("p",{class:"tipbox",text:"If Vivistays runs its own Eventbrite events, add a Where to stay section to the event page with our website and WhatsApp number."}),
+  h("h3",{text:"Areas"}),h("div",{class:"btns"},...Object.values(AREAS).map(a=>h("a",{class:"btn",href:"https://www.eventbrite.co.uk/d/united-kingdom--"+a.ev+"/all-events/",target:"_blank",rel:"noopener"},a.name))))]}
+const TPL={
+  comment:{title:"Public comment",when:"Any owner post. Be useful in public first, then message.",text:"Good question. What usually makes the biggest difference is [one specific tip related to their post]. We manage short lets around [area], so happy to share more if it helps. I'll drop you a message."},
+  cohost:{title:"Wants a co-host or manager",when:"They've asked directly for help.",text:"Hi [Name], saw your post in [group] about finding a co-host for your [property] in [area].\n\nWe're Vivistays. We manage 400+ short-let properties across the UK: listings, pricing, guest messages, cleaning and maintenance, so owners don't have to handle the day-to-day.\n\nHappy to have a quick, no-pressure chat about what you need. Would a 10-minute call this week work?\n\n[Your name], Vivistays"},
+  recommend:{title:"Asking for recommendations",when:"They asked the group who people use.",text:"Hi [Name], saw you were after recommendations for someone to manage your place in [area].\n\nWe're Vivistays. We look after short lets day to day: guest communication, cleaning, pricing and maintenance. I'm happy to explain how we work and what it would cost for your property, so you can compare properly.\n\nWant me to send a few details over?\n\n[Your name], Vivistays"},
+  frustrated:{title:"Unhappy with current setup",when:"Complaining about cleaners, reviews, guests or a manager.",text:"Hi [Name], sorry to read about [their problem]. That's frustrating, especially when it starts showing up in reviews.\n\nWe're Vivistays and we manage short lets across the UK. [Specific fix, e.g. vetted cleaners with photo checks after every stay]. If it helps, I'm happy to look at your listing and tell you honestly what I'd change, no obligation.\n\n[Your name], Vivistays"},
+  newhost:{title:"New to short lets",when:"Thinking of starting on Airbnb or switching from a long-term let.",text:"Hi [Name], saw you're thinking about short-letting your [property] in [area].\n\nWe're Vivistays. We set up and run short lets for owners: the listing, pricing, guests, cleaning and maintenance. Happy to walk you through what's involved and roughly what it could earn, so you can decide whether it's worth it.\n\nWould a quick call be useful?\n\n[Your name], Vivistays"},
+  fu1:{title:"Follow-up 1",when:"About 3 days after the first message, no reply.",text:"Hi [Name], just following up on my message. If you're still sorting out your property, I'm happy to answer any questions, even if you go with someone else. No pressure either way.\n\n[Your name], Vivistays"},
+  fu2:{title:"Follow-up 2",when:"About a week in, still no reply. The last one.",text:"Hi [Name], I'll leave it here so I'm not filling your inbox. If you want help with the property later on, you can reach us at team@vivistays.com or on WhatsApp at +44 7578 255663. Best of luck with it.\n\n[Your name], Vivistays"},
+  move:{title:"Move off Messenger",when:"They've replied and are interested.",text:"Thanks [Name]. Easiest is a quick call. What day and time suits you? If you'd rather message, you can reach the team on WhatsApp at +44 7578 255663 or at team@vivistays.com."},
+  gcomment:{title:"Reply on their post",when:"Someone asks for a place to stay. Reply fast.",text:"Hi [Name], we manage short stays across the UK. I'll check what we have in or near [area] and send you a message."},
+  gdm:{title:"First message",when:"Right after commenting.",text:"Hi [Name], thanks for posting. To check what we have near [area], could you send me:\n\n• your dates\n• how many people\n• anything you need (parking, pets, separate beds)\n\nBooking direct with us is usually cheaper than Airbnb.\n\n[Your name], Vivistays"},
+  gfu:{title:"Nudge for details",when:"No reply after a day.",text:"Hi [Name], just checking you saw my message. If you send your dates and number of guests, I'll tell you straight away what we have near [area]."},
+  goptions:{title:"Send options",when:"After checking Guesty. Only send what's actually free.",text:"Thanks [Name]. For [dates] we have:\n\n[Property name, area] – [beds], sleeps [x], [price] total\n[link or photos]\n\nYou can book direct with us by replying here, on WhatsApp at +44 7578 255663, or at team@vivistays.com. Booking direct saves you the Airbnb fees."},
+  gchase:{title:"Follow up on options",when:"A day after sending options.",text:"Hi [Name], did any of those work for you? Dates go quickly, so just say the word and I'll hold it for you."},
+  gnone:{title:"Nothing available",when:"Checked Guesty and there's nothing suitable.",text:"Hi [Name], sorry, we don't have anything free near [area] for those dates. If your plans change or you need somewhere else in the UK, message us at team@vivistays.com."}
+};
+function helpView(){
+  const T=[["posts","Posts to share"],["messages","Message templates"],["groups","Facebook groups"],["linkedin","Using LinkedIn"],["eventbrite","Using Eventbrite"]];
+  return[
+    h("div",{style:"display:flex;flex-direction:column;gap:6px"},h("h1",{text:"How-to"}),h("p",{class:"lede",text:"Everything you need to find leads on Facebook, in one place."})),
+    h("div",{class:"chips",role:"group","aria-label":"Section"},...T.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(helpTab===k),onclick:()=>{helpTab=k;render()}},t))),
+    ...(helpTab==="posts"?postsView():helpTab==="messages"?messagesView():helpTab==="linkedin"?liGuide():helpTab==="eventbrite"?evGuide():groupsView())];
+}
+function messagesView(){
+  const sec=(title,keys,foot)=>h("div",{class:"card"},h("h3",{text:title}),...keys.map(k=>{const t=TPL[k];return h("details",{style:"border-top:1px solid var(--line);padding-top:10px"},h("summary",{style:"cursor:pointer"},h("b",{text:t.title}),h("span",{class:"muted small",text:" · "+t.when})),h("div",{class:"msg",style:"margin-top:8px",text:t.text}),h("div",{class:"btns",style:"margin-top:8px"},h("button",{class:"btn",onclick:()=>copy(t.text)},"Copy")))}),foot?h("p",{class:"muted small",text:foot}):null);
+  return[
+    h("p",{class:"muted",text:"Use these when you're writing by hand. Replace anything in [brackets] and mention something from their post."}),
+    sec("Owners: comment on the post",["comment"]),
+    sec("Owners: first message",["cohost","recommend","frustrated","newhost"]),
+    sec("Owners: follow-ups",["fu1","fu2","move"]),
+    sec("Guests looking to stay",["gcomment","gdm","gfu","goptions","gchase","gnone"],"Never promise a place before checking Guesty."),
+    h("p",{class:"muted small",text:"Send from a real profile, a few at a time. Mass messages get accounts restricted."})];
+}
+function postsView(){
+  const names=[...new Set([...groups.filter(g=>g.joined).map(g=>g.name),...groups.map(g=>g.name)])];
+  const sorted=[...posts].sort((a,b)=>(a.order??99)-(b.order??99));const tday=today();
+  const card=p=>{const log=p.posted||[];const open=openPost===p.id;
+    const sel=h("select",{id:"pg-"+p.id,"aria-label":"Group"},h("option",{value:"",text:"Choose group"}),...names.map(n=>h("option",{value:n,text:n+(log.some(x=>x.group===n)?" (already posted)":"")})));
+    const mark=async()=>{const g=sel.value;if(!g){toast("Choose the group first");return}if(!db){toast("Sign in to save");return}
+      if(log.some(x=>x.group===g)&&!mark.armed){mark.armed=true;toast("Already posted there. Tap again to log it anyway.");return}
+      const next=[...log,{group:g,date:tday}];p.posted=next;render();try{await db.collection("posts").doc(p.id).update({posted:next});toast("Logged in "+g)}catch(e){toast("Couldn't save")}};
+    return h("div",{class:"card"},
+      h("button",{style:"all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:12px","aria-expanded":String(open),onclick:()=>{openPost=open?null:p.id;render()}},
+        h("span",{style:"min-width:0"},h("b",{style:"display:block",text:p.title}),h("span",{class:"muted small",text:[p.region,log.length?"Posted in "+log.length+" group"+(log.length===1?"":"s"):"Not posted yet"].filter(Boolean).join(" · ")})),
+        h("span",{style:"color:var(--accent);font-weight:600;font-size:14px",text:open?"Hide":"Show"})),
+      open?h("div",{style:"display:flex;flex-direction:column;gap:10px"},h("div",{class:"msg",text:p.body}),
+        h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>copy(p.body)},"1. Copy post")),
+        h("div",{class:"btns",style:"align-items:center"},h("div",{class:"field",style:"min-width:200px"},sel),h("button",{class:"btn",onclick:mark},"2. Mark as posted")),
+        log.length?h("p",{class:"muted small",text:"Posted: "+log.map(x=>x.group+" ("+niceDate(x.date)+")").join(", ")}):null,
+        p.checked?h("p",{class:"muted small",text:"Facts checked "+p.checked+". Rules change, so re-check before reposting months later."}):null):null)};
+  return[
+    h("div",{class:"card",style:"background:var(--accent-soft);box-shadow:none"},h("h3",{text:"How to post"}),h("p",{class:"text small",text:"• Spend your first week in a new group answering questions before you post.\n• One or two posts a week per group is plenty.\n• Don't post the same text in two groups on the same day.\n• No links and no selling in the post. Your profile says you work at Vivistays.\n• Reply to every comment. Anyone with a real question is a lead: add them."})),
+    !sorted.length?h("div",{class:"empty"},h("p",{text:ready?"No posts yet.":"Loading posts…"})):null,
+    ...sorted.map(card)];
+}
+const fbSearch=n=>"https://www.facebook.com/search/groups/?q="+encodeURIComponent(n);
+function groupsView(){
+  const st={};for(const l of leads){if(!l.group)continue;const k=l.group.trim().toLowerCase();(st[k]=st[k]||{n:0,s:0}).n++;if(l.status==="signed")st[k].s++}
+  const sorted=[...groups].sort((a,b)=>(a.order??99)-(b.order??99)||a.name.localeCompare(b.name));
+  const toggle=async g=>{if(!db){toast("Sign in to save");return}g.joined=!g.joined;render();try{await db.collection("groups").doc(g.id).update({joined:g.joined});toast(g.joined?"Marked as joined":"Moved back to To join")}catch(e){toast("Couldn't save")}};
+  const rowFor=g=>{const s=st[g.name.trim().toLowerCase()]||{n:0,s:0};const u=safeUrl(g.url)||fbSearch(g.name);
+    return h("div",{style:"display:flex;gap:12px;align-items:flex-start;border-top:1px solid var(--line);padding-top:12px"},
+      h("div",{style:"flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"},h("a",{href:u,target:"_blank",rel:"noopener",style:"font-weight:600",text:g.name}),
+        h("span",{class:"muted small",text:[g.members,g.region].filter(Boolean).join(" · ")}),g.why?h("span",{class:"muted small",text:g.why}):null,
+        g.joined?h("span",{class:"small",text:s.n+" lead"+(s.n===1?"":"s")+" · "+s.s+" signed"}):null),
+      h("button",{class:g.joined?"btn":"btn primary",onclick:()=>toggle(g)},g.joined?"Joined ✓":"Mark joined"))};
+  const nf={name:""};
+  const addOwn=async()=>{if(!db){toast("Sign in to save");return}const n=nf.name.trim();if(!n){toast("Type the group name");return}try{await db.collection("groups").add({name:n,joined:true,order:50,region:"Added by you",created:new Date().toISOString()});toast("Group added")}catch(e){toast("Couldn't add")}};
+  const toJoin=sorted.filter(g=>!g.joined),joined=sorted.filter(g=>g.joined);
+  return[
+    toJoin.length?h("div",{class:"card"},h("h3",{text:"Groups to join"}),h("p",{class:"muted small",text:"Join with the account you'll message from. Start with the first three, and answer the join questions honestly."}),...toJoin.map(rowFor)):null,
+    joined.length?h("div",{class:"card"},h("h3",{text:"Groups you've joined"}),...joined.map(rowFor),h("p",{class:"muted small",text:"No leads from a group after a few weeks? Leave it."})):null,
+    h("div",{class:"card"},h("h3",{text:"Where guests post"}),h("p",{class:"muted small",text:"People looking for a place to stay post in local town groups, not host groups. Search Facebook for “Hawick community”, “Peterhead noticeboard” and so on for towns where we have properties."})),
+    h("div",{class:"card"},h("h3",{text:"Add a group you joined"}),h("div",{class:"btns",style:"align-items:flex-end"},h("div",{class:"field",style:"flex:1;min-width:200px"},h("label",{for:"g-name",text:"Group name"}),h("input",{id:"g-name",placeholder:"As it appears on Facebook",oninput:e=>nf.name=e.target.value})),h("button",{class:"btn primary",onclick:addOwn},"Add group")))];
+}
+
+/* ---------- boot ---------- */
+$("#addtop").addEventListener("click",()=>go("add"));
+render();
+(async function(){
+  const use=window.claude&&window.claude.use;
+  if(!use){offline="Open this page in claude.ai to save and see leads.";render();return}
+  const[d,u,s]=await Promise.all([use("db"),use("user"),use("sample")]);
+  db=d;sample=s;
+  if(u){try{myId=await u.id()}catch(e){}}
+  if(!db){offline="Sign in to claude.ai to save and see leads.";render();return}
+  const busy=()=>{const a=document.activeElement;return a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&a.closest("#main")};
+  db.collection("leads").onSnapshot(snap=>{leads=snap.docs.map(x=>({id:x.id,...x.data()}));ready=true;if(selected&&!leads.some(l=>l.id===selected))selected=null;if(busy())renderTabs();else render()},()=>{offline="Lost connection to the lead list. Reload the page.";render()});
+  db.collection("posts").onSnapshot(snap=>{posts=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="help"&&!busy())render()},()=>{});
+  db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});
+  db.collection("contacts").onSnapshot(snap=>{contacts=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="outreach"&&selected&&!contacts.some(c=>c.id===selected))selected=null;if(busy())renderTabs();else render()},()=>{});
+})();
+})();
+</script>
+
+</body></html>

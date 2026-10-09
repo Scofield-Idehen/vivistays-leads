@@ -1,0 +1,28 @@
+# Every push to main uploads the changed files to cPanel over FTP.
+# Settings > Secrets and variables > Actions needs: FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
+name: Deploy to cPanel
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload changed files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .github/**
+            README.md
+            config.local.php
+            data/*.sqlite*
+            data/seed.imported-*
