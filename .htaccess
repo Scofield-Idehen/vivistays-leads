@@ -2,7 +2,7 @@ Options -Indexes
 DirectoryIndex index.php
 
 # Keep settings, helpers, the data folder and the readme private.
-<FilesMatch "^(config\.example\.php|config\.local\.php|lib\.php|app\.html|README\.md|\.cpanel\.yml)$">
+<FilesMatch "^(config\.example\.php|config\.local\.php|lib\.php|app\.html|README\.md|\.cpanel\.yml|\.ftp-deploy-sync-state\.json)$">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
