@@ -606,8 +606,8 @@ function deleteBtn(l){const b=h("button",{class:"btn danger"},"Delete lead");b.a
 function ownerPlan(l){
   const s=l.status||"new";
   return{
-    new:{h:l.commentDraft?"Comment on their post":"Send your first message",how:l.commentDraft?"Paste this as a reply under their Facebook post.":"Send this in Facebook Messenger.",msg:l.commentDraft||l.dmDraft,copy:l.commentDraft?"Copy comment":"Copy message",done:l.commentDraft?["I've commented","commented"]:["I've sent it","messaged"]},
-    commented:{h:"Send your first message",how:"Send this in Facebook Messenger.",msg:l.dmDraft,copy:"Copy message",done:["I've sent it","messaged"]},
+    new:{h:l.commentDraft?"Comment on their post":"Send your first message",how:l.commentDraft?"Paste this as a reply under their Facebook post.":"Send this in Facebook Messenger.",msg:l.followUpDraft||l.commentDraft||l.dmDraft,copy:l.commentDraft?"Copy comment":"Copy message",done:l.commentDraft?["I've commented","commented"]:["I've sent it","messaged"]},
+    commented:{h:"Send your first message",how:"Send this in Facebook Messenger.",msg:l.followUpDraft||l.dmDraft,copy:"Copy message",done:["I've sent it","messaged"]},
     messaged:{h:"Send follow-up 1",how:"They haven't replied yet. Send this short nudge.",msg:l.followUpDraft||fill(TPL.fu1.text,l),copy:"Copy follow-up",done:["I've sent it","fu1"]},
     fu1:{h:"Send the last follow-up",how:"This is the final message. After this, we leave them alone.",msg:l.followUpDraft||fill(TPL.fu2.text,l),copy:"Copy follow-up",done:["I've sent it","fu2"]},
     fu2:{h:"Wait for a reply",how:"You've sent both follow-ups. If nothing comes back by the follow-up date, close this lead.",msg:"",done:["Close lead","dead"]},
@@ -617,8 +617,8 @@ function ownerPlan(l){
 function guestPlan(l){
   const s=l.status||"new";
   return{
-    new:{h:"Reply on their post",how:"Do this today. Guests usually book with whoever answers first.",msg:l.commentDraft||fill(TPL.gcomment.text,l),copy:"Copy comment",done:["I've commented","commented"]},
-    commented:{h:"Message them for details",how:"Send this in Facebook Messenger.",msg:l.dmDraft||fill(TPL.gdm.text,l),copy:"Copy message",done:["I've sent it","messaged"]},
+    new:{h:"Reply on their post",how:"Do this today. Guests usually book with whoever answers first.",msg:l.followUpDraft||l.commentDraft||fill(TPL.gcomment.text,l),copy:"Copy comment",done:["I've commented","commented"]},
+    commented:{h:"Message them for details",how:"Send this in Facebook Messenger.",msg:l.followUpDraft||l.dmDraft||fill(TPL.gdm.text,l),copy:"Copy message",done:["I've sent it","messaged"]},
     messaged:{h:"Nudge for their dates",how:"If they still don't answer after this, close the lead.",msg:l.followUpDraft||fill(TPL.gfu.text,l),copy:"Copy follow-up",done:["Close lead","dead"]},
     replied:{h:"Check Guesty, then send options",how:"Look in Guesty for a free property in or near "+(l.location||"their area")+(l.dates?" for "+l.dates:"")+". Fill in the brackets with what's actually free.",msg:l.followUpDraft||fill(TPL.goptions.text,l),copy:"Copy message",done:["Options sent","quoted"]},
     quoted:{h:"Follow up on the options",how:"Send this a day after the options.",msg:l.followUpDraft||fill(TPL.gchase.text,l),copy:"Copy follow-up",done:["They booked","booked"]}}[s]||null;
@@ -658,11 +658,21 @@ async function setProject(p,patch){
 }
 
 /* ---------- AI ---------- */
-const CONTEXT=`You help Vivistays, a UK short-term rental management company (400+ managed properties across the UK; handles listings on Airbnb/Booking.com, pricing, guest messaging, cleaning, maintenance and damage claims). Staff find two kinds of people in Facebook groups:
+const OUR_AREAS=Object.values(AREAS).map(a=>a.name+": "+a.props.map(p=>p[1]+" ("+p[2]+")").join("; ")).join("\n");
+const CONTEXT=`You write for Vivistays, a UK short-term rental company that manages 400+ furnished homes and runs Airbnb/Booking.com listings, pricing, guest messages, cleaning and maintenance for owners. Staff find two kinds of people in Facebook groups:
 1. OWNERS who might want a manager or co-host for their property.
-2. GUESTS looking for somewhere to stay (holiday, work/contractors, family visit). Vivistays can offer them its properties and guests booking direct (website, email or WhatsApp) usually get a better rate than on Airbnb.
-Contact: team@vivistays.com, WhatsApp +44 7578 255663.
-Never claim Vivistays has a property in a specific place or free on specific dates: staff must check availability first. Message style: UK English, warm and plain, short (DM under 90 words, comment under 40 words). Reference something specific from their post. Offer help, not a hard sell. No emojis, no invented results, prices or reviews. Never pressure. Sign DMs from "[Your name], Vivistays".`;
+2. GUESTS looking for somewhere to stay (holiday, contractors and work crews, family visits, relocation). Booking direct with Vivistays (website, email or WhatsApp) avoids platform fees.
+Contact: team@vivistays.com, WhatsApp +44 7578 255663, vivistays.com.
+
+Where Vivistays has homes (town and type):
+${OUR_AREAS}
+
+How to write:
+- Make every message specific to this person. Use their first name. Repeat back the exact thing they asked for (town, dates, number of people, reason for the trip, their problem as an owner).
+- For guests: if one of our towns above is in or near the place they want, name it and the kind of home that could suit (for example "we have a 3-bed house in Hawick with parking"). Say you will check it is free for their dates. Never say it is available, never quote a price. If none of our towns is near, do not pretend: offer to check across the UK.
+- Do not ask for information they already gave. Ask for at most the one or two missing details that matter (usually dates and number of people).
+- For owners: give one genuinely useful, specific tip about their situation before mentioning Vivistays.
+- UK English, warm, confident and plain. No emojis, no hashtags, no exclamation marks, no filler like "hope you're well", no defensive lines like "no promises". Comments under 40 words. Private messages under 90 words, signed "[Your name], Vivistays".`;
 async function analyse(){
   if(!draft.post.trim()){toast("Paste the post first");return false}
   if(!sample){toast("AI isn't available here");return false}
@@ -682,8 +692,8 @@ Read this Facebook group post${draft.group?` from the group "${draft.group}"`:""
 "dates": guests only, dates or timing if mentioned, else "",
 "guestCount": guests only, number of people if mentioned, else "",
 "purpose": guests only, one of "holiday","work","family","relocation","other",
-"comment": a short public reply to the post. For guests: say we manage short stays and will check what we have near their area and message them (no promise of availability). For owners: something genuinely helpful, can invite a DM,
-"dm": the first direct message. For guests: ask for exact dates, number of guests and any must-haves (parking, pets, beds), and mention booking direct is cheaper. For owners: introduce Vivistays relevant to their problem.
+"comment": a short public reply under their post, addressed to them by first name. For guests: name the nearest Vivistays town that fits their request (if any) and say you have sent them a message. For owners: one specific, useful tip about their problem, then offer to message them,
+"dm": the first private message. For guests: repeat back what they need, suggest the kind of Vivistays home nearby that could suit, ask only for the missing details, and mention booking direct saves the platform fees. For owners: refer to their exact situation and say how Vivistays would handle it.
 
 POST:
 """${draft.post.slice(0,6000)}"""`,{modelTier:"default"});
@@ -695,17 +705,29 @@ POST:
   }catch(e){aiNote=e&&e.code==="not_granted"?"AI access was declined. Fill in the details by hand.":e&&e.code==="rate_limited"?"Too many requests. Try again in a minute.":"Couldn't read the post. Fill in the details by hand or try again."}
   aiBusy=false;render();return ok;
 }
+const STEP_PURPOSE={
+  guest:{new:"a short public comment under their Facebook post",commented:"the first private message on Messenger",messaged:"a short follow-up because they haven't replied",replied:"a message offering suitable homes (staff will fill in what is actually free)",quoted:"a short follow-up on the options we sent"},
+  owner:{new:"a short public comment under their Facebook post",commented:"the first private message on Messenger",messaged:"a short first follow-up because they haven't replied (under 60 words, add one useful point)",fu1:"a final, polite follow-up (under 50 words)",replied:"a reply that moves them to a quick call or WhatsApp"}};
 async function draftNext(l,btn){
   btn.disabled=true;btn.replaceChildren(h("span",{class:"spin"}),"Writing");
   try{
-    const g=kindOf(l)==="guest";
+    const g=kindOf(l)==="guest";const s=l.status||"new";
+    const plan=g?guestPlan(l):ownerPlan(l);
+    const purpose=(STEP_PURPOSE[g?"guest":"owner"][s])||"the next message";
     const r=await sample(`${CONTEXT}
 
-Write the next message to this ${g?"GUEST":"OWNER"} lead. Current status: ${STATUS_LABEL[l.status]||l.status}. ${g?"If they haven't given dates and guest numbers, ask for them simply. If options were sent, follow up briefly and make booking easy (direct booking by WhatsApp or email). Never promise availability.":"If they haven't replied, write a short, low-pressure follow-up (under 60 words) that adds one useful point. If they replied or a call is booked, move toward booking or confirming a call."} Use their notes. Return only the message text.
+Rewrite ${purpose} for this ${g?"GUEST":"OWNER"} so it is more targeted and more likely to get a reply. Use the details of their post. Keep it the same kind of message (${purpose}).
 
-Lead: ${JSON.stringify({name:l.name,location:l.location,dates:l.dates,guests:l.guestCount,properties:l.properties,need:l.need,post:(l.postText||"").slice(0,2000),firstMessage:l.dmDraft,notes:l.notes})}`,{modelTier:"default",cache:false});
-    const text=(r.text||"").trim();if(text){await save(l,{followUpDraft:text});render()}
-  }catch(e){toast(e&&e.code==="not_granted"?"AI access was declined":"Couldn't write a message");btn.disabled=false;btn.textContent="Rewrite with AI"}
+Current version:
+"""${plan&&plan.msg||""}"""
+
+About them: ${JSON.stringify({name:l.name,location:l.location,dates:l.dates,guests:l.guestCount,purpose:l.purpose,property:l.properties,need:l.need,post:(l.postText||"").slice(0,2500),notes:l.notes})}
+
+Return only the new message text, nothing else.`,{modelTier:"default",cache:false});
+    const text=(r.text||"").trim().replace(/^"|"$/g,"");
+    if(!text)throw{message:"The AI sent back an empty message"};
+    await save(l,{followUpDraft:text});render();toast("Message rewritten");
+  }catch(e){toast(e&&e.code==="not_granted"?"AI isn't set up: add the API key to config.local.php":"Couldn't rewrite: "+((e&&e.message)||"unknown error"));btn.disabled=false;btn.textContent="Rewrite with AI"}
 }
 
 /* ---------- ADD LEAD ---------- */
@@ -715,17 +737,23 @@ function addView(){
   const ta=(k,label,rows,ph)=>h("div",{class:"field wide"},label?h("label",{for:"a-"+k,text:label}):null,bind(k,h("textarea",{id:"a-"+k,rows:String(rows),placeholder:ph||""},draft[k])));
   const sel=(k,label,opts)=>{const s=h("select",{id:"a-"+k},...opts.map(([v,t])=>h("option",{value:v,text:t})));s.value=draft[k];return h("div",{class:"field"},h("label",{for:"a-"+k,text:label}),bind(k,s))};
   const g=draft.kind==="guest";
+  const postBox=()=>{const t=h("textarea",{id:"a-post",rows:"7",placeholder:"Paste the post here, including their name. It fills in by itself."},draft.post);
+    t.addEventListener("input",e=>draft.post=e.target.value);
+    t.addEventListener("paste",()=>setTimeout(()=>{draft.post=t.value;if(sample&&!aiBusy&&draft.post.trim().length>20)analyse()},50));
+    return h("div",{class:"field wide"},t)};
+  const urlBox=h("input",{id:"a-postUrl",type:"url",value:draft.postUrl,placeholder:"facebook.com/groups/…"});
+  urlBox.addEventListener("input",e=>{draft.postUrl=e.target.value;const gname=groupFromUrl(draft.postUrl);if(gname&&!draft.group){draft.group=gname;const gi=document.getElementById("a-group");if(gi)gi.value=gname}});
   return[
     h("div",{style:"display:flex;flex-direction:column;gap:6px"},h("h1",{text:"Add a lead"}),h("p",{class:"lede",text:"Copy someone's post from a Facebook group and paste it below. AI fills in the rest and writes your first messages."})),
     offline?h("div",{class:"banner",text:offline}):null,
     h("div",{class:"card"},
       h("h3",{text:"1. Paste their post"}),
-      ta("post","",7,"Paste the post here, including their name"),
-      h("div",{class:"form"},inp("postUrl","Link to the post (optional)","facebook.com/…",false,"url"),
+      postBox(),
+      h("div",{class:"form"},h("div",{class:"field"},h("label",{for:"a-postUrl",text:"Link to the post"}),urlBox),
         h("div",{class:"field"},h("label",{for:"a-group",text:"Which group?"}),bind("group",h("input",{id:"a-group",value:draft.group,placeholder:"Group name",list:"gl"})))),
       h("datalist",{id:"gl"},...[...new Set([...groups.map(x=>x.name),...leads.map(l=>l.group)].filter(Boolean))].map(n=>h("option",{value:n}))),
-      h("div",{class:"btns"},h("button",{class:"btn primary",disabled:aiBusy||!sample,onclick:analyse},aiBusy?[h("span",{class:"spin"}),"Reading the post…"]:aiDone?"Read it again":"2. Fill in with AI")),
-      aiNote?h("p",{class:"tipbox",text:aiNote}):h("p",{class:"muted small",text:sample?"Or skip this and fill in the boxes yourself.":"AI isn't available here. Fill in the boxes yourself."})),
+      h("div",{class:"btns"},h("button",{class:"btn primary",disabled:aiBusy||!sample,onclick:analyse},aiBusy?[h("span",{class:"spin"}),"Reading the post…"]:aiDone?"Read it again":"Fill in with AI")),
+      aiNote?h("p",{class:"tipbox",text:aiNote}):h("p",{class:"muted small",text:sample?"Pasting a post fills everything in automatically. Adding the link fills in the group.":"AI isn't available here. Fill in the boxes yourself."})),
     h("div",{class:"card"},
       h("h3",{text:"3. Check the details"}),
       h("div",{class:"toggle",role:"group","aria-label":"Who is it"},
@@ -745,6 +773,22 @@ function addView(){
     h("div",{class:"btns"},h("button",{class:"btn primary",id:"save",disabled:aiBusy,onclick:saveLead},aiBusy?"Reading the post…":"Save lead"),h("button",{class:"btn",onclick:()=>{draft={...BLANK};aiNote="";aiDone=false;render()}},"Clear"))
   ];
 }
+function groupFromUrl(u){
+  const m=String(u||"").match(/facebook\.com\/groups\/([^/?#]+)/i);if(!m)return"";
+  const key=decodeURIComponent(m[1]);
+  const known=groups.find(g=>g.url&&g.url.includes("/groups/"+key));if(known)return known.name;
+  if(/^\d+$/.test(key))return"";
+  return key.replace(/[-_.]+/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+}
+async function ensureGroup(name,url){
+  name=(name||"").trim();if(!name||!db)return;
+  const m=String(url||"").match(/(https?:\/\/[^/]*facebook\.com\/groups\/[^/?#]+)/i);const gurl=m?m[1]:"";
+  const ex=groups.find(g=>g.name.trim().toLowerCase()===name.toLowerCase());
+  try{
+    if(!ex){await db.collection("groups").add({name,joined:true,order:50,region:"Added from a lead",url:gurl,created:new Date().toISOString()});toast("New group added: "+name)}
+    else if(gurl&&!ex.url)await db.collection("groups").doc(ex.id).update({url:gurl});
+  }catch(e){}
+}
 async function saveLead(){
   if(!db){toast("Sign in to claude.ai to save leads");return}
   if(!draft.name.trim()&&!draft.post.trim()){toast("Paste the post first");return}
@@ -752,7 +796,7 @@ async function saveLead(){
   const now=new Date().toISOString();const g=draft.kind==="guest";
   const data={kind:draft.kind,name:draft.name.trim(),profileUrl:draft.profileUrl.trim(),postUrl:draft.postUrl.trim(),group:draft.group.trim(),location:draft.location.trim(),score:draft.score,need:draft.need.trim(),postText:draft.post.trim(),commentDraft:draft.comment.trim(),dmDraft:draft.dm.trim(),notes:draft.notes.trim(),status:"new",nextFollowUp:today(),created:now,updated:now,createdBy:myId||null,
     ...(g?{dates:draft.dates.trim(),guestCount:String(draft.guestCount).trim(),purpose:draft.purpose}:{properties:draft.properties.trim(),type:draft.type})};
-  try{const ref=await db.collection("leads").add(data);draft={...BLANK};aiNote="";aiDone=false;toast(g?"Saved. Reply to them today.":"Lead saved");go("leads",ref.id)}
+  try{const ref=await db.collection("leads").add(data);ensureGroup(data.group,data.postUrl);draft={...BLANK};aiNote="";aiDone=false;toast(g?"Saved. Reply to them today.":"Lead saved");go("leads",ref.id)}
   catch(err){toast(err&&err.code==="quota_exceeded"?"The tracker is full. Delete closed leads to make room.":"Couldn't save. Try again.");render()}
 }
 
