@@ -44,6 +44,18 @@ function vl_db() {
         $all = json_decode(file_get_contents($seed), true) ?: [];
         $ins = $pdo->prepare('INSERT OR IGNORE INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?)');
         $pdo->beginTransaction();
+        // "__update__" merges fields into records that already exist (used to correct details).
+        $upd = $pdo->prepare('UPDATE docs SET data = ?, updated = ? WHERE col = ? AND id = ?');
+        $get = $pdo->prepare('SELECT data FROM docs WHERE col = ? AND id = ?');
+        foreach (($all['__update__'] ?? []) as $col => $docs) {
+            if (!in_array($col, VL_COLLECTIONS, true)) continue;
+            foreach ($docs as $id => $patch) {
+                $get->execute([$col, $id]); $row = $get->fetchColumn();
+                if ($row === false || !is_array($patch)) continue;
+                $upd->execute([json_encode(array_merge(json_decode($row, true) ?: [], $patch), JSON_UNESCAPED_UNICODE), gmdate('c'), $col, $id]);
+            }
+        }
+        unset($all['__update__']);
         foreach ($all as $col => $docs) {
             if (!in_array($col, VL_COLLECTIONS, true)) continue;
             foreach ($docs as $id => $data) $ins->execute([$col, $id, json_encode($data, JSON_UNESCAPED_UNICODE), gmdate('c')]);
