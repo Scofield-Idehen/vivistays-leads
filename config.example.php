@@ -17,6 +17,10 @@ $USERS = [
 //    Leave it as '' to run without AI; everything else still works.
 $ANTHROPIC_API_KEY = '';
 
+// 2b. Stayful landlord leads (optional). Stayful > Settings > API keys, permission "leads:read".
+//     New Stayful leads then appear in Facebook leads > Owners, tagged Stayful.
+$STAYFUL_API_KEY = '';
+
 // 3. AI models (you can leave these alone).
 $MODEL_QUICK   = 'claude-haiku-5-5';   // reading pasted LinkedIn and event pages
 $MODEL_DEFAULT = 'claude-sonnet-5-5';  // reading Facebook posts, writing messages

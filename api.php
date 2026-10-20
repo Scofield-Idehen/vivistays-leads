@@ -97,6 +97,10 @@ try {
             foreach (($j['content'] ?? []) as $b) if (($b['type'] ?? '') === 'text') $text .= $b['text'];
             out(['text' => $text, 'stop' => $j['stop_reason'] ?? '']);
 
+        case 'stayful':
+            require_once __DIR__ . '/stayful.php';
+            out(vl_stayful_sync(!empty($in['force'])));
+
         default:
             fail('Unknown action');
     }

@@ -110,6 +110,13 @@
     }
   };
 
+  // Stayful landlord leads: ask the server to check for new ones.
+  window.VL_sync = async force => {
+    const r = await api("stayful", { force: !!force });
+    if (r.added || r.updated) refresh("leads", true).catch(() => {});
+    return r;
+  };
+
   window.claude = {
     use: async name => name === "db" ? db : name === "sample" ? (window.VL_AI ? sample : null) : name === "user" ? user : name === "downloads" ? downloads : null
   };

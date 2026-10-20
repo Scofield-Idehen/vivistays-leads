@@ -417,6 +417,7 @@ let view="today",selected=null,query="",filter="open",helpTab="posts",areaFilter
 const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",location:"",properties:"",type:"other",dates:"",guestCount:"",purpose:"other",score:"warm",need:"",comment:"",dm:"",notes:"",stayEnd:""};
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
+let stayfulInfo=null,stayfulBusy=false;
 try{const v=localStorage.getItem("vl-view");if(["today","leads","outreach","projects","social","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
@@ -457,7 +458,7 @@ function renderTabs(){
 
 /* one-line help cards for beginners, dismissible and remembered on this device */
 const HELP={
-  leads:["Facebook leads","are property owners and guests you found in Facebook groups. Pick a name to see the exact message to send next."],
+  leads:["Facebook leads","are property owners and guests from Facebook groups, plus landlords Stayful sends us. Pick a name to see the exact message to send next."],
   outreach:["Outreach","is everyone we contact about building projects and events: contractors, LinkedIn contacts and event organisers."],
   projects:["Projects","are building jobs near our properties. Their crews need somewhere to stay, so each one is a chance for long bookings."],
   add:["Adding someone","takes under a minute. Choose where you found them, paste what you copied, and the app writes the first message."]
@@ -563,10 +564,11 @@ function leadRow(l,onclick){
     h("span",{class:"sub",text:sub.filter(Boolean).join(" · ")}));
 }
 function leadsView(){
-  const F=[["open","To do"],["owner","Owners"],["guest","Guests"],["talking","Talking"],["won","Won"],["archived","Archived"+(allLeads.length-leads.length?" "+(allLeads.length-leads.length):"")]];
+  const F=[["open","To do"],["owner","Owners"],["guest","Guests"],...(window.VL_sync?[["stayful","Stayful"]]:[]),["talking","Talking"],["won","Won"],["archived","Archived"+(allLeads.length-leads.length?" "+(allLeads.length-leads.length):"")]];
   const listcol=h("div",{class:"listcol",style:"display:flex;flex-direction:column;gap:12px;min-width:0"},
     h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Leads"}),h("span",{class:"muted small",text:leads.filter(l=>!CLOSED.has(l.status)).length+" open"})),
     h("div",{class:"chips",role:"group","aria-label":"Show"},...F.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(filter===k),onclick:()=>{filter=k;render()}},t))),
+    stayfulLine(),
     h("input",{class:"search",id:"q",type:"search",placeholder:"Search name, town or group",value:query,oninput:e=>{query=e.target.value;const r=$("#rows");if(r)r.replaceChildren(...rowsOrEmptyList(filteredLeads()))}}),
     h("div",{id:"rows",style:"display:flex;flex-direction:column"},...rowsOrEmptyList(filteredLeads())));
   return[h("div",{class:"split"+(selected?" open":"")},listcol,detail())];
@@ -577,9 +579,10 @@ function filteredLeads(){
     if(filter==="open"&&CLOSED.has(l.status))return false;
     if(filter==="owner"&&(kindOf(l)!=="owner"||CLOSED.has(l.status)))return false;
     if(filter==="guest"&&(kindOf(l)!=="guest"||CLOSED.has(l.status)))return false;
+    if(filter==="stayful"&&(l.source!=="stayful"||CLOSED.has(l.status)))return false;
     if(filter==="talking"&&!TALKING.has(l.status))return false;
     if(filter==="won"&&!WON.has(l.status))return false;
-    return!q||[l.name,l.location,l.group,l.need,l.notes,l.properties,l.dates].join(" ").toLowerCase().includes(q)}).sort(filter==="open"?byPriority:filter==="archived"?(a,b)=>(b.archivedAt||"").localeCompare(a.archivedAt||""):byNewest);
+    return!q||[l.name,l.location,l.group,l.need,l.notes,l.properties,l.dates,l.phone,l.email,(l.stayful||{}).address].join(" ").toLowerCase().includes(q)}).sort(filter==="open"?byPriority:filter==="archived"?(a,b)=>(b.archivedAt||"").localeCompare(a.archivedAt||""):byNewest);
 }
 function rowsOrEmptyList(list){
   if(!ready&&!offline)return[h("div",{class:"empty"},h("p",{text:"Loading leads…"}))];
@@ -600,6 +603,8 @@ function detail(){
       h("div",{class:"btns"},h("span",{class:"pill "+(l.score==="hot"?"hot":l.score==="cold"?"":"warm"),text:SCORE_LABEL[l.score]||"Warm"}),h("span",{class:"pill accent",text:g?"Guest":"Owner"}),h("span",{class:"pill",text:STATUS_LABEL[l.status]||"New"}),l.location?h("span",{class:"pill",text:l.location}):null)),
     archiveCard(l,false),
     l.archived?null:nextCard(l),
+    contactCard(l),
+    stayfulCard(l),
     l.need?h("div",{class:"card"},h("h3",{text:g?"What they're looking for":"What they need"}),h("p",{class:"text",text:l.need})):null,
     (l.postText||safeUrl(l.postUrl)||safeUrl(l.profileUrl))?h("details",{class:"card"},h("summary",{},"Their Facebook post"),
       l.postText?h("p",{class:"text muted small",text:l.postText}):null,
@@ -620,7 +625,7 @@ function deleteBtn(l){const b=h("button",{class:"btn danger"},"Delete lead");b.a
 function ownerPlan(l){
   const s=l.status||"new";
   return{
-    new:{h:l.commentDraft?"Comment on their post":"Send your first message",how:l.commentDraft?"Paste this as a reply under their Facebook post.":"Send this in Facebook Messenger.",msg:l.followUpDraft||l.commentDraft||l.dmDraft,copy:l.commentDraft?"Copy comment":"Copy message",done:l.commentDraft?["I've commented","commented"]:["I've sent it","messaged"]},
+    new:{h:l.commentDraft?"Comment on their post":"Send your first message",how:l.source==="stayful"?"They asked Stayful about letting their property. Change [Your name], then send it by WhatsApp, text or email (buttons below). Calling first works well too.":l.commentDraft?"Paste this as a reply under their Facebook post.":"Send this in Facebook Messenger.",msg:l.followUpDraft||l.commentDraft||l.dmDraft,copy:l.commentDraft?"Copy comment":"Copy message",done:l.commentDraft?["I've commented","commented"]:["I've sent it","messaged"]},
     commented:{h:"Send your first message",how:"Send this in Facebook Messenger.",msg:l.followUpDraft||l.dmDraft,copy:"Copy message",done:["I've sent it","messaged"]},
     messaged:{h:"Send follow-up 1",how:"They haven't replied yet. Send this short nudge.",msg:l.followUpDraft||fill(TPL.fu1.text,l),copy:"Copy follow-up",done:["I've sent it","fu1"]},
     fu1:{h:"Send the last follow-up",how:"This is the final message. After this, we leave them alone.",msg:l.followUpDraft||fill(TPL.fu2.text,l),copy:"Copy follow-up",done:["I've sent it","fu2"]},
@@ -651,6 +656,48 @@ function nextCard(l){
       plan.msg?h("button",{class:"btn primary",onclick:()=>copy(plan.msg)},"1. "+plan.copy):null,
       h("button",{class:plan.msg?"btn":"btn primary",onclick:()=>setStatus(l,plan.done[1])},(plan.msg?"2. ":"")+plan.done[0])),
     h("div",{class:"btns"},!TALKING.has(s)?h("button",{class:"btn link",onclick:()=>setStatus(l,"replied")},"They replied"):null,plan.msg&&sample?ai:null));
+}
+
+/* ---------- Stayful landlord leads ---------- */
+function waLink(p){let d=String(p||"").replace(/[^\d+]/g,"");if(d.startsWith("+"))d=d.slice(1);else if(d.startsWith("00"))d=d.slice(2);else if(d.startsWith("0"))d="44"+d.slice(1);return d.length>=10?"https://wa.me/"+d:null}
+function contactCard(l){
+  if(!l.phone&&!l.email)return null;
+  const msg=(ownerPlan(l)||{}).msg||"";
+  const wa=waLink(l.phone);
+  return h("div",{class:"card"},h("h3",{text:"Contact"}),
+    h("dl",{class:"facts",style:"border-top:0;padding-top:0"},
+      l.phone?[h("dt",{text:"Phone"}),h("dd",{},l.phone+" ",h("button",{class:"btn link",style:"padding:0",onclick:()=>copy(l.phone)},"Copy"))]:null,
+      l.email?[h("dt",{text:"Email"}),h("dd",{},l.email+" ",h("button",{class:"btn link",style:"padding:0",onclick:()=>copy(l.email)},"Copy"))]:null),
+    h("div",{class:"btns"},
+      l.phone?h("a",{class:"btn",href:"tel:"+String(l.phone).replace(/[^\d+]/g,"")},"Call"):null,
+      wa?h("a",{class:"btn",href:wa+(msg?"?text="+encodeURIComponent(msg):""),target:"_blank",rel:"noopener"},"WhatsApp"):null,
+      l.email?h("a",{class:"btn",href:"mailto:"+l.email+"?subject="+encodeURIComponent("Your property – Vivistays")+(msg?"&body="+encodeURIComponent(msg):"")},"Email"):null));
+}
+function stayfulCard(l){
+  const s=l.stayful;if(!s)return null;
+  const gbp=n=>n==null?null:"£"+Number(n).toLocaleString("en-GB",{maximumFractionDigits:0});
+  const rows=[["Address",s.address],["Bedrooms",s.bedrooms],["Lead type",s.type==="guaranteed_rent"?"Guaranteed rent":s.type==="management"?"Management":s.type],
+    ["Stayful's yearly income estimate",gbp(s.income)],["Average nightly rate",gbp(s.nightly)],["Occupancy",s.occupancy!=null?s.occupancy+"%":null],
+    ["Rent they want",gbp(s.desiredRent)],["Status in Stayful",[s.status,s.stage].filter(Boolean).join(" · ").replaceAll("_"," ")]].filter(r=>r[1]);
+  return h("details",{class:"card",open:true},h("summary",{},"From Stayful"),
+    h("dl",{class:"facts",style:"border-top:0;padding-top:0"},...rows.map(([k,v])=>[h("dt",{text:k}),h("dd",{text:String(v)})])),
+    h("p",{class:"muted small",text:"The income figures are Stayful's own estimate, not ours. Stayful doesn't see what we do here, so after you contact them, also update the lead's status in Stayful."+(s.report?" A full property analysis PDF is in Stayful.":"")}),
+    h("div",{class:"btns"},h("a",{class:"btn",href:"https://leads.stayful.co.uk/dashboard/leads",target:"_blank",rel:"noopener"},"Open Stayful")));
+}
+function stayfulLine(){
+  if(!window.VL_sync||!stayfulInfo)return null;
+  const s=stayfulInfo;
+  if(!s.configured)return h("p",{class:"muted small",text:"Stayful isn't connected yet. Add the Stayful API key on the server to bring their landlord leads in here."});
+  const t=s.last?new Date(s.last).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"";
+  return h("p",{class:"muted small",style:"display:flex;gap:8px;align-items:center;flex-wrap:wrap"},
+    s.error?h("span",{text:"Stayful: "+s.error}):h("span",{text:"Stayful checked "+t+" · new landlord leads arrive here automatically"}),
+    h("button",{class:"btn link",style:"padding:0",disabled:stayfulBusy||null,onclick:()=>stayfulCheck(true)},stayfulBusy?"Checking…":"Check now"));
+}
+async function stayfulCheck(force){
+  if(!window.VL_sync)return;
+  stayfulBusy=true;if(force)render();
+  try{const r=await window.VL_sync(force);stayfulInfo=r;if(r.added)toast(r.added+" new Stayful lead"+(r.added>1?"s":""));else if(force&&!r.error)toast("No new Stayful leads")}catch(e){stayfulInfo={configured:true,error:"Couldn't check Stayful"}}
+  stayfulBusy=false;render();
 }
 
 /* ---------- writes ---------- */
@@ -1489,6 +1536,7 @@ render();
   db.collection("posts").onSnapshot(snap=>{posts=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="help"&&!busy())render()},()=>{});
   db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});
   db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
+  stayfulCheck(false);setInterval(()=>{if(document.visibilityState==="visible")stayfulCheck(false)},15*60e3);
   db.collection("contacts").onSnapshot(snap=>{allContacts=snap.docs.map(x=>({id:x.id,...x.data()}));contacts=allContacts.filter(c=>!c.archived);if(view==="outreach"&&selected&&!allContacts.some(c=>c.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{});
 })();
 })();
