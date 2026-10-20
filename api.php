@@ -74,7 +74,7 @@ try {
             curl_setopt_array($ch, [
                 CURLOPT_POST => true,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 60,
+                CURLOPT_TIMEOUT => 120,
                 CURLOPT_HTTPHEADER => [
                     'content-type: application/json',
                     'x-api-key: ' . $ANTHROPIC_API_KEY,
@@ -82,7 +82,7 @@ try {
                 ],
                 CURLOPT_POSTFIELDS => json_encode([
                     'model' => $model,
-                    'max_tokens' => 1500,
+                    'max_tokens' => 8000,
                     'messages' => [['role' => 'user', 'content' => $prompt]],
                 ]),
             ]);
@@ -95,7 +95,7 @@ try {
             if ($code !== 200) fail($j['error']['message'] ?? 'AI error', 502, 'ai_error');
             $text = '';
             foreach (($j['content'] ?? []) as $b) if (($b['type'] ?? '') === 'text') $text .= $b['text'];
-            out(['text' => $text]);
+            out(['text' => $text, 'stop' => $j['stop_reason'] ?? '']);
 
         default:
             fail('Unknown action');

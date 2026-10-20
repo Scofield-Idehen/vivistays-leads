@@ -61,13 +61,13 @@
   const sample = async (input, opts) => {
     const prompt = typeof input === "string" ? input : input.map(m => m.content).join("\n\n");
     const j = await api("ai", { prompt, tier: (opts && opts.modelTier) || "default" });
-    return { text: j.text || "", truncated: false };
+    return { text: j.text || "", truncated: j.stop === "max_tokens" };
   };
   sample.json = async (input, opts) => {
     const r = await sample(input + "\n\nRespond with the JSON only, no other text.", opts);
     const m = r.text.match(/\{[\s\S]*\}/);
-    if (!m) throw { code: "bad_json", message: "The AI reply wasn't readable" };
-    return JSON.parse(m[0]);
+    if (!m || r.truncated) throw { code: "bad_json", message: r.truncated ? "The AI reply was cut off before it finished" : "The AI reply wasn't readable" };
+    try { return JSON.parse(m[0]); } catch (e) { throw { code: "bad_json", message: "The AI reply wasn't readable" }; }
   };
 
   const me = window.VL_USER || "user";

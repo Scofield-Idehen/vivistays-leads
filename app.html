@@ -1402,7 +1402,7 @@ async function sGenerate(n,extra){
     const now=new Date().toISOString();
     await db.collection("social").doc("slot-"+n).set({slot:n,audience:slotAud(n),area:ak,photo:ph.id,caption:String(r.caption||""),kicker:String(r.kicker||S_AREAS[ak].name).slice(0,40),headline:String(r.headline||"").slice(0,48),bullets:(Array.isArray(r.bullets)?r.bullets:[]).slice(0,3).map(x=>String(x).slice(0,40)),cta:String(r.cta||"Book direct").slice(0,32),status:"draft",created:now,updated:now,by:myId||null,source:"page"});
     sNote="";
-  }catch(e){sNote=e&&e.code==="not_granted"?"AI access was declined.":"Couldn't write the post. Try again."}
+  }catch(e){console.error("Post writing failed",e);sNote=e&&e.code==="not_granted"?"AI access was declined.":"Couldn't write the post"+(e&&e.message?" ("+e.message+")":"")+". Try again."}
   sBusy=false;render();
 }
 async function sSet(p,patch){try{await db.collection("social").doc(p.id).update({...patch,updated:new Date().toISOString()})}catch(e){toast("Couldn't save. Try again.")}}
