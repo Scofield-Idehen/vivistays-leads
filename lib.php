@@ -9,7 +9,7 @@ if (is_file(__DIR__ . '/config.local.php')) {
     exit('Setup needed: in cPanel File Manager, copy config.example.php to config.local.php and set your passwords.');
 }
 
-const VL_COLLECTIONS = ['leads', 'posts', 'groups', 'contacts', 'projects'];
+const VL_COLLECTIONS = ['leads', 'posts', 'groups', 'contacts', 'projects', 'social'];
 
 function vl_start_session() {
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['SERVER_PORT'] ?? '') == 443);

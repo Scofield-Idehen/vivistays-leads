@@ -1,5 +1,5 @@
 // Connects the Vivistays Leads page to this server instead of claude.ai.
-// It provides the same window.claude.use("db" | "sample" | "user") the page expects.
+// It provides the same window.claude.use("db" | "sample" | "user" | "downloads") the page expects.
 (function () {
   "use strict";
   async function api(action, body) {
@@ -73,7 +73,19 @@
   const me = window.VL_USER || "user";
   const user = { id: async () => me, me: async () => ({ id: me, name: me }), isOwner: () => true, canEdit: () => true, can: () => true };
 
+  // Save a file to the computer (used by "Save flyer").
+  const downloads = {
+    save: async ({ filename, data, mimeType }) => {
+      const blob = data instanceof Blob ? data : new Blob([data], { type: mimeType || "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename || "download"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      return { saved: true };
+    }
+  };
+
   window.claude = {
-    use: async name => name === "db" ? db : name === "sample" ? (window.VL_AI ? sample : null) : name === "user" ? user : null
+    use: async name => name === "db" ? db : name === "sample" ? (window.VL_AI ? sample : null) : name === "user" ? user : name === "downloads" ? downloads : null
   };
 })();

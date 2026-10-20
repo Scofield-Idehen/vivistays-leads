@@ -28,5 +28,27 @@
     "notes": "Correct address from SSEN's Netherton Hub page (no dot). The earlier address with a dot bounced."
    }
   }
+ },
+ "social": {
+  "slot-124478": {
+   "area": "thurston",
+   "audience": "contractors",
+   "bullets": [
+    "3-bedroom caravans, sleeps 6–8",
+    "Weekly and monthly rates",
+    "Invoiced to your company"
+   ],
+   "by": null,
+   "caption": "🦺 6am start at Torness? Your crew could be on site in around 10 minutes.\n\nNo long drive in. No hotel breakfast queue. Just a proper home base at Thurston Manor, near Dunbar.\n\n🏡 3-bedroom caravans sleeping 6 to 8, so the whole crew stays together\n🍳 Your own kitchen and living space\n🚐 Free parking for the vans\n📶 Fast Wi-Fi and self check-in\n💷 Weekly and monthly rates, invoiced to your company\n\nGot a quote elsewhere? Send it over and we'll beat any like-for-like quote.\n\n📲 WhatsApp +44 7578 255663 with your dates and team size\n🌐 vivistays.com\n\nHow many in your crew this winter? 👇\n\n#Torness #ContractorAccommodation #EastLothian #Dunbar #ViViStays",
+   "created": "2026-10-20T08:40:00.000Z",
+   "cta": "Get a quote",
+   "headline": "Your crew, sorted near Torness",
+   "kicker": "THURSTON MANOR · DUNBAR",
+   "photo": "thurston-03",
+   "slot": 124478,
+   "source": "claude",
+   "status": "draft",
+   "updated": "2026-10-20T08:40:00.000Z"
+  }
  }
 }

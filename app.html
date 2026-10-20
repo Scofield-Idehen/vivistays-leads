@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}.signout{font-size:14px;color:var(--ink2);text-decoration:none;white-space:nowrap}.signout:hover{color:var(--accent)}</style></head><body>
-<title>Vivistays Leads</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@500;700&family=Playfair+Display:ital,wght@1,700&display=swap"><title>Vivistays Leads</title>
 <style>
 /* Layout: Apple-style sidebar (desktop) / tab bar (phone). One UI-style page head: a calm "viewing area" (big title, one plain sentence) above the "interaction area" of grouped cards.
    Colour: strict black and white. Status is shown by fill (solid = act now, grey = waiting, outline = done/closed), never by hue. One inverted black card per page marks what to do first. */
@@ -77,6 +77,10 @@ details.card>summary{cursor:pointer;font-weight:600;list-style:none;display:flex
 details.card>summary::after{content:"Show";font-weight:500;color:var(--ink2);font-size:14px;font-family:var(--sans)}
 details.card[open]>summary::after{content:"Hide"}
 details.card>summary::-webkit-details-marker{display:none}
+.flyer{width:100%;height:auto;border-radius:12px;display:block;background:#14161d}
+.sgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px}
+@media (max-width:720px){.sgrid{grid-template-columns:1fr}}
+pre.msg{margin:0;font-family:inherit}
 .tipbox{background:var(--well);border-radius:var(--r-sm);padding:12px 14px;font-size:15px;line-height:1.45}
 
 /* ---------- dashboard ---------- */
@@ -413,7 +417,7 @@ let view="today",selected=null,query="",filter="open",helpTab="posts",areaFilter
 const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",location:"",properties:"",type:"other",dates:"",guestCount:"",purpose:"other",score:"warm",need:"",comment:"",dm:"",notes:"",stayEnd:""};
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
-try{const v=localStorage.getItem("vl-view");if(["today","leads","outreach","projects","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","leads","outreach","projects","social","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -430,10 +434,11 @@ const ICON={
   outreach:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="m21 3-7 18-4-7-7-4Z"/></svg>',
   projects:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/><path d="M9 10.5h.01M15 10.5h.01"/></svg>',
   help:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8 7.5h8M8 11h6"/></svg>',
+  social:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>',
   add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>'
 };
-const NAV=[["today","Dashboard"],["leads","Facebook leads"],["outreach","Outreach"],["projects","Projects"],["help","Guides"]];
-const SHORT={today:"Home",leads:"Leads",outreach:"Outreach",projects:"Projects",help:"Guides"};
+const NAV=[["today","Dashboard"],["leads","Facebook leads"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["help","Guides"]];
+const SHORT={today:"Home",leads:"Leads",outreach:"Outreach",projects:"Projects",social:"Posts",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>!CLOSED.has(l.status)).length,
@@ -468,7 +473,7 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="leads"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="leads"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
   const hc=helpCard(view);if(hc)arr.splice(view==="leads"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
@@ -1346,6 +1351,129 @@ function archiveBtn(x,isContact){
   return h("button",{class:"btn",onclick:()=>{(isContact?saveC:save)(x,{archived:true,archivedReason:"Archived by hand",archivedAt:today()});selected=null;toast("Archived");render()}},"Archive");
 }
 
+/* ---------- SOCIAL POSTS (every 4 hours: guests -> owners -> contractors) ---------- */
+const S_PHOTOS=[{"id": "seton-01", "area": "seton", "label": "Caravan with decking, Seton Sands"}, {"id": "seton-02", "area": "seton", "label": "Caravan decking, Seton Sands"}, {"id": "seton-03", "area": "seton", "label": "Caravan kitchen and dining, Seton Sands"}, {"id": "seton-04", "area": "seton", "label": "Caravan lounge, Seton Sands"}, {"id": "seton-05", "area": "seton", "label": "Open-plan caravan living, Seton Sands"}, {"id": "seton-06", "area": "seton", "label": "Twin room, Seton Sands"}, {"id": "seton-07", "area": "seton", "label": "Twin room, Seton Sands"}, {"id": "seton-08", "area": "seton", "label": "Caravan lounge, Seton Sands"}, {"id": "seton-09", "area": "seton", "label": "Caravan outside, Seton Sands"}, {"id": "seton-10", "area": "seton", "label": "Caravan outside, Seton Sands"}, {"id": "thurston-01", "area": "thurston", "label": "Caravan with decking, Thurston Manor"}, {"id": "thurston-02", "area": "thurston", "label": "Caravan kitchen, Thurston Manor"}, {"id": "thurston-03", "area": "thurston", "label": "Caravan bedroom, Thurston Manor"}, {"id": "borders-01", "area": "borders", "label": "Kitchen, Peebles house"}, {"id": "borders-02", "area": "borders", "label": "Lounge, Peebles house"}, {"id": "borders-03", "area": "borders", "label": "Living room, Galashiels house"}, {"id": "borders-04", "area": "borders", "label": "Bedroom, Galashiels house"}, {"id": "borders-05", "area": "borders", "label": "Living room, Hawick flat"}, {"id": "borders-06", "area": "borders", "label": "Twin room, Hawick flat"}, {"id": "edinburgh-01", "area": "edinburgh", "label": "Living room, Leith apartment"}, {"id": "edinburgh-02", "area": "edinburgh", "label": "Living room, Dalry apartment"}, {"id": "edinburgh-03", "area": "edinburgh", "label": "Open-plan living, Leith Walk apartment"}, {"id": "edinburgh-04", "area": "edinburgh", "label": "Twin room, Morningside apartment"}, {"id": "edinburgh-05", "area": "edinburgh", "label": "Living room, Liberton apartment"}, {"id": "edinburgh-06", "area": "edinburgh", "label": "Living room, Gorgie apartment"}, {"id": "edinburgh-07", "area": "edinburgh", "label": "Bedroom, Old Town apartment"}];
+const S_AREAS={
+ seton:{name:"Seton Sands, Port Seton",region:"East Lothian",kind:"holiday caravans",facts:["20+ caravans and lodges on a holiday park beside Seton Sands beach","Edinburgh is about 40 minutes away by bus","the park is open over Christmas and New Year 2026","free parking at the caravan","contractor stays are accepted on this park"]},
+ thurston:{name:"Thurston Manor, near Dunbar",region:"East Lothian",kind:"holiday caravans",facts:["3-bedroom caravans sleeping 6 to 8","around 10 minutes from Torness","contractor stays are accepted on this park"]},
+ borders:{name:"the Scottish Borders",region:"Peebles, Galashiels, Hawick",kind:"houses and flats",facts:["two 5-bedroom houses in Galashiels","a Hawick home that sleeps up to 13","a 3-bedroom home in Peebles","the Borders Railway runs from Galashiels to Edinburgh"]},
+ edinburgh:{name:"Edinburgh",region:"Leith, Dalry, Gorgie, Morningside, Liberton, Old Town",kind:"city apartments",facts:["apartments in Leith, Dalry, Gorgie, Morningside, Liberton and the Old Town"]}
+};
+const S_AUD=["guests","owners","contractors"];
+const S_AUD_AREAS={guests:["seton","edinburgh","borders","thurston"],owners:["seton","borders","edinburgh","thurston"],contractors:["thurston","seton","borders","edinburgh"]};
+const S_COMMON=["whole homes with a kitchen and living space, not hotel rooms","fast Wi-Fi","self check-in","book direct for our best rate, with no booking-site fees","WhatsApp +44 7578 255663, team@vivistays.com, vivistays.com"];
+const S_AUD_FACTS={
+ guests:["holiday breaks, weekends away, family trips"],
+ owners:["we manage short-term lets: listing, pricing, bookings, guest messages, cleaning and changeovers, maintenance","free to try: we only take a commission when we bring a booking","we also buy caravans and lodges","we manage 400+ homes across the UK"],
+ contractors:["weekly and monthly rates","invoiced to your company","free parking","we'll beat any like-for-like quote","whole crews can stay together"]};
+const S_RULES=`HARD RULES (a manager rejected an earlier post for breaking these):
+- Use ONLY the facts listed. Do not invent distances, travel times, prices, numbers, views, landmarks or amenities.
+- A caravan is a caravan: never call it an apartment, flat, cottage or house. Edinburgh homes are apartments.
+- Never say a place is walking distance to anything unless a fact says so.
+- Never write reviews, testimonials or quotes from guests.
+- Sharp, warm, plain British English. No hype words like "unforgettable" or "nestled".`;
+const SLOT_MS=4*3600e3;
+const slotNow=()=>Math.floor(Date.now()/SLOT_MS);
+const slotAud=n=>S_AUD[((n%3)+3)%3];
+const slotArea=n=>{const a=S_AUD_AREAS[slotAud(n)];return a[Math.floor(n/3)%a.length]};
+const slotPhoto=(n,area)=>{const ps=S_PHOTOS.filter(p=>p.area===area);return ps[Math.floor(n/12)%ps.length]||S_PHOTOS[0]};
+const S_STATUS=[["draft","Waiting for approval"],["approved","Approved"],["posted","Posted"],["rejected","Rejected"]];
+let social=[],sBusy=false,sNote="",sSlot=null;
+
+function sPrompt(n,extra){
+  const aud=slotAud(n),ak=slotArea(n),A=S_AREAS[ak];
+  return `You write one Facebook post for ViViStays, a UK short-term rental company, plus the words for its flyer.
+Audience: ${aud==="guests"?"people planning a stay (guests)":aud==="owners"?"property, caravan and lodge owners who might let ViViStays manage (or sell to us)":"contractors and site teams who need accommodation for crews"}.
+Place to feature: ${A.name} (${A.region}) - ${A.kind}.
+Facts about this place: ${A.facts.map(x=>"- "+x).join("\n")}
+Facts about ViViStays: ${S_COMMON.concat(S_AUD_FACTS[aud]).map(x=>"- "+x).join("\n")}
+${S_RULES}
+Write it as a short story or scene in 1-3 lines to open (second person), then the offer, then one clear call to action with WhatsApp +44 7578 255663 and vivistays.com, then a genuine question to invite comments, then 4-5 hashtags. 90-150 words. Emojis sparingly as bullets.
+${extra?("Editor notes for this version: "+extra):""}
+Return ONLY JSON: {"caption": "...full post text with line breaks...", "kicker": "2-4 word place label in capitals", "headline": "max 5 words for the flyer", "bullets": ["max 5 words","max 5 words","max 5 words"], "cta": "max 4 words"}`;
+}
+async function sGenerate(n,extra){
+  if(!sample){toast("AI writing isn't set up on this server");return}
+  if(!db){toast("Sign in to save");return}
+  sBusy=true;sNote="Writing the post…";render();
+  try{
+    const r=await sample.json(sPrompt(n,extra),{modelTier:"default"});
+    const ak=slotArea(n),ph=slotPhoto(n,ak);
+    const now=new Date().toISOString();
+    await db.collection("social").doc("slot-"+n).set({slot:n,audience:slotAud(n),area:ak,photo:ph.id,caption:String(r.caption||""),kicker:String(r.kicker||S_AREAS[ak].name).slice(0,40),headline:String(r.headline||"").slice(0,48),bullets:(Array.isArray(r.bullets)?r.bullets:[]).slice(0,3).map(x=>String(x).slice(0,40)),cta:String(r.cta||"Book direct").slice(0,32),status:"draft",created:now,updated:now,by:myId||null,source:"page"});
+    sNote="";
+  }catch(e){sNote=e&&e.code==="not_granted"?"AI access was declined.":"Couldn't write the post. Try again."}
+  sBusy=false;render();
+}
+async function sSet(p,patch){try{await db.collection("social").doc(p.id).update({...patch,updated:new Date().toISOString()})}catch(e){toast("Couldn't save. Try again.")}}
+
+function sLoadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+async function sDrawFlyer(cv,p){
+  const W=1080,H=1350,c=cv.getContext("2d");cv.width=W;cv.height=H;
+  try{await document.fonts.load('700 italic 80px "Playfair Display"');await document.fonts.load('800 40px "Barlow Condensed"');await document.fonts.load('500 30px "Barlow"')}catch(e){}
+  const gold="#d9b66f",dark="#14161d";c.textBaseline="alphabetic";
+  /* lay the words out from the bottom up so nothing can overlap */
+  const bullets=(p.bullets||[]).slice(0,3),BTOP=1166,BH=66;
+  let fs=92;c.font=`italic 700 ${fs}px "Playfair Display"`;
+  const wrap=()=>{const ls=[""];for(const w of (p.headline||"").split(/\s+/).filter(Boolean)){const t=(ls[ls.length-1]+" "+w).trim();if(c.measureText(t).width>960&&ls[ls.length-1])ls.push(w);else ls[ls.length-1]=t}return ls};
+  let lines=wrap();if(lines.length>2){fs=74;c.font=`italic 700 ${fs}px "Playfair Display"`;lines=wrap()}lines=lines.slice(0,3);
+  const lh=fs*1.05,bulletTop=BTOP-28-bullets.length*50,lastHead=bulletTop-26,firstHead=lastHead-(lines.length-1)*lh,kickY=firstHead-fs-14;
+  const ph=Math.max(kickY+40,640);
+  c.fillStyle=dark;c.fillRect(0,0,W,H);
+  c.save();c.beginPath();c.rect(0,0,W,ph);c.clip();try{const im=await sLoadImg("img/"+p.photo+".jpg");const sc=Math.max(W/im.width,ph/im.height),w=im.width*sc,hh=im.height*sc;c.drawImage(im,(W-w)/2,(ph-hh)/2,w,hh)}catch(e){}c.restore();
+  let g=c.createLinearGradient(0,0,0,ph);g.addColorStop(0,"rgba(20,22,29,.7)");g.addColorStop(.22,"rgba(20,22,29,0)");g.addColorStop(Math.max(.3,(kickY-260)/ph),"rgba(20,22,29,.1)");g.addColorStop(Math.min(.97,(kickY-40)/ph),"rgba(20,22,29,.92)");g.addColorStop(1,dark);c.fillStyle=g;c.fillRect(0,0,W,ph);
+  try{const lg=await sLoadImg("img/logo.png");c.drawImage(lg,56,46,330,330*lg.height/lg.width)}catch(e){}
+  c.fillStyle=gold;c.font='700 26px "Barlow Condensed"';c.letterSpacing="5px";c.fillText((p.kicker||"").toUpperCase(),60,kickY);c.letterSpacing="0px";
+  c.font=`italic 700 ${fs}px "Playfair Display"`;
+  lines.forEach((l,i)=>{c.fillStyle=i===lines.length-1&&lines.length>1?gold:"#f3f0ea";c.fillText(l,60,firstHead+i*lh)});
+  c.font='500 34px "Barlow"';let y=bulletTop+34;
+  for(const b of bullets){c.fillStyle=gold;c.beginPath();c.arc(72,y-11,7,0,7);c.fill();c.fillStyle="#e4e0d8";c.fillText(b,96,y);y+=50}
+  const cta=(p.cta||"Book direct").toUpperCase();c.font='800 34px "Barlow Condensed"';const cw=c.measureText(cta).width+60;
+  c.fillStyle=gold;c.beginPath();c.roundRect(60,BTOP,cw,BH,8);c.fill();c.fillStyle=dark;c.fillText(cta,90,BTOP+45);
+  c.fillStyle="rgba(217,182,111,.5)";c.fillRect(60,1262,W-120,2);
+  c.font='700 32px "Barlow"';c.fillStyle="#f3f0ea";c.textAlign="center";c.fillText("vivistays.com   ·   WhatsApp +44 7578 255663",W/2,1312);c.textAlign="left";
+}
+async function sDownload(cv,p){
+  const dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null;
+  if(!dl){toast("Saving isn't available here. Right-click the flyer to save it.");return}
+  cv.toBlob(async b=>{try{await dl.save({filename:`vivistays-${p.audience}-${p.area}-slot${p.slot}.png`,data:b})}catch(e){if(e&&e.code!=="declined")toast("Couldn't save the flyer")}},"image/png");
+}
+function sCard(p,isNow){
+  const cv=h("canvas",{class:"flyer"});sDrawFlyer(cv,p);
+  const st=Object.fromEntries(S_STATUS)[p.status]||"Waiting for approval";
+  const start=new Date(p.slot*SLOT_MS),end=new Date((p.slot+1)*SLOT_MS);
+  const t=d=>d.toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"});
+  const note={v:""};
+  return h("div",{class:"card"},
+    h("div",{style:"display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"},
+      h("div",{class:"btns"},h("span",{class:"pill accent",text:p.audience==="guests"?"Guests":p.audience==="owners"?"Owners":"Contractors"}),h("span",{class:"pill",text:(S_AREAS[p.area]||{}).name||p.area}),h("span",{class:"pill "+(p.status==="approved"||p.status==="posted"?"good":p.status==="rejected"?"hot":"warm"),text:st})),
+      h("span",{class:"muted small",text:(isNow?"Now · ":"")+t(start)+" – "+t(end)})),
+    h("div",{class:"sgrid"},
+      h("div",{},cv,h("div",{class:"btns",style:"margin-top:8px"},h("button",{class:"btn",onclick:()=>sDownload(cv,p)},"Save flyer"))),
+      h("div",{},h("pre",{class:"msg",text:p.caption||""}),
+        h("div",{class:"btns",style:"margin-top:8px"},
+          h("button",{class:"btn primary",onclick:()=>copy(p.caption||"")},"Copy post"),
+          p.status==="draft"?h("button",{class:"btn",onclick:()=>copy("For approval before posting:\n\n"+(p.caption||""))},"Copy for the boss"):null,
+          p.status!=="approved"&&p.status!=="posted"?h("button",{class:"btn",onclick:()=>sSet(p,{status:"approved",approvedBy:myId||null})},"Boss approved"):null,
+          p.status==="approved"?h("button",{class:"btn",onclick:()=>sSet(p,{status:"posted",postedAt:new Date().toISOString()})},"I've posted it"):null,
+          p.status==="draft"?h("button",{class:"btn",onclick:()=>sSet(p,{status:"rejected"})},"Rejected"):null),
+        h("div",{class:"field",style:"margin-top:10px"},h("label",{text:"Rewrite with changes (e.g. the boss's feedback)"}),h("textarea",{rows:"2",placeholder:"e.g. it's a caravan, not an apartment",oninput:e=>note.v=e.target.value})),
+        h("div",{class:"btns"},h("button",{class:"btn",disabled:sBusy||null,onclick:()=>sGenerate(p.slot,note.v)},"Rewrite"))))
+  );
+}
+function socialView(){
+  const n=slotNow(),cur=social.find(p=>p.slot===n);
+  const next=[1,2].map(k=>n+k);
+  const hist=social.filter(p=>p.slot!==n).sort((a,b)=>b.slot-a.slot).slice(0,12);
+  return[h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Posts"}),h("span",{class:"muted small",text:"A new post every 4 hours · guests → owners → contractors"})),
+    h("div",{class:"card tipbox"},h("p",{class:"small",text:"Every post uses only checked facts about our homes, and its photo is from the place it names. Nothing goes on Facebook until the boss approves it: use “Copy for the boss”, then mark it approved."})),
+    cur?sCard(cur,true):h("div",{class:"card"},h("h3",{text:"This slot's post: "+(slotAud(n)==="guests"?"Guests":slotAud(n)==="owners"?"Owners":"Contractors")+" · "+S_AREAS[slotArea(n)].name}),
+      h("p",{class:"muted small",text:sBusy?sNote:(sNote||"Not written yet. It's usually created automatically; you can write it now.")}),
+      h("button",{class:"btn primary",disabled:sBusy||null,onclick:()=>sGenerate(n)},sBusy?"Writing…":"Write this post")),
+    h("div",{class:"card"},h("h3",{text:"Coming up"}),...next.map(k=>h("p",{class:"small",text:new Date(k*SLOT_MS).toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"})+" · "+(slotAud(k)==="guests"?"Guests":slotAud(k)==="owners"?"Owners":"Contractors")+" · "+S_AREAS[slotArea(k)].name}))),
+    hist.length?h("h2",{text:"Earlier posts"}):null,...hist.map(p=>sCard(p,false))];
+}
+
 /* ---------- boot ---------- */
 $("#addtop").addEventListener("click",()=>go("add"));
 render();
@@ -1360,6 +1488,7 @@ render();
   db.collection("leads").onSnapshot(snap=>{allLeads=snap.docs.map(x=>({id:x.id,...x.data()}));leads=allLeads.filter(l=>!l.archived);ready=true;if(selected&&view==="leads"&&!allLeads.some(l=>l.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{offline="Lost connection to the lead list. Reload the page.";render()});
   db.collection("posts").onSnapshot(snap=>{posts=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="help"&&!busy())render()},()=>{});
   db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});
+  db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   db.collection("contacts").onSnapshot(snap=>{allContacts=snap.docs.map(x=>({id:x.id,...x.data()}));contacts=allContacts.filter(c=>!c.archived);if(view==="outreach"&&selected&&!allContacts.some(c=>c.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{});
 })();
 })();
