@@ -9,7 +9,12 @@
 if (!defined('VL_APP') && PHP_SAPI !== 'cli') { http_response_code(403); exit; }
 
 const VL_STAYFUL_BASE = 'https://leads.stayful.co.uk/api/v1';
-const VL_STAYFUL_EVERY = 15 * 60;
+const VL_STAYFUL_EVERY = 10 * 60;
+
+// "3", "3 bedrooms", "2-3 bed" -> "3" / "2-3"; anything else -> ''
+function vl_stayful_beds($v) {
+    return preg_match('/\d+(\s*-\s*\d+)?/', (string)$v, $m) ? str_replace(' ', '', $m[0]) : '';
+}
 
 function vl_stayful_state_file() { return __DIR__ . '/data/stayful-sync.json'; }
 function vl_stayful_state() {
@@ -76,8 +81,8 @@ function vl_stayful_town($lead, $withArea = true) {
 
 function vl_stayful_message($lead) {
     $first = vl_stayful_first($lead['lead_name'] ?? '');
-    $beds = trim((string)($lead['bedrooms'] ?? ''));
-    $prop = ($beds !== '' && preg_match('/\d/', $beds)) ? $beds . '-bed property' : 'property';
+    $beds = vl_stayful_beds($lead['bedrooms'] ?? '');
+    $prop = $beds !== '' ? $beds . '-bed property' : 'property';
     $where = vl_stayful_town($lead, false);
     $isGR = ($lead['lead_type'] ?? '') === 'guaranteed_rent';
     $offer = $isGR
@@ -128,7 +133,7 @@ function vl_stayful_sync($force = false) {
                 $get->execute(['leads', $id]);
                 $row = $get->fetchColumn();
                 if ($row === false) {
-                    $beds = trim((string)($lead['bedrooms'] ?? ''));
+                    $beds = vl_stayful_beds($lead['bedrooms'] ?? '');
                     $doc = [
                         'kind' => 'owner', 'source' => 'stayful', 'group' => 'Stayful',
                         'name' => trim((string)($lead['lead_name'] ?? '')),

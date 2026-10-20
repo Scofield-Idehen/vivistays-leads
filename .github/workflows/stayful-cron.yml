@@ -1,0 +1,11 @@
+# Every 15 minutes, ask the leads site to pull new Stayful landlord leads.
+name: Stayful sync
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsS --max-time 60 https://leads.mandexoil.xyz/cron.php
