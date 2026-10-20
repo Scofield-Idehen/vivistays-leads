@@ -418,7 +418,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","leads","outreach","projects","social","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","leads","stayful","outreach","projects","social","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -435,14 +435,16 @@ const ICON={
   outreach:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="m21 3-7 18-4-7-7-4Z"/></svg>',
   projects:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/><path d="M9 10.5h.01M15 10.5h.01"/></svg>',
   help:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8 7.5h8M8 11h6"/></svg>',
+  stayful:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><circle cx="12" cy="14" r="2.2"/><path d="M8.5 20c.6-1.9 1.9-3 3.5-3s2.9 1.1 3.5 3"/></svg>',
   social:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>',
   add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>'
 };
-const NAV=[["today","Dashboard"],["leads","Facebook leads"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["help","Guides"]];
-const SHORT={today:"Home",leads:"Leads",outreach:"Outreach",projects:"Projects",social:"Posts",help:"Guides"};
+const NAV=[["today","Dashboard"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["help","Guides"]];
+const SHORT={today:"Home",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
-    leads:leads.filter(l=>!CLOSED.has(l.status)).length,
+    leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
+    stayful:leads.filter(l=>l.source==="stayful"&&!CLOSED.has(l.status)).length,
     outreach:contacts.filter(c=>!O_CLOSED.has(c.status)).length,
     projects:PROJECTS.length};
 }
@@ -458,7 +460,8 @@ function renderTabs(){
 
 /* one-line help cards for beginners, dismissible and remembered on this device */
 const HELP={
-  leads:["Facebook leads","are property owners and guests from Facebook groups, plus landlords Stayful sends us. Pick a name to see the exact message to send next."],
+  leads:["Facebook leads","are property owners and guests you found in Facebook groups. Pick a name to see the exact message to send next."],
+  stayful:["Stayful landlords","are owners who asked Stayful about letting their property. Stayful passes them to us. They arrive here automatically with phone, email and a first message ready."],
   outreach:["Outreach","is everyone we contact about building projects and events: contractors, LinkedIn contacts and event organisers."],
   projects:["Projects","are building jobs near our properties. Their crews need somewhere to stay, so each one is a chance for long bookings."],
   add:["Adding someone","takes under a minute. Choose where you found them, paste what you copied, and the app writes the first message."]
@@ -474,9 +477,9 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="leads"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
-  const hc=helpCard(view);if(hc)arr.splice(view==="leads"||view==="outreach"?0:1,0,hc);
+  const hc=helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
 }
 
@@ -498,7 +501,7 @@ function todayView(){
   const pstep=(n,title,sub,btn,on,done)=>h("div",{class:"pstep"+(done?" done":"")},h("div",{class:"n",text:done?"✓":n}),h("b",{text:title}),h("span",{text:sub}),h("button",{onclick:on},btn));
   const plan=h("section",{class:"plan","aria-label":"Today's plan"},
     h("h2",{text:"Today's plan"}),h("p",{text:"Three jobs, in this order. Every message is already written for you."}),
-    pstep(1,"Reply to Facebook leads",due.length?due.length+" waiting for a message":"Nobody waiting",due.length?"Start":"View",()=>{filter="open";go("leads",due[0]&&due[0].id)},!due.length),
+    pstep(1,"Reply to Facebook leads",due.length?due.length+" waiting for a message":"Nobody waiting",due.length?"Start":"View",()=>{filter="open";go(due[0]&&due[0].source==="stayful"?"stayful":"leads",due[0]&&due[0].id)},!due.length),
     pstep(2,"Find new people on Facebook","Add 2 or 3 posts from your groups","Add",()=>{addKind="facebook";go("add")},false),
     pstep(3,"Message project contacts",odue.length?odue.length+" contractors and organisers to message":"Everyone is up to date",odue.length?"Start":"View",()=>{oFilter="due";go("outreach",odue[0]&&odue[0].id)},!odue.length));
 
@@ -507,7 +510,7 @@ function todayView(){
   const queue=h("section",{class:"card"},
     h("div",{class:"cardhead"},h("h3",{text:"Needs a message today"}),h("span",{class:"muted small",text:totalDue?totalDue+" in total":""})),
     !ready&&!offline?h("p",{class:"muted small",text:"Loading…"}):offline?h("p",{class:"muted small",text:offline}):
-    items.length?h("div",{class:"list"},...items.map(i=>i.t==="l"?leadRow(i.x,()=>go("leads",i.x.id)):contactRow(i.x,()=>go("outreach",i.x.id))))
+    items.length?h("div",{class:"list"},...items.map(i=>i.t==="l"?leadRow(i.x,()=>go(i.x.source==="stayful"?"stayful":"leads",i.x.id)):contactRow(i.x,()=>go("outreach",i.x.id))))
       :h("p",{class:"muted",text:"You're up to date. Add a new lead from Facebook, LinkedIn or Eventbrite to keep things moving."}));
 
   /* pipeline: counts by stage, leads in black, outreach in grey */
@@ -564,22 +567,25 @@ function leadRow(l,onclick){
     h("span",{class:"sub",text:sub.filter(Boolean).join(" · ")}));
 }
 function leadsView(){
-  const F=[["open","To do"],["owner","Owners"],["guest","Guests"],...(window.VL_sync?[["stayful","Stayful"]]:[]),["talking","Talking"],["won","Won"],["archived","Archived"+(allLeads.length-leads.length?" "+(allLeads.length-leads.length):"")]];
+  const isS=view==="stayful",mine=l=>(l.source==="stayful")===isS,nArch=allLeads.filter(l=>l.archived&&mine(l)).length;
+  if(isS&&(filter==="owner"||filter==="guest"))filter="open";
+  const F=[["open","To do"],...(isS?[]:[["owner","Owners"],["guest","Guests"]]),["talking","Talking"],["won","Won"],["archived","Archived"+(nArch?" "+nArch:"")]];
   const listcol=h("div",{class:"listcol",style:"display:flex;flex-direction:column;gap:12px;min-width:0"},
-    h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Leads"}),h("span",{class:"muted small",text:leads.filter(l=>!CLOSED.has(l.status)).length+" open"})),
+    h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:isS?"Stayful landlords":"Leads"}),h("span",{class:"muted small",text:leads.filter(l=>mine(l)&&!CLOSED.has(l.status)).length+" open"})),
     h("div",{class:"chips",role:"group","aria-label":"Show"},...F.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(filter===k),onclick:()=>{filter=k;render()}},t))),
-    stayfulLine(),
-    h("input",{class:"search",id:"q",type:"search",placeholder:"Search name, town or group",value:query,oninput:e=>{query=e.target.value;const r=$("#rows");if(r)r.replaceChildren(...rowsOrEmptyList(filteredLeads()))}}),
+    isS?stayfulLine():null,
+    h("input",{class:"search",id:"q",type:"search",placeholder:isS?"Search name, town, phone or email":"Search name, town or group",value:query,oninput:e=>{query=e.target.value;const r=$("#rows");if(r)r.replaceChildren(...rowsOrEmptyList(filteredLeads()))}}),
     h("div",{id:"rows",style:"display:flex;flex-direction:column"},...rowsOrEmptyList(filteredLeads())));
   return[h("div",{class:"split"+(selected?" open":"")},listcol,detail())];
 }
 function filteredLeads(){
   const q=query.trim().toLowerCase();
+  const isS=view==="stayful";
   return(filter==="archived"?allLeads.filter(l=>l.archived):leads).filter(l=>{
+    if((l.source==="stayful")!==isS)return false;
     if(filter==="open"&&CLOSED.has(l.status))return false;
     if(filter==="owner"&&(kindOf(l)!=="owner"||CLOSED.has(l.status)))return false;
     if(filter==="guest"&&(kindOf(l)!=="guest"||CLOSED.has(l.status)))return false;
-    if(filter==="stayful"&&(l.source!=="stayful"||CLOSED.has(l.status)))return false;
     if(filter==="talking"&&!TALKING.has(l.status))return false;
     if(filter==="won"&&!WON.has(l.status))return false;
     return!q||[l.name,l.location,l.group,l.need,l.notes,l.properties,l.dates,l.phone,l.email,(l.stayful||{}).address].join(" ").toLowerCase().includes(q)}).sort(filter==="open"?byPriority:filter==="archived"?(a,b)=>(b.archivedAt||"").localeCompare(a.archivedAt||""):byNewest);
@@ -587,6 +593,7 @@ function filteredLeads(){
 function rowsOrEmptyList(list){
   if(!ready&&!offline)return[h("div",{class:"empty"},h("p",{text:"Loading leads…"}))];
   if(offline)return[h("div",{class:"empty"},h("h3",{text:"Sign in to see leads"}),h("p",{text:offline}))];
+  if(!list.length&&view==="stayful")return[h("div",{class:"empty"},h("h3",{text:leads.some(l=>l.source==="stayful")?"Nothing here":"No Stayful landlords yet"}),h("p",{text:leads.some(l=>l.source==="stayful")?"Try another filter or search.":"New landlords from Stayful appear here automatically, usually within 15 minutes."}))];
   if(!list.length)return[h("div",{class:"empty"},h("h3",{text:leads.length?"Nothing here":"No leads yet"}),h("p",{text:leads.length?"Try another filter or search.":"Copy a Facebook post and press Add lead to create your first one."}),!leads.length?h("button",{class:"btn primary",onclick:()=>go("add")},"+ Add lead"):null)];
   return[h("div",{class:"list"},...list.map(l=>leadRow(l,()=>{selected=l.id;render();window.scrollTo(0,0)})))];
 }
@@ -598,7 +605,7 @@ function detail(){
   const fld=(label,key,ph,wide)=>h("div",{class:"field"+(wide?" wide":"")},h("label",{for:"d-"+key,text:label}),h("input",{id:"d-"+key,value:l[key]||"",placeholder:ph||"",onchange:e=>save(l,{[key]:e.target.value.trim()})}));
   const sel=(label,key,opts,val,on)=>{const s=h("select",{id:"d-"+key,onchange:e=>on(e.target.value)},...opts.map(([v,t])=>h("option",{value:v,text:t})));s.value=val;return h("div",{class:"field"},h("label",{for:"d-"+key,text:label}),s)};
   return h("div",{class:"detail"},
-    h("button",{class:"back",onclick:()=>{selected=null;render()}},"‹ All leads"),
+    h("button",{class:"back",onclick:()=>{selected=null;render()}},view==="stayful"?"‹ All Stayful landlords":"‹ All leads"),
     h("div",{style:"display:flex;flex-direction:column;gap:8px"},h("h1",{text:l.name||(g?"Guest enquiry":"Unnamed lead")}),
       h("div",{class:"btns"},h("span",{class:"pill "+(l.score==="hot"?"hot":l.score==="cold"?"":"warm"),text:SCORE_LABEL[l.score]||"Warm"}),h("span",{class:"pill accent",text:g?"Guest":"Owner"}),h("span",{class:"pill",text:STATUS_LABEL[l.status]||"New"}),l.location?h("span",{class:"pill",text:l.location}):null)),
     archiveCard(l,false),
