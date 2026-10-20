@@ -63,11 +63,36 @@
     const j = await api("ai", { prompt, tier: (opts && opts.modelTier) || "default" });
     return { text: j.text || "", truncated: j.stop === "max_tokens" };
   };
+  // Read the JSON in an AI reply. Fixes raw line breaks inside strings, and
+  // asks once more if the reply still can't be read.
+  function readJson(text) {
+    const m = (text || "").replace(/```(?:json)?/g, "").match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    try { return JSON.parse(m[0]); } catch (e) {}
+    let out = "", inStr = false, esc = false;
+    for (const ch of m[0]) {
+      if (inStr) {
+        if (esc) { esc = false; out += ch; continue; }
+        if (ch === "\\") { esc = true; out += ch; continue; }
+        if (ch === '"') { inStr = false; out += ch; continue; }
+        if (ch === "\n") { out += "\\n"; continue; }
+        if (ch === "\r") continue;
+        if (ch === "\t") { out += "\\t"; continue; }
+        out += ch;
+      } else { if (ch === '"') inStr = true; out += ch; }
+    }
+    try { return JSON.parse(out); } catch (e) { return null; }
+  }
   sample.json = async (input, opts) => {
-    const r = await sample(input + "\n\nRespond with the JSON only, no other text.", opts);
-    const m = r.text.match(/\{[\s\S]*\}/);
-    if (!m || r.truncated) throw { code: "bad_json", message: r.truncated ? "The AI reply was cut off before it finished" : "The AI reply wasn't readable" };
-    try { return JSON.parse(m[0]); } catch (e) { throw { code: "bad_json", message: "The AI reply wasn't readable" }; }
+    let lastCut = false;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const r = await sample(input + "\n\nRespond with the JSON only, no other text. Escape line breaks inside strings as \\n.", opts);
+      lastCut = r.truncated;
+      const j = r.truncated ? null : readJson(r.text);
+      if (j) return j;
+      console.warn("AI reply could not be read (attempt " + (attempt + 1) + ")", r.text);
+    }
+    throw { code: "bad_json", message: lastCut ? "The AI reply was cut off before it finished" : "The AI reply wasn't readable" };
   };
 
   const me = window.VL_USER || "user";

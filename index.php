@@ -65,7 +65,7 @@ button{border:0;background:var(--accent);color:#fff;border-radius:99px;padding:1
 global $ANTHROPIC_API_KEY;
 $app = file_get_contents(__DIR__ . '/app.html');
 $bridge = '<script>window.VL_USER=' . json_encode($user) . ';window.VL_AI=' . ($ANTHROPIC_API_KEY ? 'true' : 'false') . ';</script>'
-        . '<script src="bridge.js?v=3"></script>';
+        . '<script src="bridge.js?v=4"></script>';
 $app = preg_replace('/<script>/', $bridge . "\n<script>", $app, 1);
 $app = str_replace('<button class="addbtn" id="addtop">', '<a class="signout" href="?logout=1">Sign out ' . htmlspecialchars($user) . '</a><button class="addbtn" id="addtop">', $app);
 header('Cache-Control: no-store');
