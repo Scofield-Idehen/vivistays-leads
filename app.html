@@ -1442,8 +1442,10 @@ function pickPhoto(area,avoid,n){
   const min=Math.min(...pool.map(p=>used[p.id]||0));const least=pool.filter(p=>(used[p.id]||0)===min);
   return least[Math.abs((n||0)*7+social.length)%least.length];
 }
-const S_LAYOUTS=[["night","Night"],["paper","Paper"],["band","Gold band"]];
+const S_LAYOUTS=[["night","Night"],["split","Split"],["paper","Paper"],["poster","Big poster"],["band","Gold band"],["collage","Collage"]];
 const nextLayout=l=>{const i=S_LAYOUTS.findIndex(x=>x[0]===l);return S_LAYOUTS[(i+1)%S_LAYOUTS.length][0]};
+/* a redesign jumps to a look with a different structure, never the same one twice running */
+const otherLayout=l=>{const o=S_LAYOUTS.map(x=>x[0]).filter(x=>x!==l);return o[Math.floor(Math.random()*o.length)]};
 const S_STATUS=[["draft","Waiting for approval"],["approved","Approved"],["posted","Posted"],["rejected","Rejected"]];
 let social=[],sBusy=false,sNote="",sSlot=null;
 
@@ -1469,7 +1471,7 @@ async function sGenerate(n,extra){
     const r=await sample.json(sPrompt(n,extra,prev),{modelTier:"default"});
     const ak=slotArea(n),ph=pickPhoto(ak,prev&&prev.photo,n);
     const now=new Date().toISOString();
-    await db.collection("social").doc("slot-"+n).set({slot:n,audience:slotAud(n),area:ak,photo:ph.id,layout:prev?nextLayout(prev.layout||"night"):S_LAYOUTS[((n%3)+3)%3][0],caption:String(r.caption||""),kicker:String(r.kicker||S_AREAS[ak].name).slice(0,40),headline:String(r.headline||"").slice(0,48),bullets:(Array.isArray(r.bullets)?r.bullets:[]).slice(0,3).map(x=>String(x).slice(0,40)),cta:String(r.cta||"Book direct").slice(0,32),status:"draft",created:prev&&prev.created||now,updated:now,by:myId||null,source:"page",version:((prev&&prev.version)||1)+(prev?1:0),editorNotes:extra||null});
+    await db.collection("social").doc("slot-"+n).set({slot:n,audience:slotAud(n),area:ak,photo:ph.id,layout:prev?otherLayout(prev.layout||"night"):S_LAYOUTS[((n%S_LAYOUTS.length)+S_LAYOUTS.length)%S_LAYOUTS.length][0],caption:String(r.caption||""),kicker:String(r.kicker||S_AREAS[ak].name).slice(0,40),headline:String(r.headline||"").slice(0,48),bullets:(Array.isArray(r.bullets)?r.bullets:[]).slice(0,3).map(x=>String(x).slice(0,40)),cta:String(r.cta||"Book direct").slice(0,32),status:"draft",created:prev&&prev.created||now,updated:now,by:myId||null,source:"page",version:((prev&&prev.version)||1)+(prev?1:0),editorNotes:extra||null});
     sNote="";toast(prev?"Redesigned: new words, new photo, new look":"Post written");
   }catch(e){console.error("Post writing failed",e);sNote=e&&e.code==="not_granted"?"AI access was declined.":"Couldn't write the post"+(e&&e.message?" ("+e.message+")":"")+". Try again."}
   sBusy=false;render();
@@ -1493,7 +1495,44 @@ async function sDrawFlyer(cv,p){
 
   /* every look is laid out from the bottom up, so nothing can overlap */
   const BTOP=1166,stack=(hd)=>{const lh=hd.fs*1.05,bulletTop=BTOP-28-bullets.length*50,lastHead=bulletTop-26,firstHead=lastHead-(hd.lines.length-1)*lh;return{lh,bulletTop,firstHead,kickY:firstHead-hd.fs-14}};
-  if(layout==="paper"){
+  const tw=(t,x,y,maxW,lh)=>{const ls=sWrap(c,t,maxW);ls.forEach((l,i)=>c.fillText(l,x,y+i*lh));return y+ls.length*lh};
+  if(layout==="split"){
+    c.fillStyle=dark;c.fillRect(0,0,W,H);
+    if(im)sCover(c,im,0,0,560,H);
+    const X=620,MW=400;
+    if(lg)c.drawImage(lg,X,70,300,300*lg.height/lg.width);
+    c.fillStyle=gold;c.font='700 24px "Barlow Condensed"';c.letterSpacing="3px";c.fillText((p.kicker||"").toUpperCase(),X,330,MW);c.letterSpacing="0px";
+    let fs=76;c.font=`italic 700 ${fs}px "Playfair Display"`;let ls=sWrap(c,p.headline,MW);if(ls.length>4){fs=62;c.font=`italic 700 ${fs}px "Playfair Display"`;ls=sWrap(c,p.headline,MW)}
+    let y=330+fs+20;ls.slice(0,5).forEach((l,i,arr)=>{c.fillStyle=i===arr.length-1&&arr.length>1?gold:"#f3f0ea";c.fillText(l,X,y);y+=fs*1.05});
+    c.fillStyle=gold;c.fillRect(X,y+4,80,3);y+=60;c.font='500 32px "Barlow"';
+    for(const b of bullets){c.fillStyle="#e4e0d8";y=tw(b,X,y,MW,40)+16}
+    ctaBtn(X,Math.max(y+10,1080),gold,dark);
+    c.font='700 30px "Barlow"';c.fillStyle="#f3f0ea";c.fillText("vivistays.com",X,1240);c.fillStyle=gold;c.fillText("WhatsApp +44 7578 255663",X,1284);
+  }else if(layout==="poster"){
+    c.fillStyle=dark;c.fillRect(0,0,W,H);if(im)sCover(c,im,0,0,W,H);
+    c.fillStyle="rgba(14,15,20,.58)";c.fillRect(0,0,W,H);
+    if(lg){c.save();c.drawImage(lg,(W-340)/2,64,340,340*lg.height/lg.width);c.restore()}
+    c.textAlign="center";let fs=132;c.font=`italic 700 ${fs}px "Playfair Display"`;let ls=sWrap(c,p.headline,920);while((ls.length>3||ls.some(l=>c.measureText(l).width>960))&&fs>80){fs-=8;c.font=`italic 700 ${fs}px "Playfair Display"`;ls=sWrap(c,p.headline,920)}
+    const blockH=ls.length*fs*1.02;let y=640-blockH/2+fs*.8;
+    c.fillStyle=gold;c.font='700 28px "Barlow Condensed"';c.letterSpacing="6px";c.fillText((p.kicker||"").toUpperCase(),W/2,y-fs-10);c.letterSpacing="0px";
+    c.font=`italic 700 ${fs}px "Playfair Display"`;ls.forEach((l,i)=>{c.fillStyle=i===ls.length-1&&ls.length>1?gold:"#fbf7ef";c.fillText(l,W/2,y+i*fs*1.02)});
+    y+=(ls.length-1)*fs*1.02+80;c.font='500 32px "Barlow"';c.fillStyle="#efe9df";
+    tw(bullets.join("   ·   "),W/2,y,900,44);c.textAlign="left";
+    /* round gold call-to-action seal */
+    const cx=W-190,cy=1060,r=120;c.fillStyle=gold;c.beginPath();c.arc(cx,cy,r,0,7);c.fill();c.strokeStyle=gold;c.lineWidth=2;c.beginPath();c.arc(cx,cy,r+12,0,7);c.stroke();
+    c.save();c.translate(cx,cy);c.rotate(-.12);c.fillStyle=dark;c.textAlign="center";c.font='800 34px "Barlow Condensed"';const cl=sWrap(c,(p.cta||"Book direct").toUpperCase(),190);cl.slice(0,3).forEach((l,i,arr)=>c.fillText(l,0,12+(i-(arr.length-1)/2)*38));c.restore();c.textAlign="left";
+    footer("#f3f0ea","rgba(217,182,111,.5)");
+  }else if(layout==="collage"){
+    c.fillStyle=ivory;c.fillRect(0,0,W,H);
+    c.fillStyle=ink;c.fillRect(0,0,W,150);if(lg)c.drawImage(lg,(W-330)/2,(150-330*lg.height/lg.width)/2,330,330*lg.height/lg.width);
+    const others=allPhotos().filter(x=>x.area===p.area&&x.id!==p.photo);let i2=null,i3=null;
+    try{if(others[0])i2=await sLoadImg(others[(p.slot||0)%others.length].src)}catch(e){}try{if(others.length>1)i3=await sLoadImg(others[((p.slot||0)+1)%others.length].src)}catch(e){}
+    if(im)sCover(c,im,60,190,620,540);if(i2)sCover(c,i2,700,190,320,260);else{c.fillStyle="#e6dccb";c.fillRect(700,190,320,260)}if(i3||i2)sCover(c,i3||i2,700,470,320,260);else{c.fillStyle="#e6dccb";c.fillRect(700,470,320,260)}
+    kick(60,800,deep);let fs=78;c.font=`italic 700 ${fs}px "Playfair Display"`;let ls=sWrap(c,p.headline,960);if(ls.length>2){fs=62;c.font=`italic 700 ${fs}px "Playfair Display"`;ls=sWrap(c,p.headline,960)}
+    let y=800+fs+12;ls.slice(0,2).forEach(l=>{c.fillStyle=ink;c.fillText(l,60,y);y+=fs*1.05});
+    c.font='600 30px "Barlow"';c.fillStyle="#3a362f";y=tw(bullets.join("  ·  "),60,y+12,960,40);
+    ctaBtn(60,Math.min(Math.max(y+14,1100),1172),ink,gold);footer(ink,"rgba(122,87,24,.45)");
+  }else if(layout==="paper"){
     c.fillStyle=ivory;c.fillRect(0,0,W,H);
     const hd=head(960,90,72),L=stack(hd),phH=Math.max(420,L.kickY-60-56);
     if(im)sCover(c,im,60,60,W-120,phH);else{c.fillStyle="#e6dccb";c.fillRect(60,60,W-120,phH)}
@@ -1553,7 +1592,7 @@ function sCard(p,isNow){
           p.status!=="approved"&&p.status!=="posted"?h("button",{class:"btn",onclick:()=>sSet(p,{status:"approved",approvedBy:myId||null})},"Boss approved"):null,
           p.status==="approved"?h("button",{class:"btn",onclick:()=>sSet(p,{status:"posted",postedAt:new Date().toISOString()})},"I've posted it"):null,
           p.status==="draft"?h("button",{class:"btn",onclick:()=>sSet(p,{status:"rejected"})},"Rejected"):null),
-        h("div",{class:"field",style:"margin-top:10px"},h("label",{text:"Redesign with your notes (new words, new photo and a new look)"}),h("textarea",{rows:"3",placeholder:"e.g. focus on families, mention free parking, more playful",oninput:e=>note.v=e.target.value})),
+        h("div",{class:"field",style:"margin-top:10px"},h("label",{text:"Redesign with your notes: new words, new photo and a different layout"}),h("textarea",{rows:"3",placeholder:"e.g. focus on families, mention free parking, more playful",oninput:e=>note.v=e.target.value})),
         h("div",{class:"btns"},h("button",{class:"btn",disabled:sBusy||null,onclick:()=>sGenerate(p.slot,note.v)},sBusy?"Redesigning…":"Redesign")),
         sBusy&&sNote?h("p",{class:"muted small",text:sNote}):null))
   );
@@ -1576,18 +1615,18 @@ async function uploadPhotos(files){
 }
 function photoLibrary(){
   const areas=Object.keys(S_AREAS);const all=allPhotos();
-  return h("details",{class:"card"},h("summary",{},"Photo library · "+all.length+" photos"),
-    h("p",{class:"muted small",text:"Flyers use the photo of each place that has been used least. Add more photos here so posts don't repeat. Only add photos of that exact place: a caravan photo must be a caravan."}),
+  return h("div",{class:"card",id:"photolib"},h("div",{class:"cardhead"},h("h3",{text:"Photos for flyers"}),h("span",{class:"muted small",text:all.length+" photos"})),
+    h("p",{class:"muted small",text:"Each post uses the photo of its place that has been used least, so the more you add, the less they repeat. Only add photos of that exact place: a caravan photo must be a caravan."}),
     h("div",{class:"btns",style:"align-items:flex-end;flex-wrap:wrap"},
       h("div",{class:"field",style:"min-width:200px"},h("label",{for:"up-area",text:"Which place?"}),(()=>{const s=h("select",{id:"up-area",onchange:e=>upArea=e.target.value},...areas.map(k=>h("option",{value:k,text:S_AREAS[k].name+" ("+S_AREAS[k].kind+")"})));s.value=upArea;return s})()),
       h("div",{class:"field",style:"flex:1;min-width:200px"},h("label",{for:"up-label",text:"What's in it? (optional)"}),h("input",{id:"up-label",placeholder:"e.g. Caravan lounge, Seton Sands",value:upLabel,oninput:e=>upLabel=e.target.value})),
       (()=>{const inp=h("input",{type:"file",accept:"image/*",multiple:true,style:"display:none",onchange:e=>{uploadPhotos(e.target.files);e.target.value=""}});return h("label",{class:"btn primary",style:"cursor:pointer"},inp,upBusy||"Add photos")})()),
-    ...areas.map(k=>{const ps=all.filter(p=>p.area===k);return h("div",{style:"display:flex;flex-direction:column;gap:8px;margin-top:6px"},
+    h("details",{},h("summary",{},"See all photos"),...areas.map(k=>{const ps=all.filter(p=>p.area===k);return h("div",{style:"display:flex;flex-direction:column;gap:8px;margin-top:10px"},
       h("h3",{text:S_AREAS[k].name+" · "+ps.length}),
       h("div",{style:"display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px"},...ps.map(p=>h("figure",{style:"margin:0;display:flex;flex-direction:column;gap:4px"},
         h("img",{src:p.src,alt:p.label,loading:"lazy",style:"width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px"}),
         h("figcaption",{class:"muted small",style:"overflow:hidden;text-overflow:ellipsis;white-space:nowrap",text:p.label}),
-        p.builtin?null:h("button",{class:"btn link small",style:"padding:0;align-self:flex-start",onclick:async()=>{try{await window.VL_photoDelete(p.docId);toast("Photo removed")}catch(e){toast("Couldn't remove it")}}},"Remove")))))}));
+        p.builtin?null:h("button",{class:"btn link small",style:"padding:0;align-self:flex-start",onclick:async()=>{try{await window.VL_photoDelete(p.docId);toast("Photo removed")}catch(e){toast("Couldn't remove it")}}},"Remove")))))})));
 }
 function socialView(){
   const n=slotNow(),cur=social.find(p=>p.slot===n);
@@ -1595,10 +1634,10 @@ function socialView(){
   const hist=social.filter(p=>p.slot!==n).sort((a,b)=>b.slot-a.slot).slice(0,12);
   return[h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Posts"}),h("span",{class:"muted small",text:"A new post every 4 hours · guests → owners → contractors"})),
     h("div",{class:"card tipbox"},h("p",{class:"small",text:"Every post uses only checked facts about our homes, and its photo is from the place it names. Nothing goes on Facebook until the boss approves it: use “Copy for the boss”, then mark it approved."})),
+    photoLibrary(),
     cur?sCard(cur,true):h("div",{class:"card"},h("h3",{text:"This slot's post: "+(slotAud(n)==="guests"?"Guests":slotAud(n)==="owners"?"Owners":"Contractors")+" · "+S_AREAS[slotArea(n)].name}),
       h("p",{class:"muted small",text:sBusy?sNote:(sNote||"Not written yet. It's usually created automatically; you can write it now.")}),
       h("button",{class:"btn primary",disabled:sBusy||null,onclick:()=>sGenerate(n)},sBusy?"Writing…":"Write this post")),
-    photoLibrary(),
     h("div",{class:"card"},h("h3",{text:"Coming up"}),...next.map(k=>h("p",{class:"small",text:new Date(k*SLOT_MS).toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"})+" · "+(slotAud(k)==="guests"?"Guests":slotAud(k)==="owners"?"Owners":"Contractors")+" · "+S_AREAS[slotArea(k)].name}))),
     hist.length?h("h2",{text:"Earlier posts"}):null,...hist.map(p=>sCard(p,false))];
 }
