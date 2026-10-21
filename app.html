@@ -1418,7 +1418,7 @@ const S_AUD_AREAS={guests:["seton","edinburgh","borders","thurston"],owners:["se
 const S_COMMON=["whole homes with a kitchen and living space, not hotel rooms","fast Wi-Fi","self check-in","book direct for our best rate, with no booking-site fees","WhatsApp +44 7578 255663, team@vivistays.com, vivistays.com"];
 const S_AUD_FACTS={
  guests:["holiday breaks, weekends away, family trips"],
- owners:["we manage short-term lets: listing, pricing, bookings, guest messages, cleaning and changeovers, maintenance","free to try: we only take a commission when we bring a booking","we also buy caravans and lodges","we manage 400+ homes across the UK"],
+ owners:["we manage short-term lets: listing, pricing, bookings, guest messages, cleaning and changeovers, maintenance","caravan management offer: FREE onboarding, FREE photography, FREE to sign up, and only 13.5% management ALL IN","first month completely FREE if you sign up before the end of 2026","free to try: we only take a commission when we bring a booking","we also buy caravans and lodges","we manage 400+ homes across the UK"],
  contractors:["weekly and monthly rates","invoiced to your company","free parking","we'll beat any like-for-like quote","whole crews can stay together"]};
 const S_RULES=`HARD RULES (a manager rejected an earlier post for breaking these):
 - Use ONLY the facts listed. Do not invent distances, travel times, prices, numbers, views, landmarks or amenities.
@@ -1442,7 +1442,7 @@ function pickPhoto(area,avoid,n){
   const min=Math.min(...pool.map(p=>used[p.id]||0));const least=pool.filter(p=>(used[p.id]||0)===min);
   return least[Math.abs((n||0)*7+social.length)%least.length];
 }
-const S_LAYOUTS=[["night","Night"],["split","Split"],["paper","Paper"],["poster","Big poster"],["band","Gold band"],["collage","Collage"]];
+const S_LAYOUTS=[["overlay","On the photo"],["night","Night"],["split","Split"],["paper","Paper"],["poster","Big poster"],["band","Gold band"],["collage","Collage"]];
 const nextLayout=l=>{const i=S_LAYOUTS.findIndex(x=>x[0]===l);return S_LAYOUTS[(i+1)%S_LAYOUTS.length][0]};
 /* a redesign jumps to a look with a different structure, never the same one twice running */
 const otherLayout=l=>{const o=S_LAYOUTS.map(x=>x[0]).filter(x=>x!==l);return o[Math.floor(Math.random()*o.length)]};
@@ -1496,7 +1496,22 @@ async function sDrawFlyer(cv,p){
   /* every look is laid out from the bottom up, so nothing can overlap */
   const BTOP=1166,stack=(hd)=>{const lh=hd.fs*1.05,bulletTop=BTOP-28-bullets.length*50,lastHead=bulletTop-26,firstHead=lastHead-(hd.lines.length-1)*lh;return{lh,bulletTop,firstHead,kickY:firstHead-hd.fs-14}};
   const tw=(t,x,y,maxW,lh)=>{const ls=sWrap(c,t,maxW);ls.forEach((l,i)=>c.fillText(l,x,y+i*lh));return y+ls.length*lh};
-  if(layout==="split"){
+  if(layout==="overlay"){
+    /* the words sit straight on the photo; soft shading only where the text is, so the photo stays bright */
+    c.fillStyle=dark;c.fillRect(0,0,W,H);if(im)sCover(c,im,0,0,W,H);
+    let g=c.createLinearGradient(0,0,0,420);g.addColorStop(0,"rgba(12,13,18,.78)");g.addColorStop(1,"rgba(12,13,18,0)");c.fillStyle=g;c.fillRect(0,0,W,420);
+    g=c.createLinearGradient(0,0,W*.85,0);g.addColorStop(0,"rgba(12,13,18,.8)");g.addColorStop(.55,"rgba(12,13,18,.45)");g.addColorStop(1,"rgba(12,13,18,0)");c.fillStyle=g;c.fillRect(0,0,W,H);
+    g=c.createLinearGradient(0,H-330,0,H);g.addColorStop(0,"rgba(12,13,18,0)");g.addColorStop(1,"rgba(12,13,18,.88)");c.fillStyle=g;c.fillRect(0,H-330,W,330);
+    if(lg)c.drawImage(lg,56,46,330,330*lg.height/lg.width);
+    c.shadowColor="rgba(0,0,0,.55)";c.shadowBlur=18;c.shadowOffsetY=3;
+    c.fillStyle=gold;c.font='700 28px "Barlow Condensed"';c.letterSpacing="6px";c.fillText((p.kicker||"").toUpperCase(),60,360);c.letterSpacing="0px";
+    let fs=112;c.font=`700 ${fs}px "Playfair Display"`;let ls=sWrap(c,(p.headline||"").toUpperCase(),760);while(ls.length>3&&fs>72){fs-=8;c.font=`700 ${fs}px "Playfair Display"`;ls=sWrap(c,(p.headline||"").toUpperCase(),760)}
+    let y=360+fs+18;ls.slice(0,4).forEach((l,i)=>{c.fillStyle=i%2?gold:"#fbf7ef";c.fillText(l,60,y);y+=fs*1.02});
+    c.fillStyle=gold;c.fillRect(60,y-fs*.55+40,110,4);y+=50;c.font='600 34px "Barlow"';
+    for(const b of bullets){c.fillStyle="#fbf7ef";c.fillText(b,60,y);y+=50}
+    c.shadowColor="transparent";c.shadowBlur=0;c.shadowOffsetY=0;
+    ctaBtn(60,Math.max(y+16,1100)>1172?1172:Math.max(y+16,1100),gold,dark);footer("#f3f0ea","rgba(217,182,111,.6)");
+  }else if(layout==="split"){
     c.fillStyle=dark;c.fillRect(0,0,W,H);
     if(im)sCover(c,im,0,0,560,H);
     const X=620,MW=400;
