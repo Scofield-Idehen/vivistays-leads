@@ -1,0 +1,4 @@
+# Uploaded flyer photos: images only, never scripts.
+<FilesMatch "\.(php\d?|phtml|phar|pl|py|cgi|sh|html?|svg|js)$">
+  Require all denied
+</FilesMatch>

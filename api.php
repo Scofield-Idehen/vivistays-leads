@@ -58,6 +58,43 @@ try {
             $db->commit();
             out(['ok' => true]);
 
+        case 'photo_upload':
+            // A photo for the Posts flyers. The browser shrinks it first; we re-encode it
+            // as a fresh JPEG (drops anything hidden in the file) and keep it in img/u/.
+            $area = $in['area'] ?? '';
+            if (!in_array($area, ['seton', 'thurston', 'borders', 'edinburgh'], true)) fail('Pick which place the photo is from');
+            $label = mb_substr(trim((string)($in['label'] ?? '')), 0, 80);
+            $raw = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', (string)($in['data'] ?? '')), true);
+            if ($raw === false || strlen($raw) < 1000) fail('That file is not a photo');
+            if (strlen($raw) > 8 * 1024 * 1024) fail('Photo is too large (8 MB max)');
+            if (!function_exists('imagecreatefromstring')) fail('Photo uploads need the PHP GD extension on the server', 500);
+            $im = @imagecreatefromstring($raw);
+            if (!$im) fail('That file is not a photo');
+            $w = imagesx($im); $h = imagesy($im);
+            if ($w < 600 || $h < 400) { imagedestroy($im); fail('Photo is too small. Use one at least 600 px wide.'); }
+            $max = 2400;
+            if ($w > $max || $h > $max) {
+                $s = $max / max($w, $h); $nw = (int)round($w * $s); $nh = (int)round($h * $s);
+                $res = imagecreatetruecolor($nw, $nh);
+                imagecopyresampled($res, $im, 0, 0, 0, 0, $nw, $nh, $w, $h);
+                imagedestroy($im); $im = $res; $w = $nw; $h = $nh;
+            }
+            $dir = __DIR__ . '/img/u';
+            if (!is_dir($dir)) mkdir($dir, 0755, true);
+            $id = bin2hex(random_bytes(10));
+            if (!imagejpeg($im, "$dir/$id.jpg", 86)) { imagedestroy($im); fail('Could not save the photo', 500); }
+            imagedestroy($im);
+            $doc = ['area' => $area, 'label' => $label, 'src' => "img/u/$id.jpg", 'w' => $w, 'h' => $h, 'by' => $user, 'created' => gmdate('c')];
+            $db->prepare('INSERT INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?)')->execute(['photos', $id, json_encode($doc, JSON_UNESCAPED_UNICODE), gmdate('c')]);
+            out(['id' => $id, 'src' => $doc['src']]);
+
+        case 'photo_delete':
+            $id = id_ok($in['id'] ?? '');
+            if (!preg_match('/^[a-f0-9]{20}$/', $id)) fail('Bad id');
+            $db->prepare('DELETE FROM docs WHERE col = ? AND id = ?')->execute(['photos', $id]);
+            @unlink(__DIR__ . "/img/u/$id.jpg");
+            out(['ok' => true]);
+
         case 'delete':
             $col = col_ok($in['collection'] ?? ''); $id = id_ok($in['id'] ?? '');
             $db->prepare('DELETE FROM docs WHERE col = ? AND id = ?')->execute([$col, $id]);

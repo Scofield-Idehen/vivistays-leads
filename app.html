@@ -1430,11 +1430,24 @@ const SLOT_MS=4*3600e3;
 const slotNow=()=>Math.floor(Date.now()/SLOT_MS);
 const slotAud=n=>S_AUD[((n%3)+3)%3];
 const slotArea=n=>{const a=S_AUD_AREAS[slotAud(n)];return a[Math.floor(n/3)%a.length]};
-const slotPhoto=(n,area)=>{const ps=S_PHOTOS.filter(p=>p.area===area);return ps[Math.floor(n/12)%ps.length]||S_PHOTOS[0]};
+/* photos: built-in ones plus any uploaded in the Photo library */
+let photosUp=[];
+const allPhotos=()=>S_PHOTOS.map(p=>({...p,src:"img/"+p.id+".jpg",builtin:true})).concat(photosUp.map(d=>({id:"u-"+d.id,docId:d.id,area:d.area,label:d.label||"Uploaded photo",src:d.src})));
+const photoSrc=id=>{const p=allPhotos().find(x=>x.id===id);return p?p.src:"img/"+id+".jpg"};
+/* the photo of this place used least often in posts so far (never the one being replaced) */
+function pickPhoto(area,avoid,n){
+  const ps=allPhotos().filter(p=>p.area===area);if(!ps.length)return S_PHOTOS[0];
+  const used={};for(const s of social)used[s.photo]=(used[s.photo]||0)+1;
+  const pool=ps.length>1?ps.filter(p=>p.id!==avoid):ps;
+  const min=Math.min(...pool.map(p=>used[p.id]||0));const least=pool.filter(p=>(used[p.id]||0)===min);
+  return least[Math.abs((n||0)*7+social.length)%least.length];
+}
+const S_LAYOUTS=[["night","Night"],["paper","Paper"],["band","Gold band"]];
+const nextLayout=l=>{const i=S_LAYOUTS.findIndex(x=>x[0]===l);return S_LAYOUTS[(i+1)%S_LAYOUTS.length][0]};
 const S_STATUS=[["draft","Waiting for approval"],["approved","Approved"],["posted","Posted"],["rejected","Rejected"]];
 let social=[],sBusy=false,sNote="",sSlot=null;
 
-function sPrompt(n,extra){
+function sPrompt(n,extra,prev){
   const aud=slotAud(n),ak=slotArea(n),A=S_AREAS[ak];
   return `You write one Facebook post for ViViStays, a UK short-term rental company, plus the words for its flyer.
 Audience: ${aud==="guests"?"people planning a stay (guests)":aud==="owners"?"property, caravan and lodge owners who might let ViViStays manage (or sell to us)":"contractors and site teams who need accommodation for crews"}.
@@ -1443,49 +1456,72 @@ Facts about this place: ${A.facts.map(x=>"- "+x).join("\n")}
 Facts about ViViStays: ${S_COMMON.concat(S_AUD_FACTS[aud]).map(x=>"- "+x).join("\n")}
 ${S_RULES}
 Write it as a short story or scene in 1-3 lines to open (second person), then the offer, then one clear call to action with WhatsApp +44 7578 255663 and vivistays.com, then a genuine question to invite comments, then 4-5 hashtags. 90-150 words. Emojis sparingly as bullets.
-${extra?("Editor notes for this version: "+extra):""}
+${prev?`This is a REDESIGN. The last version's headline was "${prev.headline||""}" and its bullets were ${JSON.stringify(prev.bullets||[])}. Write a clearly different angle, opening scene, headline and bullets. Do not reuse that headline.`:""}
+${extra?("Editor notes for this version (follow them; they override the angle above, never the hard rules): "+extra):""}
 Return ONLY JSON: {"caption": "...full post text with line breaks...", "kicker": "2-4 word place label in capitals", "headline": "max 5 words for the flyer", "bullets": ["max 5 words","max 5 words","max 5 words"], "cta": "max 4 words"}`;
 }
 async function sGenerate(n,extra){
   if(!sample){toast("AI writing isn't set up on this server");return}
   if(!db){toast("Sign in to save");return}
-  sBusy=true;sNote="Writing the post…";render();
+  const prev=social.find(p=>p.slot===n)||null;
+  sBusy=true;sNote=prev?"Redesigning the post and flyer…":"Writing the post…";render();
   try{
-    const r=await sample.json(sPrompt(n,extra),{modelTier:"default"});
-    const ak=slotArea(n),ph=slotPhoto(n,ak);
+    const r=await sample.json(sPrompt(n,extra,prev),{modelTier:"default"});
+    const ak=slotArea(n),ph=pickPhoto(ak,prev&&prev.photo,n);
     const now=new Date().toISOString();
-    await db.collection("social").doc("slot-"+n).set({slot:n,audience:slotAud(n),area:ak,photo:ph.id,caption:String(r.caption||""),kicker:String(r.kicker||S_AREAS[ak].name).slice(0,40),headline:String(r.headline||"").slice(0,48),bullets:(Array.isArray(r.bullets)?r.bullets:[]).slice(0,3).map(x=>String(x).slice(0,40)),cta:String(r.cta||"Book direct").slice(0,32),status:"draft",created:now,updated:now,by:myId||null,source:"page"});
-    sNote="";
+    await db.collection("social").doc("slot-"+n).set({slot:n,audience:slotAud(n),area:ak,photo:ph.id,layout:prev?nextLayout(prev.layout||"night"):S_LAYOUTS[((n%3)+3)%3][0],caption:String(r.caption||""),kicker:String(r.kicker||S_AREAS[ak].name).slice(0,40),headline:String(r.headline||"").slice(0,48),bullets:(Array.isArray(r.bullets)?r.bullets:[]).slice(0,3).map(x=>String(x).slice(0,40)),cta:String(r.cta||"Book direct").slice(0,32),status:"draft",created:prev&&prev.created||now,updated:now,by:myId||null,source:"page",version:((prev&&prev.version)||1)+(prev?1:0),editorNotes:extra||null});
+    sNote="";toast(prev?"Redesigned: new words, new photo, new look":"Post written");
   }catch(e){console.error("Post writing failed",e);sNote=e&&e.code==="not_granted"?"AI access was declined.":"Couldn't write the post"+(e&&e.message?" ("+e.message+")":"")+". Try again."}
   sBusy=false;render();
 }
-async function sSet(p,patch){try{await db.collection("social").doc(p.id).update({...patch,updated:new Date().toISOString()})}catch(e){toast("Couldn't save. Try again.")}}
+async function sSet(p,patch){Object.assign(p,patch);try{await db.collection("social").doc(p.id).update({...patch,updated:new Date().toISOString()})}catch(e){toast("Couldn't save. Try again.")}render()}
 
 function sLoadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+function sCover(c,im,x,y,w,h){const sc=Math.max(w/im.width,h/im.height),iw=im.width*sc,ih=im.height*sc;c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.drawImage(im,x+(w-iw)/2,y+(h-ih)/2,iw,ih);c.restore()}
+function sWrap(c,text,maxW){const ls=[""];for(const w of String(text||"").split(/\s+/).filter(Boolean)){const t=(ls[ls.length-1]+" "+w).trim();if(c.measureText(t).width>maxW&&ls[ls.length-1])ls.push(w);else ls[ls.length-1]=t}return ls}
 async function sDrawFlyer(cv,p){
   const W=1080,H=1350,c=cv.getContext("2d");cv.width=W;cv.height=H;
-  try{await document.fonts.load('700 italic 80px "Playfair Display"');await document.fonts.load('800 40px "Barlow Condensed"');await document.fonts.load('500 30px "Barlow"')}catch(e){}
-  const gold="#d9b66f",dark="#14161d";c.textBaseline="alphabetic";
-  /* lay the words out from the bottom up so nothing can overlap */
-  const bullets=(p.bullets||[]).slice(0,3),BTOP=1166,BH=66;
-  let fs=92;c.font=`italic 700 ${fs}px "Playfair Display"`;
-  const wrap=()=>{const ls=[""];for(const w of (p.headline||"").split(/\s+/).filter(Boolean)){const t=(ls[ls.length-1]+" "+w).trim();if(c.measureText(t).width>960&&ls[ls.length-1])ls.push(w);else ls[ls.length-1]=t}return ls};
-  let lines=wrap();if(lines.length>2){fs=74;c.font=`italic 700 ${fs}px "Playfair Display"`;lines=wrap()}lines=lines.slice(0,3);
-  const lh=fs*1.05,bulletTop=BTOP-28-bullets.length*50,lastHead=bulletTop-26,firstHead=lastHead-(lines.length-1)*lh,kickY=firstHead-fs-14;
-  const ph=Math.max(kickY+40,640);
-  c.fillStyle=dark;c.fillRect(0,0,W,H);
-  c.save();c.beginPath();c.rect(0,0,W,ph);c.clip();try{const im=await sLoadImg("img/"+p.photo+".jpg");const sc=Math.max(W/im.width,ph/im.height),w=im.width*sc,hh=im.height*sc;c.drawImage(im,(W-w)/2,(ph-hh)/2,w,hh)}catch(e){}c.restore();
-  let g=c.createLinearGradient(0,0,0,ph);g.addColorStop(0,"rgba(20,22,29,.7)");g.addColorStop(.22,"rgba(20,22,29,0)");g.addColorStop(Math.max(.3,(kickY-260)/ph),"rgba(20,22,29,.1)");g.addColorStop(Math.min(.97,(kickY-40)/ph),"rgba(20,22,29,.92)");g.addColorStop(1,dark);c.fillStyle=g;c.fillRect(0,0,W,ph);
-  try{const lg=await sLoadImg("img/logo.png");c.drawImage(lg,56,46,330,330*lg.height/lg.width)}catch(e){}
-  c.fillStyle=gold;c.font='700 26px "Barlow Condensed"';c.letterSpacing="5px";c.fillText((p.kicker||"").toUpperCase(),60,kickY);c.letterSpacing="0px";
-  c.font=`italic 700 ${fs}px "Playfair Display"`;
-  lines.forEach((l,i)=>{c.fillStyle=i===lines.length-1&&lines.length>1?gold:"#f3f0ea";c.fillText(l,60,firstHead+i*lh)});
-  c.font='500 34px "Barlow"';let y=bulletTop+34;
-  for(const b of bullets){c.fillStyle=gold;c.beginPath();c.arc(72,y-11,7,0,7);c.fill();c.fillStyle="#e4e0d8";c.fillText(b,96,y);y+=50}
-  const cta=(p.cta||"Book direct").toUpperCase();c.font='800 34px "Barlow Condensed"';const cw=c.measureText(cta).width+60;
-  c.fillStyle=gold;c.beginPath();c.roundRect(60,BTOP,cw,BH,8);c.fill();c.fillStyle=dark;c.fillText(cta,90,BTOP+45);
-  c.fillStyle="rgba(217,182,111,.5)";c.fillRect(60,1262,W-120,2);
-  c.font='700 32px "Barlow"';c.fillStyle="#f3f0ea";c.textAlign="center";c.fillText("vivistays.com   ·   WhatsApp +44 7578 255663",W/2,1312);c.textAlign="left";
+  try{await Promise.all([document.fonts.load('700 italic 80px "Playfair Display"'),document.fonts.load('800 40px "Barlow Condensed"'),document.fonts.load('500 30px "Barlow"')])}catch(e){}
+  const gold="#d9b66f",dark="#14161d",ivory="#f5efe4",ink="#1b1915",deep="#7a5718";c.textBaseline="alphabetic";c.textAlign="left";
+  let im=null,lg=null;try{im=await sLoadImg(photoSrc(p.photo))}catch(e){}try{lg=await sLoadImg("img/logo.png")}catch(e){}
+  const bullets=(p.bullets||[]).slice(0,3),layout=p.layout||"night";
+  const head=(maxW,big,small)=>{let fs=big;c.font=`italic 700 ${fs}px "Playfair Display"`;let ls=sWrap(c,p.headline,maxW);if(ls.length>2){fs=small;c.font=`italic 700 ${fs}px "Playfair Display"`;ls=sWrap(c,p.headline,maxW)}return{fs,lines:ls.slice(0,3)}};
+  const footer=(col,line)=>{c.fillStyle=line;c.fillRect(60,1262,W-120,2);c.font='700 32px "Barlow"';c.fillStyle=col;c.textAlign="center";c.fillText("vivistays.com   ·   WhatsApp +44 7578 255663",W/2,1312);c.textAlign="left"};
+  const ctaBtn=(x,y,bg,fg)=>{const t=(p.cta||"Book direct").toUpperCase();c.font='800 34px "Barlow Condensed"';const w=c.measureText(t).width+60;c.fillStyle=bg;c.beginPath();c.roundRect(x,y,w,66,8);c.fill();c.fillStyle=fg;c.fillText(t,x+30,y+45)};
+  const kick=(x,y,col)=>{c.fillStyle=col;c.font='700 26px "Barlow Condensed"';c.letterSpacing="5px";c.fillText((p.kicker||"").toUpperCase(),x,y);c.letterSpacing="0px"};
+  const bl=(x,y,dot,col)=>{c.font='500 34px "Barlow"';for(const b of bullets){c.fillStyle=dot;c.beginPath();c.arc(x+12,y-11,7,0,7);c.fill();c.fillStyle=col;c.fillText(b,x+36,y);y+=50}return y};
+
+  /* every look is laid out from the bottom up, so nothing can overlap */
+  const BTOP=1166,stack=(hd)=>{const lh=hd.fs*1.05,bulletTop=BTOP-28-bullets.length*50,lastHead=bulletTop-26,firstHead=lastHead-(hd.lines.length-1)*lh;return{lh,bulletTop,firstHead,kickY:firstHead-hd.fs-14}};
+  if(layout==="paper"){
+    c.fillStyle=ivory;c.fillRect(0,0,W,H);
+    const hd=head(960,90,72),L=stack(hd),phH=Math.max(420,L.kickY-60-56);
+    if(im)sCover(c,im,60,60,W-120,phH);else{c.fillStyle="#e6dccb";c.fillRect(60,60,W-120,phH)}
+    if(lg){c.fillStyle="rgba(20,22,29,.86)";c.beginPath();c.roundRect(84,84,320,320*lg.height/lg.width+36,10);c.fill();c.drawImage(lg,100,102,288,288*lg.height/lg.width)}
+    kick(60,L.kickY,deep);c.font=`italic 700 ${hd.fs}px "Playfair Display"`;
+    hd.lines.forEach((l,i)=>{c.fillStyle=i===hd.lines.length-1&&hd.lines.length>1?deep:ink;c.fillText(l,60,L.firstHead+i*L.lh)});
+    bl(60,L.bulletTop+34,deep,"#3a362f");ctaBtn(60,BTOP,ink,gold);footer(ink,"rgba(122,87,24,.45)");
+  }else if(layout==="band"){
+    c.fillStyle=dark;c.fillRect(0,0,W,H);
+    const hd=head(960,84,68),L=stack(hd),by=Math.max(520,L.kickY-74);
+    if(im)sCover(c,im,0,0,W,by);
+    let g=c.createLinearGradient(0,0,0,360);g.addColorStop(0,"rgba(20,22,29,.75)");g.addColorStop(1,"rgba(20,22,29,0)");c.fillStyle=g;c.fillRect(0,0,W,360);
+    if(lg)c.drawImage(lg,56,46,330,330*lg.height/lg.width);
+    c.fillStyle=gold;c.fillRect(0,by,W,H-by);
+    kick(60,L.kickY,dark);c.font=`italic 700 ${hd.fs}px "Playfair Display"`;
+    hd.lines.forEach(l=>{c.fillStyle=dark;c.fillText(l,60,L.firstHead+hd.lines.indexOf(l)*L.lh)});
+    bl(60,L.bulletTop+34,dark,dark);ctaBtn(60,BTOP,dark,gold);footer(dark,"rgba(20,22,29,.35)");
+  }else{
+    const hd=head(960,92,74);
+    const {lh,bulletTop,firstHead,kickY}=stack(hd);
+    const ph=Math.max(kickY+40,640);
+    c.fillStyle=dark;c.fillRect(0,0,W,H);if(im)sCover(c,im,0,0,W,ph);
+    let g=c.createLinearGradient(0,0,0,ph);g.addColorStop(0,"rgba(20,22,29,.7)");g.addColorStop(.22,"rgba(20,22,29,0)");g.addColorStop(Math.max(.3,(kickY-260)/ph),"rgba(20,22,29,.1)");g.addColorStop(Math.min(.97,(kickY-40)/ph),"rgba(20,22,29,.92)");g.addColorStop(1,dark);c.fillStyle=g;c.fillRect(0,0,W,ph);
+    if(lg)c.drawImage(lg,56,46,330,330*lg.height/lg.width);
+    kick(60,kickY,gold);c.font=`italic 700 ${hd.fs}px "Playfair Display"`;
+    hd.lines.forEach((l,i)=>{c.fillStyle=i===hd.lines.length-1&&hd.lines.length>1?gold:"#f3f0ea";c.fillText(l,60,firstHead+i*lh)});
+    bl(60,bulletTop+34,gold,"#e4e0d8");ctaBtn(60,BTOP,gold,dark);footer("#f3f0ea","rgba(217,182,111,.5)");
+  }
 }
 async function sDownload(cv,p){
   const dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null;
@@ -1497,13 +1533,19 @@ function sCard(p,isNow){
   const st=Object.fromEntries(S_STATUS)[p.status]||"Waiting for approval";
   const start=new Date(p.slot*SLOT_MS),end=new Date((p.slot+1)*SLOT_MS);
   const t=d=>d.toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"});
-  const note={v:""};
+  const note={v:""};const look=(S_LAYOUTS.find(x=>x[0]===(p.layout||"night"))||S_LAYOUTS[0])[1];
+  const nPh=allPhotos().filter(x=>x.area===p.area).length;
   return h("div",{class:"card"},
     h("div",{style:"display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"},
       h("div",{class:"btns"},h("span",{class:"pill accent",text:p.audience==="guests"?"Guests":p.audience==="owners"?"Owners":"Contractors"}),h("span",{class:"pill",text:(S_AREAS[p.area]||{}).name||p.area}),h("span",{class:"pill "+(p.status==="approved"||p.status==="posted"?"good":p.status==="rejected"?"hot":"warm"),text:st})),
       h("span",{class:"muted small",text:(isNow?"Now · ":"")+t(start)+" – "+t(end)})),
     h("div",{class:"sgrid"},
-      h("div",{},cv,h("div",{class:"btns",style:"margin-top:8px"},h("button",{class:"btn",onclick:()=>sDownload(cv,p)},"Save flyer"))),
+      h("div",{},cv,
+        h("div",{class:"btns",style:"margin-top:8px"},
+          h("button",{class:"btn",onclick:()=>sDownload(cv,p)},"Save flyer"),
+          h("button",{class:"btn",disabled:nPh<2||null,title:nPh<2?"Only one photo of this place. Add more in the Photo library.":null,onclick:()=>sSet(p,{photo:pickPhoto(p.area,p.photo,p.slot).id})},"New photo"),
+          h("button",{class:"btn",onclick:()=>sSet(p,{layout:nextLayout(p.layout||"night")})},"Change look")),
+        h("p",{class:"muted small",style:"margin:6px 0 0",text:"Look: "+look+" · "+nPh+" photo"+(nPh===1?"":"s")+" of this place"})),
       h("div",{},h("pre",{class:"msg",text:p.caption||""}),
         h("div",{class:"btns",style:"margin-top:8px"},
           h("button",{class:"btn primary",onclick:()=>copy(p.caption||"")},"Copy post"),
@@ -1511,9 +1553,41 @@ function sCard(p,isNow){
           p.status!=="approved"&&p.status!=="posted"?h("button",{class:"btn",onclick:()=>sSet(p,{status:"approved",approvedBy:myId||null})},"Boss approved"):null,
           p.status==="approved"?h("button",{class:"btn",onclick:()=>sSet(p,{status:"posted",postedAt:new Date().toISOString()})},"I've posted it"):null,
           p.status==="draft"?h("button",{class:"btn",onclick:()=>sSet(p,{status:"rejected"})},"Rejected"):null),
-        h("div",{class:"field",style:"margin-top:10px"},h("label",{text:"Rewrite with changes (e.g. the boss's feedback)"}),h("textarea",{rows:"2",placeholder:"e.g. it's a caravan, not an apartment",oninput:e=>note.v=e.target.value})),
-        h("div",{class:"btns"},h("button",{class:"btn",disabled:sBusy||null,onclick:()=>sGenerate(p.slot,note.v)},"Rewrite"))))
+        h("div",{class:"field",style:"margin-top:10px"},h("label",{text:"Redesign with your notes (new words, new photo and a new look)"}),h("textarea",{rows:"3",placeholder:"e.g. focus on families, mention free parking, more playful",oninput:e=>note.v=e.target.value})),
+        h("div",{class:"btns"},h("button",{class:"btn",disabled:sBusy||null,onclick:()=>sGenerate(p.slot,note.v)},sBusy?"Redesigning…":"Redesign")),
+        sBusy&&sNote?h("p",{class:"muted small",text:sNote}):null))
   );
+}
+/* Photo library: upload photos of each place so flyers don't keep repeating */
+let upArea="seton",upLabel="",upBusy="";
+async function shrinkToJpeg(file){
+  const bmp=await createImageBitmap(file);const max=2000,s=Math.min(1,max/Math.max(bmp.width,bmp.height));
+  const cv=document.createElement("canvas");cv.width=Math.round(bmp.width*s);cv.height=Math.round(bmp.height*s);cv.getContext("2d").drawImage(bmp,0,0,cv.width,cv.height);
+  const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",.88));
+  return await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result));fr.onerror=rej;fr.readAsDataURL(blob)});
+}
+async function uploadPhotos(files){
+  if(!window.VL_photoUpload){toast("Uploading works on the Vivistays server only");return}
+  const list=[...files].filter(f=>/^image\//.test(f.type));if(!list.length)return;
+  let ok=0,fail=[];
+  for(let i=0;i<list.length;i++){upBusy="Uploading "+(i+1)+" of "+list.length+"…";render();
+    try{await window.VL_photoUpload({area:upArea,label:upLabel||list[i].name.replace(/\.[^.]+$/,""),data:await shrinkToJpeg(list[i])});ok++}catch(e){fail.push(list[i].name+": "+(e&&e.message||"failed"))}}
+  upBusy="";render();toast(ok+" photo"+(ok===1?"":"s")+" added"+(fail.length?", "+fail.length+" failed":""));if(fail.length)console.warn(fail);
+}
+function photoLibrary(){
+  const areas=Object.keys(S_AREAS);const all=allPhotos();
+  return h("details",{class:"card"},h("summary",{},"Photo library · "+all.length+" photos"),
+    h("p",{class:"muted small",text:"Flyers use the photo of each place that has been used least. Add more photos here so posts don't repeat. Only add photos of that exact place: a caravan photo must be a caravan."}),
+    h("div",{class:"btns",style:"align-items:flex-end;flex-wrap:wrap"},
+      h("div",{class:"field",style:"min-width:200px"},h("label",{for:"up-area",text:"Which place?"}),(()=>{const s=h("select",{id:"up-area",onchange:e=>upArea=e.target.value},...areas.map(k=>h("option",{value:k,text:S_AREAS[k].name+" ("+S_AREAS[k].kind+")"})));s.value=upArea;return s})()),
+      h("div",{class:"field",style:"flex:1;min-width:200px"},h("label",{for:"up-label",text:"What's in it? (optional)"}),h("input",{id:"up-label",placeholder:"e.g. Caravan lounge, Seton Sands",value:upLabel,oninput:e=>upLabel=e.target.value})),
+      (()=>{const inp=h("input",{type:"file",accept:"image/*",multiple:true,style:"display:none",onchange:e=>{uploadPhotos(e.target.files);e.target.value=""}});return h("label",{class:"btn primary",style:"cursor:pointer"},inp,upBusy||"Add photos")})()),
+    ...areas.map(k=>{const ps=all.filter(p=>p.area===k);return h("div",{style:"display:flex;flex-direction:column;gap:8px;margin-top:6px"},
+      h("h3",{text:S_AREAS[k].name+" · "+ps.length}),
+      h("div",{style:"display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px"},...ps.map(p=>h("figure",{style:"margin:0;display:flex;flex-direction:column;gap:4px"},
+        h("img",{src:p.src,alt:p.label,loading:"lazy",style:"width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px"}),
+        h("figcaption",{class:"muted small",style:"overflow:hidden;text-overflow:ellipsis;white-space:nowrap",text:p.label}),
+        p.builtin?null:h("button",{class:"btn link small",style:"padding:0;align-self:flex-start",onclick:async()=>{try{await window.VL_photoDelete(p.docId);toast("Photo removed")}catch(e){toast("Couldn't remove it")}}},"Remove")))))}));
 }
 function socialView(){
   const n=slotNow(),cur=social.find(p=>p.slot===n);
@@ -1524,6 +1598,7 @@ function socialView(){
     cur?sCard(cur,true):h("div",{class:"card"},h("h3",{text:"This slot's post: "+(slotAud(n)==="guests"?"Guests":slotAud(n)==="owners"?"Owners":"Contractors")+" · "+S_AREAS[slotArea(n)].name}),
       h("p",{class:"muted small",text:sBusy?sNote:(sNote||"Not written yet. It's usually created automatically; you can write it now.")}),
       h("button",{class:"btn primary",disabled:sBusy||null,onclick:()=>sGenerate(n)},sBusy?"Writing…":"Write this post")),
+    photoLibrary(),
     h("div",{class:"card"},h("h3",{text:"Coming up"}),...next.map(k=>h("p",{class:"small",text:new Date(k*SLOT_MS).toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"})+" · "+(slotAud(k)==="guests"?"Guests":slotAud(k)==="owners"?"Owners":"Contractors")+" · "+S_AREAS[slotArea(k)].name}))),
     hist.length?h("h2",{text:"Earlier posts"}):null,...hist.map(p=>sCard(p,false))];
 }
@@ -1542,6 +1617,7 @@ render();
   db.collection("leads").onSnapshot(snap=>{allLeads=snap.docs.map(x=>({id:x.id,...x.data()}));leads=allLeads.filter(l=>!l.archived);ready=true;if(selected&&view==="leads"&&!allLeads.some(l=>l.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{offline="Lost connection to the lead list. Reload the page.";render()});
   db.collection("posts").onSnapshot(snap=>{posts=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="help"&&!busy())render()},()=>{});
   db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});
+  db.collection("photos").onSnapshot(snap=>{photosUp=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   stayfulCheck(false);setInterval(()=>{if(document.visibilityState==="visible")stayfulCheck(false)},15*60e3);
   db.collection("contacts").onSnapshot(snap=>{allContacts=snap.docs.map(x=>({id:x.id,...x.data()}));contacts=allContacts.filter(c=>!c.archived);if(view==="outreach"&&selected&&!allContacts.some(c=>c.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{});
