@@ -678,7 +678,7 @@ Thank you for taking the time to speak with me. It was great chatting with you!
 
 As promised, here's how we'd help you get a higher return from your ${ownerProp(l)} through ViVi Stays.
 
-We're a professional, fully managed serviced accommodation company, managing close to 100 properties across Scotland and England. We're property investors ourselves, so we know what matters to owners: maximising income, protecting your investment and keeping it completely hands-off.
+We're a professional, fully managed serviced accommodation company, managing over 100 properties across Scotland and England. We're property investors ourselves, so we know what matters to owners: maximising income, protecting your investment and keeping it completely hands-off.
 
 There are two ways we can work together:
 
@@ -697,7 +697,7 @@ What we take care of:
 
 The best part: it's completely FREE to get started. No onboarding fee, no charge for photography or setup, and no fixed monthly fee. We only earn our commission when we bring you bookings, so if your property doesn't make money, neither do we.
 
-We're currently offering the Fully Managed Service at just 15% all-inclusive instead of our usual 18%, for a limited time.
+Our fee is a simple, all-inclusive commission on the bookings we bring, and I'll confirm your exact rate alongside your free projection.
 
 The next step is simple: we'll put together a FREE, no-obligation income projection for your ${t||"property"} and, if you're happy, get you onboarded and taking bookings as quickly as possible.
 
@@ -713,8 +713,8 @@ const CALL_GUIDE=[
  ["1 · Open (30 seconds)",["“Hi [Name], it's [Your name] from ViVi Stays. You asked about getting a better return from your [property]. Is now still good for 10 minutes?”","Say why you're calling in one line, then ask a question. Don't pitch yet."]],
  ["2 · Find out (let them talk)",["How is it used right now: long-term tenant, empty, or already on Airbnb? When is it free?","What does it bring in now, and what would make switching worth it?","How hands-off do you want to be?","Is it furnished? Parking? Anything we should know about the building or neighbours?","Does your mortgage, lease or freeholder allow short lets? (They may need consent. Note it, don't advise.)","When would you ideally like to start?"]],
  ["3 · Two options (recommend one)",["Fixed Income: we become the tenant and guarantee a fixed monthly rent for up to 5 years, whatever the occupancy. Peace of mind, but a lower figure.","Fully Managed (recommend this): we run it as a short let to maximise income. Photography and listings on Airbnb, Booking.com, Vrbo and direct; dynamic pricing; contractor and corporate guests; all guest messages; cleaning and changeovers; maintenance; monthly statements and payouts."]],
- ["4 · The offer",["Completely FREE to start: no onboarding fee, no photography or setup charge, no fixed monthly fee.","We only earn commission when we bring bookings. If it doesn't make money, neither do we.","Currently 15% all-inclusive instead of the usual 18%, for a limited time. (Check the rate with Alex before promising it.)","Cleaning is paid by guests, not the owner."]],
- ["5 · If they say…",["“What will it cost me?” → Nothing upfront. Commission only on bookings we bring, 15% all-in right now.","“I want guaranteed money.” → That's our Fixed Income option: fixed monthly rent for up to 5 years.","“I'm worried about guests or damage.” → We handle every guest, check-in, cleaning, inspections and maintenance, and build up the reviews.","“I already have a tenant or an agent.” → Let us do a free income projection so you can compare side by side.","“I need to think about it.” → Of course. Let me send the free projection, then book a time to go through it.","“Who are you?” → Close to 100 properties across Scotland and England; we're property investors ourselves; vivistays.com/pricing."]],
+ ["4 · The offer",["Completely FREE to start: no onboarding fee, no photography or setup charge, no fixed monthly fee.","We only earn commission when we bring bookings. If it doesn't make money, neither do we.","If they ask the rate: “It's a simple all-inclusive commission on the bookings we bring. I'll confirm your exact rate with your free projection.” Don't name a number.","Cleaning is paid by guests, not the owner."]],
+ ["5 · If they say…",["“What will it cost me?” → Nothing upfront. A simple all-inclusive commission only on bookings we bring; your exact rate comes with your free projection.","“I want guaranteed money.” → That's our Fixed Income option: fixed monthly rent for up to 5 years.","“I'm worried about guests or damage.” → We handle every guest, check-in, cleaning, inspections and maintenance, and build up the reviews.","“I already have a tenant or an agent.” → Let us do a free income projection so you can compare side by side.","“I need to think about it.” → Of course. Let me send the free projection, then book a time to go through it.","“Who are you?” → Over 100 properties across Scotland and England; we're property investors ourselves; vivistays.com/pricing."]],
  ["6 · Close",["“Shall I put together your free income projection and send it with the next steps? When's a good time to go through it?”","Agree a date before you hang up, set it as the next follow-up below, and send the proposal within the hour."]],
  ["Don't",["Don't quote Stayful's income figure as ours. It's their estimate.","Don't promise a rate, date or number you haven't checked.","Don't talk over them. Ask, then listen."]]
 ];
@@ -727,7 +727,7 @@ function callGuideCard(l){
     h("details",{class:"card",open:open||null},h("summary",{},"Call guide · what to say and how"),
       ...CALL_GUIDE.map(([t,pts])=>h("div",{style:"display:flex;flex-direction:column;gap:6px;margin-top:8px"},h("h3",{text:t}),h("ul",{style:"margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px"},...pts.map(x=>h("li",{class:"text",text:fillT(x)})))))),
     h("details",{class:"card"},h("summary",{},"Proposal to send after the call"),
-      h("p",{class:"muted small",text:"Same structure as Alex's message to owners. Change [Your name], and remove the 15% line if Alex hasn't agreed it for this owner."}),
+      h("p",{class:"muted small",text:"Same structure as Alex's message to owners. Change [Your name] before sending. It doesn't name a rate: that comes with the projection."}),
       h("div",{class:"msg",text:msg}),
       h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>copy(msg)},"Copy proposal"),
         wa?h("a",{class:"btn",href:wa+"?text="+encodeURIComponent(msg),target:"_blank",rel:"noopener"},"WhatsApp it"):null,
@@ -798,7 +798,7 @@ async function setProject(p,patch){
 
 /* ---------- AI ---------- */
 const OUR_AREAS=Object.values(AREAS).map(a=>a.name+": "+a.props.map(p=>p[1]+" ("+p[2]+")").join("; ")).join("\n");
-const CONTEXT=`You write for Vivistays, a UK short-term rental company that manages 400+ furnished homes and runs Airbnb/Booking.com listings, pricing, guest messages, cleaning and maintenance for owners. Staff find two kinds of people in Facebook groups:
+const CONTEXT=`You write for Vivistays, a UK short-term rental company that manages over 100 furnished homes and runs Airbnb/Booking.com listings, pricing, guest messages, cleaning and maintenance for owners. Staff find two kinds of people in Facebook groups:
 1. OWNERS who might want a manager or co-host for their property.
 2. GUESTS looking for somewhere to stay (holiday, contractors and work crews, family visits, relocation). Booking direct with Vivistays (website, email or WhatsApp) avoids platform fees.
 Contact: team@vivistays.com, WhatsApp +44 7578 255663, vivistays.com.
@@ -1320,7 +1320,7 @@ function evGuide(){return[h("div",{class:"card guide"},h("h3",{text:"Why Eventbr
   h("h3",{text:"Areas"}),h("div",{class:"btns"},...Object.values(AREAS).map(a=>h("a",{class:"btn",href:"https://www.eventbrite.co.uk/d/united-kingdom--"+a.ev+"/all-events/",target:"_blank",rel:"noopener"},a.name))))]}
 const TPL={
   comment:{title:"Public comment",when:"Any owner post. Be useful in public first, then message.",text:"Good question. What usually makes the biggest difference is [one specific tip related to their post]. We manage short lets around [area], so happy to share more if it helps. I'll drop you a message."},
-  cohost:{title:"Wants a co-host or manager",when:"They've asked directly for help.",text:"Hi [Name], saw your post in [group] about finding a co-host for your [property] in [area].\n\nWe're Vivistays. We manage 400+ short-let properties across the UK: listings, pricing, guest messages, cleaning and maintenance, so owners don't have to handle the day-to-day.\n\nHappy to have a quick, no-pressure chat about what you need. Would a 10-minute call this week work?\n\n[Your name], Vivistays"},
+  cohost:{title:"Wants a co-host or manager",when:"They've asked directly for help.",text:"Hi [Name], saw your post in [group] about finding a co-host for your [property] in [area].\n\nWe're Vivistays. We manage over 100 short-let properties across Scotland and England: listings, pricing, guest messages, cleaning and maintenance, so owners don't have to handle the day-to-day.\n\nHappy to have a quick, no-pressure chat about what you need. Would a 10-minute call this week work?\n\n[Your name], Vivistays"},
   recommend:{title:"Asking for recommendations",when:"They asked the group who people use.",text:"Hi [Name], saw you were after recommendations for someone to manage your place in [area].\n\nWe're Vivistays. We look after short lets day to day: guest communication, cleaning, pricing and maintenance. I'm happy to explain how we work and what it would cost for your property, so you can compare properly.\n\nWant me to send a few details over?\n\n[Your name], Vivistays"},
   frustrated:{title:"Unhappy with current setup",when:"Complaining about cleaners, reviews, guests or a manager.",text:"Hi [Name], sorry to read about [their problem]. That's frustrating, especially when it starts showing up in reviews.\n\nWe're Vivistays and we manage short lets across the UK. [Specific fix, e.g. vetted cleaners with photo checks after every stay]. If it helps, I'm happy to look at your listing and tell you honestly what I'd change, no obligation.\n\n[Your name], Vivistays"},
   newhost:{title:"New to short lets",when:"Thinking of starting on Airbnb or switching from a long-term let.",text:"Hi [Name], saw you're thinking about short-letting your [property] in [area].\n\nWe're Vivistays. We set up and run short lets for owners: the listing, pricing, guests, cleaning and maintenance. Happy to walk you through what's involved and roughly what it could earn, so you can decide whether it's worth it.\n\nWould a quick call be useful?\n\n[Your name], Vivistays"},
@@ -1489,7 +1489,7 @@ const S_AUD_AREAS={guests:["seton","edinburgh","borders","thurston"],owners:["se
 const S_COMMON=["whole homes with a kitchen and living space, not hotel rooms","fast Wi-Fi","self check-in","book direct for our best rate, with no booking-site fees","WhatsApp +44 7578 255663, team@vivistays.com, vivistays.com"];
 const S_AUD_FACTS={
  guests:["holiday breaks, weekends away, family trips"],
- owners:["we manage short-term lets: listing, pricing, bookings, guest messages, cleaning and changeovers, maintenance","caravan management offer: FREE onboarding, FREE photography, FREE to sign up, and only 13.5% management ALL IN","first month completely FREE if you sign up before the end of 2026","free to try: we only take a commission when we bring a booking","we also buy caravans and lodges","we manage 400+ homes across the UK"],
+ owners:["we manage short-term lets: listing, pricing, bookings, guest messages, cleaning and changeovers, maintenance","caravan management offer: FREE onboarding, FREE photography, FREE to sign up, and only 13.5% management ALL IN","first month completely FREE if you sign up before the end of 2026","free to try: we only take a commission when we bring a booking","we also buy caravans and lodges","we manage over 100 properties across Scotland and England"],
  contractors:["weekly and monthly rates","invoiced to your company","free parking","we'll beat any like-for-like quote","whole crews can stay together"]};
 const S_RULES=`HARD RULES (a manager rejected an earlier post for breaking these):
 - Use ONLY the facts listed. Do not invent distances, travel times, prices, numbers, views, landmarks or amenities.
