@@ -58,6 +58,28 @@ try {
             $db->commit();
             out(['ok' => true]);
 
+        case 'nl_stats': require_once __DIR__ . '/newsletter.php'; out(nl_stats());
+        case 'nl_import':
+            require_once __DIR__ . '/newsletter.php';
+            $em = $in['emails'] ?? null; if (!is_array($em) || count($em) > 5000) fail('Send up to 5,000 emails at a time');
+            out(nl_import($em));
+        case 'nl_list':
+            require_once __DIR__ . '/newsletter.php';
+            out(nl_list(trim((string)($in['q'] ?? '')), (string)($in['status'] ?? ''), (string)($in['segment'] ?? ''), (string)($in['campaign'] ?? ''), (int)($in['offset'] ?? 0)));
+        case 'nl_set':
+            require_once __DIR__ . '/newsletter.php';
+            out(['ok' => nl_set((string)($in['email'] ?? ''), (string)($in['status'] ?? ''), isset($in['note']) ? mb_substr((string)$in['note'], 0, 300) : null)]);
+        case 'nl_preview':
+            require_once __DIR__ . '/newsletter.php';
+            out(['html' => nl_html((string)($in['subject'] ?? ''), (string)($in['body'] ?? ''), 'jane.smith@example.com')]);
+        case 'nl_test':
+            require_once __DIR__ . '/newsletter.php';
+            try { nl_test((string)($in['campaign'] ?? ''), (int)($in['step'] ?? 0), (string)($in['to'] ?? '')); out(['ok' => true]); }
+            catch (Throwable $e) { fail($e->getMessage()); }
+        case 'nl_run':
+            require_once __DIR__ . '/newsletter.php';
+            out(nl_run(min(100, max(1, (int)($in['max'] ?? 50))), ($in['campaign'] ?? '') ?: null));
+
         case 'photo_upload':
             // A photo for the Posts flyers. The browser shrinks it first; we re-encode it
             // as a fresh JPEG (drops anything hidden in the file) and keep it in img/u/.

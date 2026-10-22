@@ -21,6 +21,14 @@ $ANTHROPIC_API_KEY = '';
 //     New Stayful leads then appear in Facebook leads > Owners, tagged Stayful.
 $STAYFUL_API_KEY = '';
 
+// 2c. Newsletter (optional). Brevo > SMTP & API > API keys. The sender must be verified in Brevo.
+$BREVO_API_KEY  = '';
+$NL_FROM_EMAIL  = 'team@vivistays.com';   // must be a verified sender/domain in Brevo
+$NL_FROM_NAME   = 'ViVi Stays';
+$NL_REPLY_TO    = 'team@vivistays.com';   // replies land here
+$NL_DAILY_LIMIT = 150;                     // start low, raise slowly (e.g. +100 a week)
+$NL_ADDRESS     = '';                      // company postal address for the email footer
+
 // 3. AI models (you can leave these alone).
 $MODEL_QUICK   = 'claude-haiku-5-5';   // reading pasted LinkedIn and event pages
 $MODEL_DEFAULT = 'claude-sonnet-5-5';  // reading Facebook posts, writing messages

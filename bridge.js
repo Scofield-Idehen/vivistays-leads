@@ -115,6 +115,9 @@
   window.VL_photoUpload = async body => { const r = await api("photo_upload", body); refresh("photos", true).catch(() => {}); return r; };
   window.VL_photoDelete = async id => { const r = await api("photo_delete", { id }); refresh("photos", true).catch(() => {}); return r; };
 
+  // Newsletter calls (stats, import, list, send).
+  window.VL_nl = (action, body) => api(action, body || {});
+
   window.VL_sync = async force => {
     const r = await api("stayful", { force: !!force });
     if (r.added || r.updated) refresh("leads", true).catch(() => {});

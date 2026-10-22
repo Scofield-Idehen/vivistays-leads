@@ -5,7 +5,14 @@
 define('VL_APP', true);
 require __DIR__ . '/lib.php';
 require __DIR__ . '/stayful.php';
+require __DIR__ . '/newsletter.php';
 header('Content-Type: application/json');
 header('Cache-Control: no-store');
 $r = vl_stayful_sync(false);
-echo json_encode(['ok' => empty($r['error']), 'added' => (int)($r['added'] ?? 0)]);
+// Newsletter: send a slice of what's due, on UK weekdays 8am-6pm only, within the daily limit.
+$uk = new DateTime('now', new DateTimeZone('Europe/London'));
+$nl = null;
+if ((int)$uk->format('N') <= 5 && (int)$uk->format('G') >= 8 && (int)$uk->format('G') < 18) {
+    try { $nl = nl_run(40); } catch (Throwable $e) { $nl = ['error' => 'newsletter']; }
+}
+echo json_encode(['ok' => empty($r['error']), 'added' => (int)($r['added'] ?? 0), 'newsletterSent' => (int)($nl['sent'] ?? 0)]);

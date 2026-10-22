@@ -418,7 +418,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","leads","stayful","outreach","projects","social","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","leads","stayful","outreach","projects","social","newsletter","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -436,11 +436,12 @@ const ICON={
   projects:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/><path d="M9 10.5h.01M15 10.5h.01"/></svg>',
   help:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8 7.5h8M8 11h6"/></svg>',
   stayful:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><circle cx="12" cy="14" r="2.2"/><path d="M8.5 20c.6-1.9 1.9-3 3.5-3s2.9 1.1 3.5 3"/></svg>',
+  newsletter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>',
   social:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>',
   add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>'
 };
-const NAV=[["today","Dashboard"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["help","Guides"]];
-const SHORT={today:"Home",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",help:"Guides"};
+const NAV=[["today","Dashboard"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["help","Guides"]];
+const SHORT={today:"Home",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
@@ -477,7 +478,7 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
   const hc=helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
@@ -1728,6 +1729,222 @@ function socialView(){
     hist.length?h("h2",{text:"Earlier posts"}):null,...hist.map(p=>sCard(p,false))];
 }
 
+/* ---------- NEWSLETTER: email offers to contractor / insurance lists, weekly follow-ups ---------- */
+const NL_SIG="The ViVi Stays team\nWhatsApp +44 7578 255663 · team@vivistays.com · vivistays.com";
+const NL_TEMPLATES={
+ insurance:{name:"Insurance & claims – alternative accommodation",segments:["insurance"],steps:[
+  {subject:"Alternative accommodation for your policyholders – whole homes, invoiced direct",body:`Hi {{first_name}},
+
+When a home is damaged by flood, fire or escape of water, your policyholders need somewhere to live while it's put right, and quickly.
+
+ViVi Stays manages over 100 furnished properties across Scotland and England, from city apartments in Edinburgh to family homes in the Scottish Borders and holiday homes in East Lothian.
+
+Why book direct with us:
+• Whole homes, not hotel rooms: their own kitchen and living space
+• Room for families, with homes that sleep up to 13
+• Weekly and monthly rates for longer stays
+• Invoiced to your company
+• Fast Wi-Fi and self check-in, so they can arrive at any hour
+• No booking-site fees
+
+Who is the best person to speak to about alternative accommodation? Just reply to this email.
+
+${NL_SIG}`},
+  {subject:"Re: alternative accommodation for your policyholders",body:`Hi {{first_name}},
+
+Just bringing this back to the top of your inbox.
+
+If you ever need to place a household in a furnished home in Scotland or England, send us the area, dates and number of people and we'll come back with what's free. Weekly and monthly rates, invoiced to your company.
+
+${NL_SIG}`},
+  {subject:"A home, not a hotel room",body:`Hi {{first_name}},
+
+Families out of their own home for weeks or months settle far better somewhere with a kitchen, a living room and space to spread out.
+
+That's all we do: whole furnished homes, booked direct, at weekly and monthly rates. Edinburgh, East Lothian, the Scottish Borders and more across Scotland and England.
+
+Is there a claim on your desk right now where this would help? Reply with the area and dates.
+
+${NL_SIG}`},
+  {subject:"Shall I close your file?",body:`Hi {{first_name}},
+
+I don't want to keep filling your inbox, so this is my last email for now.
+
+If you ever need alternative accommodation for a policyholder, just reply here or WhatsApp us on +44 7578 255663 and we'll help straight away.
+
+${NL_SIG}`}]},
+ contractors:{name:"Contractor stays – crews, weekly & monthly rates",segments:["construction"],steps:[
+  {subject:"Crew accommodation near your sites – weekly & monthly rates",body:`Hi {{first_name}},
+
+If your teams are working in Edinburgh, East Lothian or the Scottish Borders, we'd love to house them.
+
+ViVi Stays manages over 100 furnished properties across Scotland and England, including:
+• 3-bedroom caravans at Thurston Manor, sleeping 6 to 8, around 10 minutes from Torness
+• Caravans at Seton Sands, Port Seton, with free parking
+• 5-bedroom houses in Galashiels and a Hawick home that sleeps up to 13
+• Apartments across Edinburgh
+
+What crews get:
+• Whole homes with their own kitchen, so the whole team stays together
+• Weekly and monthly rates, invoiced to your company
+• Free parking, fast Wi-Fi and self check-in
+• **Got a quote already? Send it over and we'll beat any like-for-like quote.**
+
+Which sites are you working on next? Reply with the area, dates and crew size.
+
+${NL_SIG}`},
+  {subject:"Re: crew accommodation – we'll beat any like-for-like quote",body:`Hi {{first_name}},
+
+Quick follow-up. If you're already paying for crew accommodation, send me the quote. We'll beat any like-for-like quote and invoice your company directly.
+
+Whole homes, weekly and monthly rates, free parking.
+
+${NL_SIG}`},
+  {subject:"Where's your next job?",body:`Hi {{first_name}},
+
+Crews work better when they can cook proper meals, park outside and stay together, which is hard to do in a hotel.
+
+Tell me the area and dates of your next job and I'll send you what's free, with weekly and monthly prices.
+
+${NL_SIG}`},
+  {subject:"Last one from me",body:`Hi {{first_name}},
+
+This is my last email for now, so I'm not cluttering your inbox.
+
+Whenever you need beds for a crew in Scotland or England, reply here or WhatsApp +44 7578 255663 and we'll sort it.
+
+${NL_SIG}`}]}
+};
+const NL_STATUS=[["","All"],["active","In the sequence"],["engaged","Clicked or replied"],["replied","Replied"],["archived","No response (archived)"],["unsubscribed","Unsubscribed"],["bounced","Bounced"],["excluded","Not emailed"]];
+let nlS=null,nlList=null,nlF={q:"",status:"",segment:"",campaign:"",offset:0},nlBusy="",nlEdit=null,nlCamps=[],nlLoaded=false,nlTestTo="",nlPrev=null;
+const nlApi=(a,b)=>window.VL_nl(a,b||{});
+async function nlLoad(){if(!window.VL_nl)return;try{[nlS,nlList]=await Promise.all([nlApi("nl_stats"),nlApi("nl_list",nlF)])}catch(e){toast(e&&e.message||"Couldn't load the newsletter")}nlLoaded=true;if(view==="newsletter")render()}
+async function nlListLoad(){try{nlList=await nlApi("nl_list",nlF)}catch(e){}render()}
+const nlN=n=>Number(n||0).toLocaleString("en-GB");
+
+async function nlImportFile(file){
+  try{
+    let emails=[];
+    if(/\.xlsx?$/i.test(file.name)){
+      nlBusy="Reading spreadsheet…";render();
+      if(!window.XLSX)await new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";s.onload=res;s.onerror=()=>rej(new Error("Couldn't load the spreadsheet reader"));document.head.append(s)});
+      const wb=window.XLSX.read(await file.arrayBuffer(),{type:"array"});
+      for(const n of wb.SheetNames){const rows=window.XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false});for(const r of rows)for(const c of r)if(c&&String(c).includes("@"))emails.push(String(c))}
+    }else{emails=(await file.text()).match(/[^\s,;"'<>]+@[^\s,;"'<>]+\.[a-z]{2,}/gi)||[]}
+    emails=[...new Set(emails.map(e=>e.replace(/ /g,"").trim().toLowerCase()))];
+    if(!emails.length){toast("No email addresses found in that file");nlBusy="";render();return}
+    let added=0,dup=0,bad=0;
+    for(let i=0;i<emails.length;i+=2000){nlBusy=`Importing ${nlN(Math.min(i+2000,emails.length))} of ${nlN(emails.length)}…`;render();
+      const r=await nlApi("nl_import",{emails:emails.slice(i,i+2000)});added+=r.added;dup+=r.duplicates;bad+=r.invalid}
+    nlBusy="";toast(`${nlN(added)} added · ${nlN(dup)} already there · ${nlN(bad)} not valid`);nlLoad();
+  }catch(e){nlBusy="";toast(e&&e.message||"Import failed");render()}
+}
+function nlNewFrom(key){const t=NL_TEMPLATES[key];nlEdit={id:null,name:t.name,segments:[...t.segments],gapDays:7,status:"draft",steps:t.steps.map(s=>({...s}))};render();window.scrollTo(0,0)}
+async function nlSave(c){
+  const now=new Date().toISOString();const data={name:c.name.trim()||"Untitled campaign",segments:c.segments,gapDays:Math.max(1,parseInt(c.gapDays)||7),status:c.status||"draft",steps:c.steps.filter(s=>s.subject.trim()&&s.body.trim()),updated:now};
+  if(!data.steps.length){toast("Add at least one email");return null}
+  try{if(c.id){await db.collection("nl_campaigns").doc(c.id).update(data);return c.id}else{const r=await db.collection("nl_campaigns").add({...data,created:now,by:myId||null});return r.id}}catch(e){toast("Couldn't save the campaign");return null}
+}
+async function nlSetCamp(c,patch){try{await db.collection("nl_campaigns").doc(c.id).update({...patch,updated:new Date().toISOString()});Object.assign(c,patch);render()}catch(e){toast("Couldn't save")}}
+async function nlRun(c){nlBusy="Sending…";render();try{const r=await nlApi("nl_run",{campaign:c.id,max:50});toast(r.configured===false?"Brevo isn't connected yet":`Sent ${r.sent} · ${r.sentToday}/${r.dailyLimit} today`+(r.archived?` · ${r.archived} archived`:"")+(r.errors&&r.errors.length?" · "+r.errors[0]:""))}catch(e){toast(e&&e.message||"Send failed")}nlBusy="";nlLoad()}
+async function nlSetContact(r,status,note){try{await nlApi("nl_set",{email:r.email,status,note});r.status=status;toast("Saved");nlLoad()}catch(e){toast("Couldn't save")}}
+async function nlToOutreach(r){
+  const camp=nlCamps.find(c=>c.id===r.campaign);const dom=r.email.split("@")[1]||"";const now=new Date().toISOString();
+  try{await db.collection("contacts").add({kind:"project",channel:"email",name:"",role:"",company:dom,email:r.email,phone:"",url:"",notes:"Replied to newsletter"+(camp?": "+camp.name:"")+". Read their reply in team@vivistays.com.",projectId:"",eventName:"",eventDate:"",eventTown:"",area:"",status:"new",nextFollowUp:today(),created:now,updated:now,createdBy:myId||null});
+    await nlApi("nl_set",{email:r.email,status:"replied",note:"Moved to Outreach"});toast("Added to Outreach");nlLoad()}catch(e){toast("Couldn't add to Outreach")}
+}
+
+function nlSetupCard(){
+  const s=nlS;if(!s)return null;
+  const ok=s.configured;
+  return h("details",{class:"card",open:!ok||null},h("summary",{},ok?"Sending: connected to Brevo · "+nlN(s.sentToday)+" of "+nlN(s.dailyLimit)+" sent today":"Set up sending (not connected yet)"),
+    ok?h("p",{class:"small",text:"From "+s.fromName+" <"+s.from+"> · replies go to "+s.replyTo+". Sends go out in small batches on UK weekdays, 8am–6pm, up to the daily limit. Raise the limit slowly (about 100 more a week) so emails keep landing in inboxes."}):
+      h("ol",{class:"small",style:"margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px"},
+        h("li",{text:"Create a free Brevo account (brevo.com) for Vivistays."}),
+        h("li",{text:"In Brevo, Senders & domains: add vivistays.com and add the DNS records it shows (SPF, DKIM, DMARC) where vivistays.com's DNS is managed. This is what keeps emails out of spam."}),
+        h("li",{text:"Brevo › SMTP & API › API keys: create a key and put it in config.local.php as $BREVO_API_KEY (see config.example.php for the other settings)."}),
+        h("li",{text:"Paste the webhook link below into Brevo › Transactional › Settings › Webhook, and tick opened, clicked, hard bounce, unsubscribed and spam."})),
+    h("div",{class:"field"},h("label",{text:"Webhook link for Brevo (tracks opens, clicks and bounces)"}),h("div",{class:"btns"},h("input",{value:s.webhookUrl,readonly:true,style:"flex:1;min-width:0",onfocus:e=>e.target.select()}),h("button",{class:"btn",onclick:()=>copy(s.webhookUrl)},"Copy"))),
+    s.hasAddress?null:h("p",{class:"tipbox small",text:"Add the company's postal address as $NL_ADDRESS in config.local.php. UK marketing emails should show who they're from."}));
+}
+function nlListCard(){
+  const s=nlS;const L=s?s.labels:{};const segs=Object.keys(L);
+  const tot=k=>Object.values((s&&s.segments[k])||{}).reduce((a,b)=>a+b,0);
+  const all=segs.reduce((a,k)=>a+tot(k),0);
+  const inp=h("input",{type:"file",accept:".xlsx,.xls,.csv,.txt",style:"display:none",onchange:e=>{if(e.target.files[0])nlImportFile(e.target.files[0]);e.target.value=""}});
+  return h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:"Mailing list · "+nlN(all)}),h("label",{class:"btn primary",style:"cursor:pointer"},inp,nlBusy&&nlBusy.startsWith("Import")||nlBusy.startsWith("Reading")?nlBusy:"Import emails")),
+    h("p",{class:"muted small",text:"Import a spreadsheet or CSV. Duplicates are skipped and each email is sorted into a group. Personal addresses (Gmail, Hotmail…) and overseas ones are kept but never emailed: UK rules need consent for personal addresses."}),
+    all?h("div",{style:"overflow-x:auto"},h("table",{class:"small",style:"width:100%;border-collapse:collapse"},
+      h("thead",{},h("tr",{},...["Group","Total","Can be emailed","Clicked/replied","Archived","Unsub/bounced"].map(t=>h("th",{style:"text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)",text:t})))),
+      h("tbody",{},...segs.filter(k=>tot(k)).map(k=>{const g=s.segments[k]||{};return h("tr",{},h("td",{style:"padding:6px 8px",text:L[k]}),h("td",{style:"padding:6px 8px",text:nlN(tot(k))}),h("td",{style:"padding:6px 8px",text:nlN(g.active)}),h("td",{style:"padding:6px 8px",text:nlN(g.replied)}),h("td",{style:"padding:6px 8px",text:nlN(g.archived)}),h("td",{style:"padding:6px 8px",text:nlN((g.unsubscribed||0)+(g.bounced||0))}))})))):null);
+}
+function nlCampCard(c){
+  const st=(nlS&&nlS.campaigns[c.id])||{contacted:0,opened:0,clicked:0,replied:0,unsubscribed:0,bounced:0,archived:0,steps:{}};
+  const L=(nlS&&nlS.labels)||{};const stepSel={v:0};
+  const stat=(n,t)=>h("div",{style:"display:flex;flex-direction:column"},h("b",{style:"font-size:22px",text:nlN(n)}),h("span",{class:"muted small",text:t}));
+  return h("div",{class:"card"},
+    h("div",{style:"display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"},h("h3",{text:c.name}),h("span",{class:"pill "+(c.status==="active"?"hot":"warm"),text:c.status==="active"?"Sending":c.status==="paused"?"Paused":"Draft"})),
+    h("p",{class:"muted small",text:(c.steps||[]).length+" emails, "+(c.gapDays||7)+" days apart · to: "+(c.segments||[]).map(k=>L[k]||k).join(", ")}),
+    h("div",{style:"display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px"},stat(st.contacted,"emailed"),stat(st.opened,"opened*"),stat(st.clicked,"clicked"),stat(st.replied,"replied"),stat(st.archived,"no response"),stat(st.unsubscribed+st.bounced,"unsub/bounced")),
+    h("p",{class:"muted small",text:"*Some email apps open emails automatically, so treat opens as a hint. Clicks and replies are the real signal."}),
+    h("div",{class:"btns"},
+      c.status==="active"?h("button",{class:"btn",onclick:()=>nlSetCamp(c,{status:"paused"})},"Pause"):h("button",{class:"btn primary",disabled:!(nlS&&nlS.configured)||null,title:nlS&&nlS.configured?null:"Connect Brevo first",onclick:()=>nlSetCamp(c,{status:"active"})},"Start sending"),
+      c.status==="active"?h("button",{class:"btn",disabled:!!nlBusy||null,onclick:()=>nlRun(c)},nlBusy==="Sending…"?"Sending…":"Send next batch now"):null,
+      h("button",{class:"btn",onclick:()=>{nlEdit=JSON.parse(JSON.stringify(c));render();window.scrollTo(0,0)}},"Edit emails"),
+      h("button",{class:"btn link",onclick:()=>{nlF={...nlF,campaign:c.id,status:"",offset:0};nlListLoad()}},"See its contacts")),
+    h("div",{class:"btns",style:"align-items:flex-end"},
+      h("div",{class:"field",style:"flex:1;min-width:200px"},h("label",{text:"Send a test to"}),h("input",{type:"email",placeholder:"you@vivistays.com",value:nlTestTo,oninput:e=>nlTestTo=e.target.value})),
+      h("div",{class:"field"},h("label",{text:"Email"}),(()=>{const s=h("select",{onchange:e=>stepSel.v=+e.target.value},...(c.steps||[]).map((x,i)=>h("option",{value:i,text:"Email "+(i+1)})));return s})()),
+      h("button",{class:"btn",disabled:!(nlS&&nlS.configured)||null,onclick:async()=>{try{await nlApi("nl_test",{campaign:c.id,step:stepSel.v,to:nlTestTo});toast("Test sent")}catch(e){toast(e&&e.message||"Test failed")}}},"Send test")));
+}
+function nlEditor(){
+  const c=nlEdit,L=(nlS&&nlS.labels)||{};
+  const prevBtn=i=>h("button",{class:"btn link",onclick:async()=>{try{const r=await nlApi("nl_preview",{subject:c.steps[i].subject,body:c.steps[i].body});nlPrev={i,html:r.html};render()}catch(e){toast("Preview failed")}}},"Preview");
+  return h("div",{class:"card"},h("h3",{text:c.id?"Edit campaign":"New campaign"}),
+    h("div",{class:"field"},h("label",{for:"nl-name",text:"Campaign name (only you see this)"}),h("input",{id:"nl-name",value:c.name,oninput:e=>c.name=e.target.value})),
+    h("div",{class:"field"},h("label",{text:"Send to"}),h("div",{class:"btns"},...Object.keys(L).filter(k=>!["personal","overseas"].includes(k)).map(k=>h("label",{class:"chip",style:"display:inline-flex;gap:6px;align-items:center"},h("input",{type:"checkbox",checked:c.segments.includes(k)||null,onchange:e=>{c.segments=e.target.checked?[...new Set([...c.segments,k])]:c.segments.filter(x=>x!==k)}}),L[k])))),
+    h("div",{class:"field",style:"max-width:220px"},h("label",{for:"nl-gap",text:"Days between follow-ups"}),h("input",{id:"nl-gap",type:"number",min:"1",value:c.gapDays,oninput:e=>c.gapDays=e.target.value})),
+    h("p",{class:"muted small",text:"Each person gets email 1, then the next one every "+(c.gapDays||7)+" days until they reply, click, unsubscribe or reach the end. {{first_name}} becomes their first name when we can tell it from the address, otherwise “there”. **text** makes bold."}),
+    ...c.steps.map((s,i)=>h("div",{style:"display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px"},
+      h("div",{style:"display:flex;justify-content:space-between;align-items:center"},h("b",{text:"Email "+(i+1)+(i?" · "+(c.gapDays||7)*i+" days after the first":" · first email")}),h("div",{class:"btns"},prevBtn(i),c.steps.length>1?h("button",{class:"btn link",onclick:()=>{c.steps.splice(i,1);render()}},"Remove"):null)),
+      h("div",{class:"field"},h("label",{text:"Subject"}),h("input",{value:s.subject,oninput:e=>s.subject=e.target.value})),
+      h("div",{class:"field"},h("label",{text:"Message"}),h("textarea",{rows:"12",oninput:e=>s.body=e.target.value},s.body)),
+      nlPrev&&nlPrev.i===i?h("iframe",{title:"Email preview",srcdoc:nlPrev.html,sandbox:"",style:"width:100%;height:560px;border:1px solid var(--line);border-radius:10px;background:#fff"}):null)),
+    h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>{c.steps.push({subject:"",body:"Hi {{first_name}},\n\n\n\n"+NL_SIG});render()}},"+ Add a follow-up email")),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:async()=>{const id=await nlSave(c);if(id){toast("Campaign saved");nlEdit=null;nlPrev=null;render()}}},"Save campaign"),h("button",{class:"btn",onclick:()=>{nlEdit=null;nlPrev=null;render()}},"Cancel")));
+}
+function nlContactsCard(){
+  const L=(nlS&&nlS.labels)||{};const d=nlList||{total:0,rows:[]};
+  const sel=(val,opts,on)=>{const s=h("select",{onchange:e=>on(e.target.value)},...opts.map(([v,t])=>h("option",{value:v,text:t})));s.value=val;return s};
+  let tq;
+  return h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:"Contacts · "+nlN(d.total)}),nlF.campaign?h("button",{class:"btn link small",onclick:()=>{nlF={...nlF,campaign:"",offset:0};nlListLoad()}},"Show all campaigns"):null),
+    h("div",{class:"btns",style:"flex-wrap:wrap"},
+      h("input",{class:"search",type:"search",placeholder:"Search email",value:nlF.q,style:"flex:1;min-width:180px",oninput:e=>{clearTimeout(tq);const v=e.target.value;tq=setTimeout(()=>{nlF={...nlF,q:v,offset:0};nlListLoad()},350)}}),
+      sel(nlF.status,NL_STATUS,v=>{nlF={...nlF,status:v,offset:0};nlListLoad()}),
+      sel(nlF.segment,[["","All groups"],...Object.entries(L)],v=>{nlF={...nlF,segment:v,offset:0};nlListLoad()})),
+    h("p",{class:"muted small",text:"Replies arrive in "+((nlS&&nlS.replyTo)||"team@vivistays.com")+". When someone replies, find them here and press “Replied”: they stop getting emails and move to Outreach for a proper follow-up."}),
+    h("div",{style:"overflow-x:auto"},h("table",{class:"small",style:"width:100%;border-collapse:collapse;min-width:640px"},
+      h("thead",{},h("tr",{},...["Email","Group","Email no.","Opens","Clicks","Status",""].map(t=>h("th",{style:"text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)",text:t})))),
+      h("tbody",{},...d.rows.map(r=>h("tr",{style:"border-bottom:1px solid var(--line)"},
+        h("td",{style:"padding:6px 8px;overflow-wrap:anywhere",text:r.email}),h("td",{style:"padding:6px 8px",text:(L[r.segment]||r.segment).replace(/ \(.*\)/,"")}),
+        h("td",{style:"padding:6px 8px",text:r.step?r.step+" sent":"–"}),h("td",{style:"padding:6px 8px",text:r.opens||"–"}),h("td",{style:"padding:6px 8px",text:r.clicks||"–"}),
+        h("td",{style:"padding:6px 8px",text:((NL_STATUS.find(x=>x[0]===r.status)||[0,r.status])[1])+(r.note?" · "+r.note:"")}),
+        h("td",{style:"padding:6px 8px;white-space:nowrap"},["active","archived"].includes(r.status)?h("div",{class:"btns",style:"gap:4px"},h("button",{class:"btn small",onclick:()=>nlToOutreach(r)},"Replied"),r.status==="active"?h("button",{class:"btn link small",onclick:()=>nlSetContact(r,"archived","Archived by hand")},"Archive"):null):null)))))),
+    d.total>100?h("div",{class:"btns"},h("button",{class:"btn",disabled:nlF.offset<=0||null,onclick:()=>{nlF={...nlF,offset:Math.max(0,nlF.offset-100)};nlListLoad()}},"‹ Previous"),h("span",{class:"muted small",text:(nlF.offset+1)+"–"+Math.min(nlF.offset+100,d.total)+" of "+nlN(d.total)}),h("button",{class:"btn",disabled:nlF.offset+100>=d.total||null,onclick:()=>{nlF={...nlF,offset:nlF.offset+100};nlListLoad()}},"Next ›")):null);
+}
+function newsletterView(){
+  if(!window.VL_nl)return[h("h1",{text:"Newsletter"}),h("div",{class:"card"},h("p",{text:"The newsletter works on the Vivistays server (leads.mandexoil.xyz) only."}))];
+  if(!nlS){if(!nlLoaded){nlLoaded=true;nlLoad()}return[h("h1",{text:"Newsletter"}),h("p",{class:"muted",text:"Loading…"})]}
+  return[h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"},h("h1",{text:"Newsletter"}),h("span",{class:"muted small",text:"Email offers to contractors and insurers, with weekly follow-ups"})),
+    nlSetupCard(),
+    nlEdit?nlEditor():null,
+    nlEdit?null:h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:"Campaigns"})),
+      nlCamps.length?null:h("p",{class:"muted small",text:"Start from one of our offers. You can edit every email before anything is sent."}),
+      h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>nlNewFrom("contractors")},"+ Contractor stays offer"),h("button",{class:"btn primary",onclick:()=>nlNewFrom("insurance")},"+ Insurance & claims offer"))),
+    ...(nlEdit?[]:nlCamps.slice().sort((a,b)=>(b.created||"").localeCompare(a.created||"")).map(nlCampCard)),
+    nlListCard(),nlContactsCard()];
+}
+
 /* ---------- boot ---------- */
 $("#addtop").addEventListener("click",()=>go("add"));
 render();
@@ -1743,6 +1960,7 @@ render();
   db.collection("posts").onSnapshot(snap=>{posts=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="help"&&!busy())render()},()=>{});
   db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});
   db.collection("photos").onSnapshot(snap=>{photosUp=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
+  db.collection("nl_campaigns").onSnapshot(snap=>{nlCamps=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="newsletter"&&!busy())render()},()=>{});
   db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   stayfulCheck(false);setInterval(()=>{if(document.visibilityState==="visible")stayfulCheck(false)},15*60e3);
   db.collection("contacts").onSnapshot(snap=>{allContacts=snap.docs.map(x=>({id:x.id,...x.data()}));contacts=allContacts.filter(c=>!c.archived);if(view==="outreach"&&selected&&!allContacts.some(c=>c.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{});
