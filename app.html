@@ -611,6 +611,7 @@ function detail(){
     archiveCard(l,false),
     l.archived?null:nextCard(l),
     contactCard(l),
+    ...(callGuideCard(l)||[]),
     stayfulCard(l),
     l.need?h("div",{class:"card"},h("h3",{text:g?"What they're looking for":"What they need"}),h("p",{class:"text",text:l.need})):null,
     (l.postText||safeUrl(l.postUrl)||safeUrl(l.profileUrl))?h("details",{class:"card"},h("summary",{},"Their Facebook post"),
@@ -663,6 +664,76 @@ function nextCard(l){
       plan.msg?h("button",{class:"btn primary",onclick:()=>copy(plan.msg)},"1. "+plan.copy):null,
       h("button",{class:plan.msg?"btn":"btn primary",onclick:()=>setStatus(l,plan.done[1])},(plan.msg?"2. ":"")+plan.done[0])),
     h("div",{class:"btns"},!TALKING.has(s)?h("button",{class:"btn link",onclick:()=>setStatus(l,"replied")},"They replied"):null,plan.msg&&sample?ai:null));
+}
+
+/* ---------- Owner call guide + proposal (from Alex's messages to owners) ---------- */
+const ownerTown=l=>String(l.location||"").replace(/\s*\([^)]*\)\s*/g,"").trim();
+const ownerBeds=l=>{const m=String((l.stayful&&l.stayful.bedrooms)||l.properties||"").match(/\d+/);return m?m[0]:""};
+const ownerProp=l=>{const b=ownerBeds(l),t=ownerTown(l);return (b?b+"-bed":"property")+(t?" in "+t:"")};
+function proposalText(l){
+  const fn=firstName(l),t=ownerTown(l);
+  return `Hi ${fn},
+
+Thank you for taking the time to speak with me. It was great chatting with you!
+
+As promised, here's how we'd help you get a higher return from your ${ownerProp(l)} through ViVi Stays.
+
+We're a professional, fully managed serviced accommodation company, managing close to 100 properties across Scotland and England. We're property investors ourselves, so we know what matters to owners: maximising income, protecting your investment and keeping it completely hands-off.
+
+There are two ways we can work together:
+
+🔒 Fixed Income: we become your tenant and guarantee you a fixed monthly rent for up to 5 years, whatever the occupancy. Total peace of mind, but the guaranteed figure is lower, so you could miss out on higher earnings.
+
+🚀 Fully Managed Service (my recommendation): we run the property as a short-term let to maximise your income, and you stay hands-off.
+
+What we take care of:
+✅ Professional photography & listings on Airbnb, Booking.com, Vrbo and our own direct booking site
+✅ Dynamic pricing: rates adjusted for demand, seasonality and local events
+✅ Contractor, corporate and longer-stay guests to keep occupancy up year-round
+✅ Complete guest management: enquiries, bookings, check-in, support, check-out and reviews
+✅ Cleaning, linen & changeovers, with cleaning costs covered by guests
+✅ Maintenance & inspections coordinated by our operations team
+✅ Monthly owner statements and payouts
+
+The best part: it's completely FREE to get started. No onboarding fee, no charge for photography or setup, and no fixed monthly fee. We only earn our commission when we bring you bookings, so if your property doesn't make money, neither do we.
+
+We're currently offering the Fully Managed Service at just 15% all-inclusive instead of our usual 18%, for a limited time.
+
+The next step is simple: we'll put together a FREE, no-obligation income projection for your ${t||"property"} and, if you're happy, get you onboarded and taking bookings as quickly as possible.
+
+Would you be happy for us to get that started?
+
+More about us: https://vivistays.com/pricing
+
+Thanks,
+[Your name]
+ViVi Stays · WhatsApp +44 7578 255663`;
+}
+const CALL_GUIDE=[
+ ["1 · Open (30 seconds)",["“Hi [Name], it's [Your name] from ViVi Stays. You asked about getting a better return from your [property]. Is now still good for 10 minutes?”","Say why you're calling in one line, then ask a question. Don't pitch yet."]],
+ ["2 · Find out (let them talk)",["How is it used right now: long-term tenant, empty, or already on Airbnb? When is it free?","What does it bring in now, and what would make switching worth it?","How hands-off do you want to be?","Is it furnished? Parking? Anything we should know about the building or neighbours?","Does your mortgage, lease or freeholder allow short lets? (They may need consent. Note it, don't advise.)","When would you ideally like to start?"]],
+ ["3 · Two options (recommend one)",["Fixed Income: we become the tenant and guarantee a fixed monthly rent for up to 5 years, whatever the occupancy. Peace of mind, but a lower figure.","Fully Managed (recommend this): we run it as a short let to maximise income. Photography and listings on Airbnb, Booking.com, Vrbo and direct; dynamic pricing; contractor and corporate guests; all guest messages; cleaning and changeovers; maintenance; monthly statements and payouts."]],
+ ["4 · The offer",["Completely FREE to start: no onboarding fee, no photography or setup charge, no fixed monthly fee.","We only earn commission when we bring bookings. If it doesn't make money, neither do we.","Currently 15% all-inclusive instead of the usual 18%, for a limited time. (Check the rate with Alex before promising it.)","Cleaning is paid by guests, not the owner."]],
+ ["5 · If they say…",["“What will it cost me?” → Nothing upfront. Commission only on bookings we bring, 15% all-in right now.","“I want guaranteed money.” → That's our Fixed Income option: fixed monthly rent for up to 5 years.","“I'm worried about guests or damage.” → We handle every guest, check-in, cleaning, inspections and maintenance, and build up the reviews.","“I already have a tenant or an agent.” → Let us do a free income projection so you can compare side by side.","“I need to think about it.” → Of course. Let me send the free projection, then book a time to go through it.","“Who are you?” → Close to 100 properties across Scotland and England; we're property investors ourselves; vivistays.com/pricing."]],
+ ["6 · Close",["“Shall I put together your free income projection and send it with the next steps? When's a good time to go through it?”","Agree a date before you hang up, set it as the next follow-up below, and send the proposal within the hour."]],
+ ["Don't",["Don't quote Stayful's income figure as ours. It's their estimate.","Don't promise a rate, date or number you haven't checked.","Don't talk over them. Ask, then listen."]]
+];
+function callGuideCard(l){
+  if(kindOf(l)==="guest")return null;
+  const prop=ownerProp(l),fn=firstName(l),msg=proposalText(l),wa=typeof waLink==="function"?waLink(l.phone):null;
+  const fillT=s=>s.replaceAll("[Name]",fn).replaceAll("[property]",prop);
+  const open=["new","messaged","replied","call","commented","fu1","fu2"].includes(l.status||"new");
+  return [
+    h("details",{class:"card",open:open||null},h("summary",{},"Call guide · what to say and how"),
+      ...CALL_GUIDE.map(([t,pts])=>h("div",{style:"display:flex;flex-direction:column;gap:6px;margin-top:8px"},h("h3",{text:t}),h("ul",{style:"margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px"},...pts.map(x=>h("li",{class:"text",text:fillT(x)})))))),
+    h("details",{class:"card"},h("summary",{},"Proposal to send after the call"),
+      h("p",{class:"muted small",text:"Same structure as Alex's message to owners. Change [Your name], and remove the 15% line if Alex hasn't agreed it for this owner."}),
+      h("div",{class:"msg",text:msg}),
+      h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>copy(msg)},"Copy proposal"),
+        wa?h("a",{class:"btn",href:wa+"?text="+encodeURIComponent(msg),target:"_blank",rel:"noopener"},"WhatsApp it"):null,
+        l.email?h("a",{class:"btn",href:"mailto:"+l.email+"?subject="+encodeURIComponent("Your "+prop+" – ViVi Stays proposal")+"&body="+encodeURIComponent(msg)},"Email it"):null,
+        h("button",{class:"btn",onclick:()=>{setStatus(l,"call")}},"Mark: call done, proposal sent")))
+  ];
 }
 
 /* ---------- Stayful landlord leads ---------- */
