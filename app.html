@@ -34,6 +34,28 @@ h3{font-size:17px;line-height:1.3;font-weight:600;letter-spacing:-.015em}
 p{margin:0}
 .num,.tab-n,.kpi b{font-variant-numeric:tabular-nums}
 
+
+/* ---------- guest manuals ---------- */
+@font-face{font-family:"VOpen";font-weight:400;src:url(img/fonts/open-sans-latin-400-normal.ttf)}
+@font-face{font-family:"VOpen";font-weight:700;src:url(img/fonts/open-sans-latin-700-normal.ttf)}
+@font-face{font-family:"VOpen";font-weight:400;font-style:italic;src:url(img/fonts/open-sans-latin-400-italic.ttf)}
+
+.mpage{position:relative;background:#222631;color:#fff;font-family:"VOpen",Arial,sans-serif;overflow:hidden;letter-spacing:0;line-height:normal;-webkit-font-smoothing:antialiased}
+.mpage .mhead{position:absolute;left:0;top:0;display:block}
+.mpage .mheadph{position:absolute;left:0;top:0;right:0;height:396px;display:grid;place-items:center;border-bottom:1px solid #3a3f4d}
+.mpage .mheadph span{font:italic 700 64px "Playfair Display",Georgia,serif;color:#d4b06f}
+.mpage .mcols{position:absolute;column-count:2;column-gap:24px;column-fill:balance;font-size:11.6pt}
+.mpage .ms{break-inside:avoid;margin-bottom:.78em}
+.mpage h3{font-family:"VOpen",Arial,sans-serif;font-size:1.16em;font-weight:700;letter-spacing:.2pt;margin:0 0 .26em;line-height:1.25;color:#fff}
+.mpage h3 i{font-style:italic}
+.mpage p,.mpage li{font-size:1em;line-height:1.38;text-align:justify;margin:0}
+.mpage ul{padding-left:1.12em;margin:0} .mpage li{margin-bottom:.17em}
+.mpage b{font-weight:700} .mpage a{color:#fff;font-weight:700;text-decoration:underline}
+.mpage .code{font-weight:700;font-size:1.08em;color:#e3c27e;letter-spacing:1pt}
+.mprev{overflow:hidden;border-radius:12px;max-width:520px}
+.mprev .mpage{transform-origin:0 0}
+.mstage{position:fixed;left:0;top:0;z-index:-1;pointer-events:none}
+
 /* ---------- shell ---------- */
 .shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
 .side{position:sticky;top:0;height:100vh;background:var(--sidebg);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:24px;padding:22px 14px 18px}
@@ -418,7 +440,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","leads","stayful","outreach","projects","social","newsletter","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -437,11 +459,12 @@ const ICON={
   help:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8 7.5h8M8 11h6"/></svg>',
   stayful:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><circle cx="12" cy="14" r="2.2"/><path d="M8.5 20c.6-1.9 1.9-3 3.5-3s2.9 1.1 3.5 3"/></svg>',
   newsletter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>',
+  manuals:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5Z"/><path d="M15 3v4h4"/><circle cx="10" cy="14" r="2.2"/><path d="M12 14h4.5M15 14v2"/></svg>',
   social:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>',
   add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>'
 };
-const NAV=[["today","Dashboard"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["help","Guides"]];
-const SHORT={today:"Home",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",help:"Guides"};
+const NAV=[["today","Dashboard"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
+const SHORT={today:"Home",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
@@ -478,7 +501,7 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
   const hc=helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
@@ -1945,6 +1968,223 @@ function newsletterView(){
     nlListCard(),nlContactsCard()];
 }
 
+/* ---------- GUEST MANUALS ----------
+   Each property's House Manual page is stored as sections (title + short HTML).
+   Change a lock code or a link here, then "Update the PDF" rebuilds that page inside the
+   manual in this browser (pdf.js + html2canvas + pdf-lib) and downloads the new file.
+   Lock codes live only in this private database, never in the public code. */
+let manuals=[],mSel=null,mQuery="",mBusy="",mDirty=null,mShowWording=false,mCacheInfo={};
+const M_LIBS={
+  pdflib:"https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",
+  pdfjs:"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+  pdfjsWorker:"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+  h2c:"https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+};
+const mLoaded={};
+function mScript(src){return mLoaded[src]||(mLoaded[src]=new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=()=>{delete mLoaded[src];rej(new Error("Couldn't load "+src.split("/").pop()))};document.head.appendChild(s)}))}
+async function mLibs(){await Promise.all([mScript(M_LIBS.pdflib),mScript(M_LIBS.pdfjs),mScript(M_LIBS.h2c)]);window.pdfjsLib.GlobalWorkerOptions.workerSrc=M_LIBS.pdfjsWorker}
+
+/* only allow the few tags the manual page uses */
+function mClean(html){
+  const doc=new DOMParser().parseFromString("<div>"+String(html||"")+"</div>","text/html");
+  const OK={UL:1,LI:1,P:1,B:1,I:1,BR:1,SPAN:1,A:1,STRONG:1,EM:1};
+  (function walk(n){[...n.children].forEach(c=>{
+    if(!OK[c.tagName]){c.replaceWith(...c.childNodes);return walk(n)}
+    [...c.attributes].forEach(a=>{const k=a.name;
+      if(c.tagName==="A"&&k==="href"){if(!/^(https?:|mailto:|tel:)/i.test(a.value))c.removeAttribute(k)}
+      else if(k==="class"&&(c.tagName==="SPAN"&&a.value==="code"||c.tagName==="A"&&a.value==="l")){}
+      else if(k==="style"&&c.tagName==="P"&&/^text-align:\s*left;?$/.test(a.value)){}
+      else c.removeAttribute(k)});
+    walk(c)})})(doc.body.firstChild);
+  return doc.body.firstChild.innerHTML;
+}
+function mSlug(n){return n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,80)}
+
+/* codes and links found in the sections, so they can be edited as simple fields */
+function mFields(m){
+  const codes=[],links=[];
+  m.sections.forEach((s,si)=>{
+    const d=document.createElement("div");d.innerHTML=s.html;
+    d.querySelectorAll("span.code").forEach((e,ei)=>codes.push({si,ei,title:mTitle(s.title),value:e.textContent}));
+    d.querySelectorAll("a[href]").forEach((e,ei)=>links.push({si,ei,title:mTitle(s.title),text:e.textContent.trim(),value:e.getAttribute("href")}));
+  });
+  return{codes,links};
+}
+function mTitle(t){const d=document.createElement("div");d.innerHTML=t;return d.textContent.replace(/\s+/g," ").trim()}
+function mSet(m,kind,si,ei,val){
+  const s=m.sections[si];const d=document.createElement("div");d.innerHTML=s.html;
+  const el=d.querySelectorAll(kind==="code"?"span.code":"a[href]")[ei];if(!el)return;
+  if(kind==="code")el.textContent=val;else el.setAttribute("href",val);
+  s.html=d.innerHTML;
+}
+
+/* ---------- page renderer (same look as the 21 Troon House Manual page) ---------- */
+function mPageNode(m,Wpt,Hpt,headUrl){
+  const px=4/3,root=h("div",{class:"mpage",style:`width:${Wpt*px}px;height:${Hpt*px}px`});
+  if(headUrl)root.append(h("img",{class:"mhead",src:headUrl,style:`width:${Wpt*px}px;height:${297*px}px`}));
+  const cols=h("div",{class:"mcols",style:`top:${306*px}px;left:${24*px}px;right:${24*px}px`});
+  m.sections.forEach(s=>{const d=h("div",{class:"ms"});const t=h("h3");t.innerHTML=mClean(s.title);const b=h("div");b.innerHTML=mClean(s.html);d.append(t,b);cols.append(d)});
+  root.append(cols);return root;
+}
+function mFit(root,Hpt){
+  const cols=root.querySelector(".mcols"),lim=(Hpt-14)*4/3;let fs=11.6;
+  const bottom=()=>{const r0=root.getBoundingClientRect().top;let mx=0;cols.querySelectorAll(".ms").forEach(e=>{mx=Math.max(mx,e.getBoundingClientRect().bottom-r0)});return mx};
+  cols.style.fontSize=fs+"pt";
+  while(bottom()>lim&&fs>7.6){fs-=0.2;cols.style.fontSize=fs.toFixed(1)+"pt"}
+  return fs;
+}
+
+/* PDF cache in this browser, so the file only has to be picked once per property */
+function mIdb(){return new Promise((res,rej)=>{const r=indexedDB.open("vl-manuals",1);r.onupgradeneeded=()=>r.result.createObjectStore("pdf");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function mCacheGet(id){try{const d=await mIdb();return await new Promise(res=>{const q=d.transaction("pdf").objectStore("pdf").get(id);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)})}catch(e){return null}}
+async function mCachePut(id,val){try{const d=await mIdb();await new Promise(res=>{const t=d.transaction("pdf","readwrite");t.objectStore("pdf").put(val,id);t.oncomplete=res;t.onerror=res})}catch(e){}}
+function mPick(){return mPick2("application/pdf,.pdf")}
+
+async function mBuildPdf(m,file){
+  await mLibs();
+  const bytes=new Uint8Array(await file.arrayBuffer());
+  const pg=m.page||3;
+  // header (nav icons + "House Manual" title) taken from the manual itself
+  const pdfjsDoc=await window.pdfjsLib.getDocument({data:bytes.slice()}).promise;
+  if(pdfjsDoc.numPages<pg)throw new Error("That PDF has only "+pdfjsDoc.numPages+" pages");
+  const p=await pdfjsDoc.getPage(pg);const vp=p.getViewport({scale:200/72});
+  const cv=document.createElement("canvas");cv.width=Math.ceil(vp.width);cv.height=Math.ceil(vp.height);
+  await p.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
+  const Wpt=vp.width*72/200,Hpt=vp.height*72/200;
+  const head=document.createElement("canvas");head.width=cv.width;head.height=Math.round(297*200/72);
+  head.getContext("2d").drawImage(cv,0,0);
+  const headUrl=head.toDataURL("image/jpeg",0.92);
+  // lay out the page off to the side, fit it, then photograph it
+  const stage=h("div",{class:"mstage"});const node=mPageNode(m,Wpt,Hpt,headUrl);stage.append(node);document.body.append(stage);
+  try{
+    await Promise.all(["400 12pt VOpen","700 12pt VOpen","italic 400 12pt VOpen"].map(f=>document.fonts.load(f)));
+    await new Promise(r=>setTimeout(r,60));
+    const fs=mFit(node,Hpt);
+    const r0=node.getBoundingClientRect();
+    const links=[...node.querySelectorAll(".mcols a[href]")].flatMap(a=>[...a.getClientRects()].map(r=>({url:a.getAttribute("href"),x1:(r.left-r0.left)*.75,x2:(r.right-r0.left)*.75,top:(r.top-r0.top)*.75,bot:(r.bottom-r0.top)*.75})));
+    const shot=await window.html2canvas(node,{scale:200/96,backgroundColor:"#222631",useCORS:true,logging:false});
+    const jpg=await new Promise(r=>shot.toBlob(b=>r(b),"image/jpeg",0.9));
+    const {PDFDocument,PDFName,PDFString}=window.PDFLib;
+    const doc=await PDFDocument.load(bytes,{ignoreEncryption:true});
+    const page=doc.getPage(pg-1);const H=page.getSize().height,W=page.getSize().width;
+    const img=await doc.embedJpg(new Uint8Array(await jpg.arrayBuffer()));
+    // keep the header navigation links, drop the old body links
+    const keep=[];const ann=page.node.Annots();
+    if(ann)for(let i=0;i<ann.size();i++){const ref=ann.get(i),a=doc.context.lookup(ref);const R=a&&a.lookup(PDFName.of("Rect"));
+      if(!R)continue;const ys=[R.get(1).asNumber(),R.get(3).asNumber()];if(H-Math.max(...ys)<297)keep.push(ref)}
+    page.node.set(PDFName.of("Contents"),doc.context.obj([]));
+    page.drawImage(img,{x:0,y:0,width:W,height:H});
+    for(const l of links)keep.push(doc.context.register(doc.context.obj({Type:"Annot",Subtype:"Link",Rect:[l.x1,H-l.bot,l.x2,H-l.top],Border:[0,0,0],A:{Type:"Action",S:"URI",URI:PDFString.of(l.url)}})));
+    page.node.set(PDFName.of("Annots"),doc.context.obj(keep));
+    const out=await doc.save({useObjectStreams:true});
+    return{out,fs};
+  }finally{stage.remove()}
+}
+
+async function mUpdatePdf(m,forcePick){
+  if(mBusy)return;
+  let cached=forcePick?null:await mCacheGet(m.id),file=null;
+  if(cached)file=new File([cached.bytes],cached.name,{type:"application/pdf"});
+  else{toast("Pick the current PDF for "+m.name);file=await mPick();if(!file)return}
+  if(!forcePick&&!cached&&file.name&&m.file&&file.name.toLowerCase().replace(/\s+/g," ")!==m.file.toLowerCase()&&!confirm("That file is called \""+file.name+"\" but this is "+m.name+". Use it anyway?"))return;
+  mBusy="Building the new House Manual page…";render();
+  try{
+    const{out,fs}=await mBuildPdf(m,file);
+    const name=m.file||(m.name+" - Guest Manual ViVi Stays.pdf");
+    const blob=new Blob([out],{type:"application/pdf"});
+    const a=h("a",{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();a.remove();
+    await mCachePut(m.id,{name,bytes:out,saved:new Date().toISOString()});mCacheInfo[m.id]=true;
+    const log=(m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what:"PDF rebuilt"});
+    await db.collection("manuals").doc(m.id).update({pdfBuilt:new Date().toISOString(),log});
+    toast(fs<11?"Done. Text was shrunk slightly to fit ("+fs.toFixed(1)+"pt).":"Done. The new manual is downloading.");
+  }catch(e){console.error(e);toast((e&&e.message)||"Couldn't build the PDF")}
+  mBusy="";render();
+}
+
+async function mImport(){
+  const f=await mPick2(".json,application/json");if(!f)return;
+  let j;try{j=JSON.parse(await f.text())}catch(e){toast("That isn't the manuals data file");return}
+  if(!j||!Array.isArray(j.manuals)){toast("That isn't the manuals data file");return}
+  mBusy="Importing "+j.manuals.length+" manuals…";render();let n=0;
+  for(const x of j.manuals){if(!x.name||!Array.isArray(x.sections))continue;
+    const id=mSlug(x.name);if(manuals.some(m=>m.id===id))continue;
+    await db.collection("manuals").doc(id).set({name:x.name,file:x.file||"",page:x.page||3,sections:x.sections.map(s=>({title:mClean(s.title),html:mClean(s.html)})),updated:new Date().toISOString(),log:[{at:new Date().toISOString(),by:window.VL_USER||"",what:"Imported"}]});n++}
+  mBusy="";toast(n?"Imported "+n+" manuals":"Nothing new to import");render();
+}
+function mPick2(accept){return new Promise(res=>{const i=h("input",{type:"file",accept,style:"position:fixed;left:-9999px"});document.body.append(i);i.onchange=()=>{res(i.files[0]||null);i.remove()};i.click()})}
+
+async function mSave(m,what){
+  const log=(m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what});
+  await db.collection("manuals").doc(m.id).update({sections:m.sections,updated:new Date().toISOString(),log});
+  mDirty=null;toast("Saved. Now press \"Update the PDF\".");
+}
+
+function manualsView(){
+  const head=[h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"},h("h1",{text:"Guest manuals"}),h("span",{class:"muted small",text:"Change a lock code or a link, then rebuild the PDF"}))];
+  if(!db)return[...head,h("div",{class:"card"},h("p",{text:"Loading…"}))];
+  if(mBusy)head.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+mBusy})));
+  if(!manuals.length)return[...head,h("div",{class:"card"},h("h3",{text:"Load the manuals"}),
+    h("p",{class:"muted small",text:"Import the file \"manuals-data.json\" once. It holds every property's House Manual page (codes and links). It's kept private in this app."}),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:mImport},"Import manuals-data.json")))];
+  const q=mQuery.trim().toLowerCase();
+  const list=manuals.filter(m=>!q||m.name.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+  const search=h("input",{class:"search",type:"search",placeholder:"Search a property, e.g. 21 Troon",value:mQuery,"aria-label":"Search properties",
+    oninput:e=>{mQuery=e.target.value;const pos=e.target.selectionStart;render();const s=$("#main .search");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}}});
+  const sel=h("select",{"aria-label":"Property",onchange:e=>{mSel=e.target.value||null;mDirty=null;mShowWording=false;render()}},
+    h("option",{value:"",text:list.length?"Choose a property ("+list.length+")":"No match"}),...list.map(m=>h("option",{value:m.id,text:m.name})));
+  sel.value=mSel&&list.some(m=>m.id===mSel)?mSel:"";
+  const out=[...head,h("div",{class:"card"},h("div",{class:"form"},h("div",{class:"field"},h("label",{text:"Find"}),search),h("div",{class:"field"},h("label",{text:"Property"},),sel)),
+    h("div",{class:"btns"},h("button",{class:"btn link small",onclick:mImport},"Import more from a data file")))];
+  const m0=manuals.find(x=>x.id===mSel);if(!m0)return out;
+  const m=mDirty&&mDirty.id===m0.id?mDirty:JSON.parse(JSON.stringify(m0));
+  const touch=()=>{mDirty=m};
+  const {codes,links}=mFields(m);
+  out.push(h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:m.name}),h("span",{class:"muted small",text:"House Manual page "+(m.page||3)+(m.updated?" · saved "+new Date(m.updated).toLocaleDateString("en-GB"):"")})),
+    h("h3",{text:"Lock codes"}),
+    codes.length?h("div",{class:"form"},...codes.map(c=>h("div",{class:"field"},h("label",{text:c.title}),h("input",{value:c.value,inputmode:"text",oninput:e=>{mSet(m,"code",c.si,c.ei,e.target.value.trim());touch()}})))):h("p",{class:"muted small",text:"No code on this page."}),
+    h("h3",{text:"Links"}),
+    links.length?h("div",{class:"form"},...links.map(l=>h("div",{class:"field wide"},h("label",{text:l.title+" · \""+l.text+"\""}),h("input",{value:l.value,type:"url",oninput:e=>{mSet(m,"link",l.si,l.ei,e.target.value.trim());touch()}})))):h("p",{class:"muted small",text:"No links on this page yet."}),
+    mAddLink(m,touch),
+    h("div",{class:"btns"},
+      h("button",{class:"btn primary",disabled:!!mBusy,onclick:async()=>{await mSave(m,"Edited codes/links");render()}},"Save changes"),
+      h("button",{class:"btn primary",disabled:!!mBusy,onclick:async()=>{if(mDirty)await mSave(m,"Edited codes/links");mUpdatePdf(m,false)}},"Update the PDF"),
+      h("button",{class:"btn",disabled:!!mBusy,onclick:()=>mUpdatePdf(m,true)},"Use a different PDF file"),
+      h("button",{class:"btn link",onclick:()=>{mShowWording=!mShowWording;render()}},mShowWording?"Hide wording":"Edit wording")),
+    h("p",{class:"muted small",text:"The first time, you'll be asked for this property's current manual PDF. After that this browser remembers it and each update starts from the last version you made."}),
+    mShowWording?mWording(m,touch):null,
+    h("h3",{text:"Preview"}),mPreview(m),
+    (m.log&&m.log.length)?h("details",{},h("summary",{class:"small",text:"History"}),h("ul",{class:"small muted"},...m.log.slice().reverse().map(x=>h("li",{text:new Date(x.at).toLocaleString("en-GB")+" · "+(x.by||"")+" · "+x.what})))):null));
+  return out;
+}
+let mNew={si:0,text:"Tap here",url:""};
+function mAddLink(m,touch){
+  return h("details",{},h("summary",{class:"small",text:"+ Add a new link"}),h("div",{class:"form"},
+    h("div",{class:"field"},h("label",{text:"Section"}),(()=>{const s=h("select",{onchange:e=>mNew.si=+e.target.value},...m.sections.map((x,i)=>h("option",{value:i,text:mTitle(x.title)})));s.value=String(mNew.si<m.sections.length?mNew.si:0);return s})()),
+    h("div",{class:"field"},h("label",{text:"What it is (shown to guests)"}),h("input",{value:mNew.label||"",placeholder:"e.g. How to use the hot tub",oninput:e=>mNew.label=e.target.value})),
+    h("div",{class:"field wide"},h("label",{text:"Link"}),h("input",{type:"url",value:mNew.url,placeholder:"https://drive.google.com/…",oninput:e=>mNew.url=e.target.value.trim()}))),
+    h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>{
+      if(!/^https?:\/\//i.test(mNew.url)){toast("Paste a full link starting with https://");return}
+      const s=m.sections[mNew.si<m.sections.length?mNew.si:0];const lab=(mNew.label||"Watch the video").replace(/[<>&"]/g,"");
+      const url=mNew.url.replace(/"/g,"%22");
+      s.html+=`<p>${lab}: <a class="l" href="${url}">Tap here</a>.</p>`;touch();mNew={si:mNew.si,text:"Tap here",url:"",label:""};render();toast("Link added. Save, then update the PDF.")}},"Add link")));
+}
+function mWording(m,touch){
+  return h("div",{class:"list"},...m.sections.map((s,i)=>h("div",{class:"field wide"},
+    h("label",{text:mTitle(s.title)}),
+    h("textarea",{rows:"4",oninput:e=>{s.html=mClean(e.target.value);touch()}},s.html),
+    h("div",{class:"btns"},
+      i>0?h("button",{class:"btn link small",onclick:()=>{[m.sections[i-1],m.sections[i]]=[m.sections[i],m.sections[i-1]];touch();render()}},"Move up"):null,
+      h("button",{class:"btn link small",onclick:()=>{if(confirm("Remove the "+mTitle(s.title)+" section?")){m.sections.splice(i,1);touch();render()}}},"Remove section")))),
+    h("p",{class:"muted small",text:"Wording uses simple tags: <p>, <ul><li>, <b>, <span class=\"code\">1234</span> for codes, <a class=\"l\" href=\"…\">Tap here</a> for links."}));
+}
+function mPreview(m){
+  const W=594.71,H=841.12,wrap=h("div",{class:"mprev"});
+  const node=mPageNode(m,W,H,null);node.prepend(h("div",{class:"mheadph"},h("span",{text:"House Manual"})));
+  wrap.append(node);
+  requestAnimationFrame(()=>{try{const fs=mFit(node,H);const sc=Math.min(1,(wrap.clientWidth||400)/(W*4/3));node.style.transform="scale("+sc+")";wrap.style.height=(H*4/3*sc)+"px";if(fs<10)wrap.title="Text shrinks to "+fs.toFixed(1)+"pt to fit"}catch(e){}});
+  return wrap;
+}
+
 /* ---------- boot ---------- */
 $("#addtop").addEventListener("click",()=>go("add"));
 render();
@@ -1961,6 +2201,7 @@ render();
   db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});
   db.collection("photos").onSnapshot(snap=>{photosUp=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   db.collection("nl_campaigns").onSnapshot(snap=>{nlCamps=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="newsletter"&&!busy())render()},()=>{});
+  db.collection("manuals").onSnapshot(snap=>{manuals=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="manuals"&&!busy()&&!mBusy)render()},()=>{});
   db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   stayfulCheck(false);setInterval(()=>{if(document.visibilityState==="visible")stayfulCheck(false)},15*60e3);
   db.collection("contacts").onSnapshot(snap=>{allContacts=snap.docs.map(x=>({id:x.id,...x.data()}));contacts=allContacts.filter(c=>!c.archived);if(view==="outreach"&&selected&&!allContacts.some(c=>c.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{});
