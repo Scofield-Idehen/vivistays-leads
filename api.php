@@ -117,6 +117,36 @@ try {
             @unlink(__DIR__ . "/img/u/$id.jpg");
             out(['ok' => true]);
 
+        case 'manual_pdf_chunk':
+            // A guest-manual PDF, sent in pieces (each well under the server's upload limit).
+            // Stored in data/manuals/ which the web server never serves directly.
+            $id = (string)($in['id'] ?? '');
+            if (!preg_match('/^[a-z0-9][a-z0-9-]{0,79}$/', $id)) fail('Bad manual id');
+            $idx = (int)($in['idx'] ?? -1); $total = (int)($in['total'] ?? 0);
+            if ($idx < 0 || $total < 1 || $total > 400 || $idx >= $total) fail('Bad chunk');
+            $raw = base64_decode((string)($in['data'] ?? ''), true);
+            if ($raw === false) fail('Bad chunk data');
+            $dir = __DIR__ . '/data/manuals';
+            if (!is_dir($dir)) mkdir($dir, 0750, true);
+            $tmp = "$dir/$id.part";
+            if ($idx === 0) @unlink($tmp);
+            elseif (!is_file($tmp) || (int)($in['offset'] ?? -1) !== filesize($tmp)) fail('Upload out of order, please retry');
+            file_put_contents($tmp, $raw, FILE_APPEND | LOCK_EX);
+            if ($idx < $total - 1) out(['ok' => true]);
+            if (filesize($tmp) > 60 * 1024 * 1024) { @unlink($tmp); fail('PDF is too large (60 MB max)'); }
+            $fh = fopen($tmp, 'rb'); $head = fread($fh, 5); fclose($fh);
+            if ($head !== '%PDF-') { @unlink($tmp); fail('That file is not a PDF'); }
+            rename($tmp, "$dir/$id.pdf");
+            $file = mb_substr(preg_replace('/[\\\\\/:*?"<>|\r\n]/', '', (string)($in['file'] ?? '')), 0, 150);
+            $name = mb_substr(trim((string)($in['name'] ?? '')), 0, 120);
+            $st = $db->prepare('SELECT data FROM docs WHERE col = ? AND id = ?'); $st->execute(['manuals', $id]);
+            $row = $st->fetchColumn();
+            $doc = $row !== false ? (json_decode($row, true) ?: []) : ['name' => $name ?: $id, 'page' => 3, 'sections' => []];
+            if ($file) $doc['file'] = $file;
+            $doc['pdfAt'] = gmdate('c'); $doc['pdfSize'] = filesize("$dir/$id.pdf"); $doc['pdfBy'] = $user;
+            $db->prepare('INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?)')->execute(['manuals', $id, json_encode($doc, JSON_UNESCAPED_UNICODE), gmdate('c')]);
+            out(['ok' => true, 'size' => $doc['pdfSize']]);
+
         case 'delete':
             $col = col_ok($in['collection'] ?? ''); $id = id_ok($in['id'] ?? '');
             $db->prepare('DELETE FROM docs WHERE col = ? AND id = ?')->execute([$col, $id]);

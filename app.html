@@ -201,6 +201,7 @@ pre.msg{margin:0;font-family:inherit}
 .next .msg{background:rgba(255,255,255,.1);color:var(--inv)}
 :root[data-theme="dark"] .next .msg{background:rgba(0,0,0,.06)}
 .btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn.small{padding:6px 12px;font-size:13px}
 .btn{border:0;background:var(--well);color:var(--ink);border-radius:99px;padding:10px 18px;font-weight:600;font-size:15px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .btn:hover{background:var(--line2)}
 .btn.primary{background:var(--ink);color:var(--inv)}
@@ -2083,31 +2084,69 @@ async function mBuildPdf(m,file){
 
 async function mUpdatePdf(m,forcePick){
   if(mBusy)return;
-  let cached=forcePick?null:await mCacheGet(m.id),file=null;
-  if(cached)file=new File([cached.bytes],cached.name,{type:"application/pdf"});
-  else{toast("Pick the current PDF for "+m.name);file=await mPick();if(!file)return}
-  if(!forcePick&&!cached&&file.name&&m.file&&file.name.toLowerCase().replace(/\s+/g," ")!==m.file.toLowerCase()&&!confirm("That file is called \""+file.name+"\" but this is "+m.name+". Use it anyway?"))return;
+  let file=null;
+  if(!forcePick&&m.pdfAt){
+    mBusy="Fetching the current PDF…";render();
+    try{const r=await fetch("manual-pdf.php?id="+encodeURIComponent(m.id),{credentials:"same-origin",cache:"no-store"});if(r.ok)file=new File([await r.blob()],m.file||m.name+".pdf",{type:"application/pdf"})}catch(e){}
+    mBusy="";
+  }
+  if(!file&&!forcePick){const c=await mCacheGet(m.id);if(c)file=new File([c.bytes],c.name,{type:"application/pdf"})}
+  if(!file){toast("Pick the current PDF for "+m.name);file=await mPick();if(!file){render();return}}
   mBusy="Building the new House Manual page…";render();
   try{
     const{out,fs}=await mBuildPdf(m,file);
     const name=m.file||(m.name+" - Guest Manual ViVi Stays.pdf");
-    const blob=new Blob([out],{type:"application/pdf"});
-    const a=h("a",{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();a.remove();
-    await mCachePut(m.id,{name,bytes:out,saved:new Date().toISOString()});mCacheInfo[m.id]=true;
+    mBusy="Saving the new PDF to the app…";render();
+    await mUploadPdf(m.id,new Blob([out],{type:"application/pdf"}),name,m.name);
+    await mCachePut(m.id,{name,bytes:out,saved:new Date().toISOString()});
     const log=(m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what:"PDF rebuilt"});
-    await db.collection("manuals").doc(m.id).update({pdfBuilt:new Date().toISOString(),log});
-    toast(fs<11?"Done. Text was shrunk slightly to fit ("+fs.toFixed(1)+"pt).":"Done. The new manual is downloading.");
+    await db.collection("manuals").doc(m.id).update({log});
+    toast((fs<11?"Done (text shrunk slightly to fit). ":"Done. ")+"Use \"Download PDF\" to get it.");
   }catch(e){console.error(e);toast((e&&e.message)||"Couldn't build the PDF")}
   mBusy="";render();
 }
 
-async function mImport(){
-  const f=await mPick2(".json,application/json");if(!f)return;
+/* PDFs live on the server (data/manuals/, never public). Sent in 1.5 MB pieces. */
+async function mUploadPdf(id,blob,fileName,name,onp){
+  const CH=1536*1024,total=Math.max(1,Math.ceil(blob.size/CH));
+  for(let i=0;i<total;i++){
+    const part=blob.slice(i*CH,(i+1)*CH);
+    const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]||"");r.onerror=rej;r.readAsDataURL(part)});
+    let tries=0;
+    for(;;){
+      try{const r=await fetch("api.php?action=manual_pdf_chunk",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:JSON.stringify({id,idx:i,total,offset:i*CH,data:b64,file:fileName,name})});
+        const j=await r.json().catch(()=>({}));if(!r.ok||j.error)throw new Error(j.error||("Upload failed ("+r.status+")"));break}
+      catch(e){if(++tries>=3)throw e;await new Promise(r=>setTimeout(r,1500))}
+    }
+    if(onp)onp((i+1)/total);
+  }
+}
+function mDownload(m){const a=h("a",{href:"manual-pdf.php?id="+encodeURIComponent(m.id)});document.body.append(a);a.click();a.remove()}
+async function mBulk(files){
+  files=[...files];if(!files.length)return;
+  const js=files.filter(f=>/\.json$/i.test(f.name)),pdfs=files.filter(f=>/\.pdf$/i.test(f.name));
+  for(const f of js)await mImportFile(f);
+  let n=0,bad=[];
+  for(const f of pdfs){
+    const name=f.name.replace(/\s*-\s*Guest Manual.*$/i,"").replace(/\.pdf$/i,"").trim();
+    const id=mSlug(name);
+    mBusy="Uploading "+(n+1)+" of "+pdfs.length+": "+name;render();
+    try{await mUploadPdf(id,f,f.name,name);n++}catch(e){bad.push(name+" ("+(e.message||"error")+")")}
+  }
+  if(pdfs.length&&n){try{const any=manuals.find(m=>m.id===mSlug(pdfs[0].name.replace(/\s*-\s*Guest Manual.*$/i,"").replace(/\.pdf$/i,"").trim()))||manuals[0];if(any)await db.collection("manuals").doc(any.id).update({})}catch(e){}}
+  mBusy="";render();
+  if(pdfs.length)toast("Uploaded "+n+" PDF"+(n===1?"":"s")+(bad.length?". Failed: "+bad.join(", "):""));
+  window.MB_LAST={n,bad};
+}
+
+async function mImport(){const f=await mPick2(".json,application/json");if(f)await mImportFile(f)}
+async function mImportFile(f){
   let j;try{j=JSON.parse(await f.text())}catch(e){toast("That isn't the manuals data file");return}
   if(!j||!Array.isArray(j.manuals)){toast("That isn't the manuals data file");return}
   mBusy="Importing "+j.manuals.length+" manuals…";render();let n=0;
   for(const x of j.manuals){if(!x.name||!Array.isArray(x.sections))continue;
-    const id=mSlug(x.name);if(manuals.some(m=>m.id===id))continue;
+    const id=mSlug(x.name);const ex=manuals.find(m=>m.id===id);if(ex&&ex.sections&&ex.sections.length)continue;
+    if(ex){await db.collection("manuals").doc(id).update({file:x.file||ex.file||"",page:x.page||3,sections:x.sections.map(s=>({title:mClean(s.title),html:mClean(s.html)}))});n++;continue}
     await db.collection("manuals").doc(id).set({name:x.name,file:x.file||"",page:x.page||3,sections:x.sections.map(s=>({title:mClean(s.title),html:mClean(s.html)})),updated:new Date().toISOString(),log:[{at:new Date().toISOString(),by:window.VL_USER||"",what:"Imported"}]});n++}
   mBusy="";toast(n?"Imported "+n+" manuals":"Nothing new to import");render();
 }
@@ -2119,13 +2158,22 @@ async function mSave(m,what){
   mDirty=null;toast("Saved. Now press \"Update the PDF\".");
 }
 
+function mAllCard(list){
+  const rows=list.map(m=>h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line)"},
+    h("button",{class:"btn link small",style:"text-align:left;padding:4px 0;white-space:normal",onclick:()=>{mSel=m.id;mDirty=null;render();window.scrollTo(0,0)}},m.name),
+    h("span",{style:"display:flex;align-items:center;gap:10px"},
+      h("span",{class:"muted small",text:m.pdfAt?new Date(m.pdfAt).toLocaleDateString("en-GB",{day:"numeric",month:"short"}):"no PDF yet"}),
+      m.pdfAt?h("button",{class:"btn small",onclick:()=>mDownload(m)},"Download"):null)));
+  if(!rows.length)return null;
+  return h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:"All manuals"}),h("span",{class:"muted small",text:list.filter(m=>m.pdfAt).length+" of "+list.length+" have a PDF"})),...rows);
+}
 function manualsView(){
   const head=[h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"},h("h1",{text:"Guest manuals"}),h("span",{class:"muted small",text:"Change a lock code or a link, then rebuild the PDF"}))];
   if(!db)return[...head,h("div",{class:"card"},h("p",{text:"Loading…"}))];
   if(mBusy)head.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+mBusy})));
   if(!manuals.length)return[...head,h("div",{class:"card"},h("h3",{text:"Load the manuals"}),
     h("p",{class:"muted small",text:"Import the file \"manuals-data.json\" once. It holds every property's House Manual page (codes and links). It's kept private in this app."}),
-    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:mImport},"Import manuals-data.json")))];
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:mImport},"Import manuals-data.json"),h("label",{class:"btn",style:"position:relative;overflow:hidden;cursor:pointer"},"Upload manual PDFs",h("input",{type:"file",id:"m-bulk",multiple:true,accept:".pdf,.json,application/pdf,application/json",style:"position:absolute;inset:0;opacity:0;cursor:pointer",onchange:e=>{const fs=[...e.target.files];e.target.value="";e.target.blur();mBulk(fs)}}))),mAllCard([]))];
   const q=mQuery.trim().toLowerCase();
   const list=manuals.filter(m=>!q||m.name.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
   const search=h("input",{class:"search",type:"search",placeholder:"Search a property, e.g. 21 Troon",value:mQuery,"aria-label":"Search properties",
@@ -2134,8 +2182,9 @@ function manualsView(){
     h("option",{value:"",text:list.length?"Choose a property ("+list.length+")":"No match"}),...list.map(m=>h("option",{value:m.id,text:m.name})));
   sel.value=mSel&&list.some(m=>m.id===mSel)?mSel:"";
   const out=[...head,h("div",{class:"card"},h("div",{class:"form"},h("div",{class:"field"},h("label",{text:"Find"}),search),h("div",{class:"field"},h("label",{text:"Property"},),sel)),
-    h("div",{class:"btns"},h("button",{class:"btn link small",onclick:mImport},"Import more from a data file")))];
-  const m0=manuals.find(x=>x.id===mSel);if(!m0)return out;
+    h("div",{class:"btns"},h("label",{class:"btn",style:"position:relative;overflow:hidden;cursor:pointer"},"Upload manual PDFs",h("input",{type:"file",id:"m-bulk",multiple:true,accept:".pdf,.json,application/pdf,application/json",style:"position:absolute;inset:0;opacity:0;cursor:pointer",onchange:e=>{const fs=[...e.target.files];e.target.value="";e.target.blur();mBulk(fs)}})),h("button",{class:"btn link small",onclick:mImport},"Import a data file")),
+    h("p",{class:"muted small",text:"Upload PDFs: pick one or many manual files (named like \"21 Troon - Guest Manual ViVi Stays.pdf\"). Each replaces that property's current PDF."}))];
+  const m0=manuals.find(x=>x.id===mSel);if(!m0){out.push(mAllCard(list));return out}
   const m=mDirty&&mDirty.id===m0.id?mDirty:JSON.parse(JSON.stringify(m0));
   const touch=()=>{mDirty=m};
   const {codes,links}=mFields(m);
@@ -2148,9 +2197,10 @@ function manualsView(){
     h("div",{class:"btns"},
       h("button",{class:"btn primary",disabled:!!mBusy,onclick:async()=>{await mSave(m,"Edited codes/links");render()}},"Save changes"),
       h("button",{class:"btn primary",disabled:!!mBusy,onclick:async()=>{if(mDirty)await mSave(m,"Edited codes/links");mUpdatePdf(m,false)}},"Update the PDF"),
-      h("button",{class:"btn",disabled:!!mBusy,onclick:()=>mUpdatePdf(m,true)},"Use a different PDF file"),
+      m0.pdfAt?h("button",{class:"btn",onclick:()=>mDownload(m0)},"Download PDF"):null,
+      h("button",{class:"btn link",disabled:!!mBusy,onclick:()=>mUpdatePdf(m,true)},"Rebuild from another PDF file"),
       h("button",{class:"btn link",onclick:()=>{mShowWording=!mShowWording;render()}},mShowWording?"Hide wording":"Edit wording")),
-    h("p",{class:"muted small",text:"The first time, you'll be asked for this property's current manual PDF. After that this browser remembers it and each update starts from the last version you made."}),
+    h("p",{class:"muted small",text:m0.pdfAt?"Current PDF saved "+new Date(m0.pdfAt).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+(m0.pdfBy?" by "+m0.pdfBy:"")+(m0.pdfSize?" · "+(m0.pdfSize/1048576).toFixed(1)+" MB":"")+". \"Update the PDF\" rebuilds the House Manual page and saves the new file here.":"No PDF saved for this property yet. Upload it with \"Upload manual PDFs\" above, or press \"Update the PDF\" and pick the file."}),
     mShowWording?mWording(m,touch):null,
     h("h3",{text:"Preview"}),mPreview(m),
     (m.log&&m.log.length)?h("details",{},h("summary",{class:"small",text:"History"}),h("ul",{class:"small muted"},...m.log.slice().reverse().map(x=>h("li",{text:new Date(x.at).toLocaleString("en-GB")+" · "+(x.by||"")+" · "+x.what})))):null));
@@ -2195,7 +2245,7 @@ render();
   db=d;sample=s;
   if(u){try{myId=await u.id()}catch(e){}}
   if(!db){offline="Sign in to claude.ai to save and see leads.";render();return}
-  const busy=()=>{const a=document.activeElement;return a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&a.closest("#main")};
+  const busy=()=>{const a=document.activeElement;return a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&a.type!=="file"&&a.closest("#main")};
   db.collection("leads").onSnapshot(snap=>{allLeads=snap.docs.map(x=>({id:x.id,...x.data()}));leads=allLeads.filter(l=>!l.archived);ready=true;if(selected&&view==="leads"&&!allLeads.some(l=>l.id===selected))selected=null;autoArchive();if(busy())renderTabs();else render()},()=>{offline="Lost connection to the lead list. Reload the page.";render()});
   db.collection("posts").onSnapshot(snap=>{posts=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="help"&&!busy())render()},()=>{});
   db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});

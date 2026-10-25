@@ -26,3 +26,4 @@ jobs:
             config.local.php
             data/*.sqlite*
             data/seed.imported-*
+            data/manuals/**
