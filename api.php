@@ -153,7 +153,7 @@ try {
             $id = (string)($in['id'] ?? '');
             if (!preg_match('/^[a-z0-9][a-z0-9-]{0,79}$/', $id)) fail('Bad manual id');
             $url = (string)($in['url'] ?? '');
-            if (!preg_match('#^https://github\.com/Scofield-Idehen/vivistays-leads/releases/download/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$#', $url)) fail('Bad source');
+            if (!preg_match('#^https://raw\.githubusercontent\.com/Scofield-Idehen/vivistays-leads/manuals-transfer/enc/[a-z0-9-]+\.bin$#', $url)) fail('Bad source');
             $key = hex2bin((string)($in['key'] ?? ''));
             if ($key === false || strlen($key) !== 32) fail('Bad key');
             if (!function_exists('openssl_decrypt')) fail('Server needs the PHP openssl extension', 500);
