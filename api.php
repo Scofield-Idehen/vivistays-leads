@@ -147,6 +147,35 @@ try {
             $db->prepare('INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?)')->execute(['manuals', $id, json_encode($doc, JSON_UNESCAPED_UNICODE), gmdate('c')]);
             out(['ok' => true, 'size' => $doc['pdfSize']]);
 
+        case 'manual_pull':
+            // Fetch an encrypted manual PDF from this project's GitHub release, decrypt it with the
+            // key sent by the signed-in user (AES-256-GCM: 12-byte nonce + ciphertext + 16-byte tag), store it.
+            $id = (string)($in['id'] ?? '');
+            if (!preg_match('/^[a-z0-9][a-z0-9-]{0,79}$/', $id)) fail('Bad manual id');
+            $url = (string)($in['url'] ?? '');
+            if (!preg_match('#^https://github\.com/Scofield-Idehen/vivistays-leads/releases/download/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$#', $url)) fail('Bad source');
+            $key = hex2bin((string)($in['key'] ?? ''));
+            if ($key === false || strlen($key) !== 32) fail('Bad key');
+            if (!function_exists('openssl_decrypt')) fail('Server needs the PHP openssl extension', 500);
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 5, CURLOPT_TIMEOUT => 120, CURLOPT_USERAGENT => 'vivistays-leads']);
+            $blob = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+            if ($blob === false || $code !== 200 || strlen($blob) < 40) fail('Could not download (' . $code . ')');
+            $pdf = openssl_decrypt(substr($blob, 12, -16), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, substr($blob, 0, 12), substr($blob, -16));
+            if ($pdf === false || substr($pdf, 0, 5) !== '%PDF-') fail('Could not decrypt');
+            $dir = __DIR__ . '/data/manuals';
+            if (!is_dir($dir)) mkdir($dir, 0750, true);
+            file_put_contents("$dir/$id.pdf.tmp", $pdf); rename("$dir/$id.pdf.tmp", "$dir/$id.pdf");
+            $file = mb_substr(preg_replace('/[\\\\\/:*?"<>|\r\n]/', '', (string)($in['file'] ?? '')), 0, 150);
+            $name = mb_substr(trim((string)($in['name'] ?? '')), 0, 120);
+            $st = $db->prepare('SELECT data FROM docs WHERE col = ? AND id = ?'); $st->execute(['manuals', $id]);
+            $row = $st->fetchColumn();
+            $doc = $row !== false ? (json_decode($row, true) ?: []) : ['name' => $name ?: $id, 'page' => 3, 'sections' => []];
+            if ($file) $doc['file'] = $file;
+            $doc['pdfAt'] = gmdate('c'); $doc['pdfSize'] = strlen($pdf); $doc['pdfBy'] = $user;
+            $db->prepare('INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?)')->execute(['manuals', $id, json_encode($doc, JSON_UNESCAPED_UNICODE), gmdate('c')]);
+            out(['ok' => true, 'size' => strlen($pdf)]);
+
         case 'delete':
             $col = col_ok($in['collection'] ?? ''); $id = id_ok($in['id'] ?? '');
             $db->prepare('DELETE FROM docs WHERE col = ? AND id = ?')->execute([$col, $id]);
