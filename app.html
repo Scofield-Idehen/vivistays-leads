@@ -528,7 +528,7 @@ function todayView(){
     h("h2",{text:"Today's plan"}),h("p",{text:"Three jobs, in this order. Every message is already written for you."}),
     pstep(1,"Reply to Facebook leads",due.length?due.length+" waiting for a message":"Nobody waiting",due.length?"Start":"View",()=>{filter="open";go(due[0]&&due[0].source==="stayful"?"stayful":"leads",due[0]&&due[0].id)},!due.length),
     pstep(2,"Find new people on Facebook","Add 2 or 3 posts from your groups","Add",()=>{addKind="facebook";go("add")},false),
-    pstep(3,"Message project contacts",odue.length?odue.length+" contractors and organisers to message":"Everyone is up to date",odue.length?"Start":"View",()=>{oFilter="due";go("outreach",odue[0]&&odue[0].id)},!odue.length));
+    pstep(3,"Message project contacts",odue.length?odue.length+" contractors and organisers to message":"Everyone is up to date",odue.length?"Start":"View",()=>{oBrowse=false;go("outreach",odue[0]&&odue[0].id)},!odue.length));
 
   /* who needs a message, both kinds together */
   const items=[...due.map(l=>({t:"l",x:l})),...odue.map(c=>({t:"c",x:c}))].slice(0,7);
@@ -1169,7 +1169,6 @@ function contactRow(c,onclick){
     h("span",{class:"when"+(late?" late":""),text:right}),
     h("span",{class:"sub",text:sub.filter(Boolean).join(" · ")}));
 }
-let oFilter="open";
 function filteredContacts(){
   const q=query.trim().toLowerCase();
   return(oFilter==="archived"?allContacts.filter(c=>c.archived):contacts).filter(c=>{
@@ -1181,19 +1180,72 @@ function filteredContacts(){
         return!q||[c.name,c.company,c.role,c.email,c.eventName,c.eventTown,(projById(c.projectId)||{}).name,c.notes].join(" ").toLowerCase().includes(q)})
   .sort((a,b)=>oDue(b)-oDue(a)||(a.nextFollowUp||"").localeCompare(b.nextFollowUp||""));
 }
+let oFilter="open",oLane=null,oBrowse=false;
+/* ---- focus mode: one lane (email / phone / LinkedIn), overdue apart, 10 new every 6 hours ---- */
+const BATCH_N=10,BATCH_MS=6*3600e3;
+const laneOf=c=>{const ch=chOf(c);return ch==="linkedin"?"linkedin":ch==="phone"?"phone":"email"};
+const LANES=[["email","Email"],["phone","Phone"],["linkedin","LinkedIn"]];
+const oOverdue=c=>!c.archived&&!O_CLOSED.has(c.status)&&(c.status||"new")!=="new"&&!!c.nextFollowUp&&c.nextFollowUp<today();
+const oDueToday=c=>!c.archived&&!O_CLOSED.has(c.status)&&(c.status||"new")!=="new"&&c.nextFollowUp===today();
+const prioRank=c=>({A:0,B:1,C:2}[c.priority]??1);
+const reachable=c=>{const l=laneOf(c);return l==="phone"?!!(c.phone||"").trim():l==="linkedin"?!!(c.url||"").trim():(!!(c.email||"").trim()||c.kind==="event")};
+const slotNo=()=>Math.floor(Date.now()/BATCH_MS);
+function bKey(lane){return"vl_batch_"+lane}
+function bLoad(lane){try{return JSON.parse(localStorage.getItem(bKey(lane))||"null")}catch(e){return null}}
+function bSave(lane,v){try{localStorage.setItem(bKey(lane),JSON.stringify(v))}catch(e){}}
+let bMem={};
+function getBatch(lane,force){
+  const slot=slotNo();let b=bMem[lane]||bLoad(lane);
+  const inLane=contacts.filter(c=>laneOf(c)===lane&&!c.archived);
+  if(force||!b||b.slot!==slot){
+    const fresh=inLane.filter(c=>!O_CLOSED.has(c.status)&&!oOverdue(c)&&((c.status||"new")==="new"&&reachable(c)||oDueToday(c)))
+      .filter(c=>!(force&&b&&b.items.some(x=>x.id===c.id)))
+      .sort((x,y)=>oDueToday(y)-oDueToday(x)||prioRank(x)-prioRank(y)||(x.created||"").localeCompare(y.created||""));
+    b={slot,items:fresh.slice(0,BATCH_N).map(c=>({id:c.id,st:c.status||"new",nf:c.nextFollowUp||""}))};
+    bMem[lane]=b;bSave(lane,b);
+  }
+  bMem[lane]=b;
+  const items=b.items.map(x=>({x,c:allContacts.find(c=>c.id===x.id)})).filter(o=>o.c);
+  return items.map(({x,c})=>({c,done:(c.status||"new")!==x.st||(c.nextFollowUp||"")!==x.nf||!!c.archived}));
+}
+function nextBatchTime(){const t=new Date((slotNo()+1)*BATCH_MS);return t.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}
 function outreachView(){
-  const F=[["open","All open"],["due","To do today"],["project","Projects"],["event","Events"],["replied","Replied"],["archived","Archived"+(allContacts.length-contacts.length?" "+(allContacts.length-contacts.length):"")]];
-  const rows=list=>{
-    if(!ready&&!offline)return[h("div",{class:"empty"},h("p",{text:"Loading…"}))];
-    if(offline)return[h("div",{class:"empty"},h("h3",{text:"Sign in to see contacts"}),h("p",{text:offline}))];
-    if(!list.length)return[h("div",{class:"empty"},h("h3",{text:contacts.length?"Nothing here":"No one yet"}),h("p",{text:"Add a LinkedIn person, an event organiser or a company email."}),h("button",{class:"btn primary",onclick:()=>{addKind="linkedin";go("add")}},"+ Add someone"))];
-    return[h("div",{class:"list"},...list.map(c=>contactRow(c,()=>{selected=c.id;render();window.scrollTo(0,0)})))]};
-  const listcol=h("div",{class:"listcol",style:"display:flex;flex-direction:column;gap:12px;min-width:0"},
-    h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Outreach"}),h("span",{style:"display:flex;gap:10px;align-items:center"},h("span",{class:"muted small",text:contacts.filter(c=>!O_CLOSED.has(c.status)).length+" open"}),importBtn())),
-    h("p",{class:"muted",text:"Everyone we're messaging about projects and events, by email, LinkedIn or phone."}),
-    h("div",{class:"chips",role:"group","aria-label":"Show"},...F.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(oFilter===k),onclick:()=>{oFilter=k;render()}},t))),
-    h("input",{class:"search",id:"oq",type:"search",placeholder:"Search name, company, project or event",value:query,oninput:e=>{query=e.target.value;const r=$("#orows");if(r)r.replaceChildren(...rows(filteredContacts()))}}),
-    h("div",{id:"orows",style:"display:flex;flex-direction:column"},...rows(filteredContacts())));
+  const F=[["open","All open"],["replied","Replied"],["archived","Archived"+(allContacts.length-contacts.length?" "+(allContacts.length-contacts.length):"")]];
+  const open=c=>{selected=c.id;render();window.scrollTo(0,0)};
+  const counts={};for(const[k]of LANES)counts[k]={over:contacts.filter(c=>laneOf(c)===k&&oOverdue(c)).length,all:contacts.filter(c=>laneOf(c)===k&&!O_CLOSED.has(c.status)).length};
+  const lanes=LANES.filter(([k])=>k!=="linkedin"||counts.linkedin.all);
+  if(!oLane||!lanes.some(([k])=>k===oLane))oLane="email";
+  const head=h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Outreach"}),importBtn());
+  if(!ready&&!offline)return[h("div",{class:"split"},h("div",{class:"listcol"},head,h("div",{class:"empty"},h("p",{text:"Loading…"}))),contactDetail())];
+  if(offline)return[h("div",{class:"split"},h("div",{class:"listcol"},head,h("div",{class:"empty"},h("h3",{text:"Sign in to see contacts"}),h("p",{text:offline}))),contactDetail())];
+  const laneTabs=h("div",{class:"chips",role:"tablist","aria-label":"How you contact them"},...lanes.map(([k,t])=>h("button",{class:"chip",role:"tab","aria-pressed":String(!oBrowse&&oLane===k),onclick:()=>{oLane=k;oBrowse=false;selected=null;render()}},
+    t+(counts[k].over?" · "+counts[k].over+" overdue":""))),h("button",{class:"chip","aria-pressed":String(oBrowse),onclick:()=>{oBrowse=true;render()}},"Browse all"));
+  let body;
+  if(oBrowse){
+    const rows=list=>list.length?[h("div",{class:"list"},...list.map(c=>contactRow(c,()=>open(c))))]:[h("div",{class:"empty"},h("h3",{text:"Nothing here"}))];
+    body=[h("div",{class:"chips",role:"group","aria-label":"Show"},...F.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(oFilter===k),onclick:()=>{oFilter=k;render()}},t))),
+      h("input",{class:"search",id:"oq",type:"search",placeholder:"Search name, company, project or event",value:query,oninput:e=>{query=e.target.value;const r=$("#orows");if(r)r.replaceChildren(...rows(filteredContacts()))}}),
+      h("div",{id:"orows",style:"display:flex;flex-direction:column"},...rows(filteredContacts()))];
+  }else{
+    const over=contacts.filter(c=>laneOf(c)===oLane&&oOverdue(c)).sort((a,b)=>(a.nextFollowUp||"").localeCompare(b.nextFollowUp||""));
+    const batch=getBatch(oLane);const done=batch.filter(x=>x.done).length;
+    const waiting=contacts.filter(c=>laneOf(c)===oLane&&!c.archived&&(c.status||"new")==="new"&&reachable(c)&&!batch.some(x=>x.c.id===c.id)).length;
+    const noContact=contacts.filter(c=>!c.archived&&!O_CLOSED.has(c.status)&&(c.status||"new")==="new"&&!reachable(c)).length;
+    const verb=oLane==="phone"?"call":oLane==="linkedin"?"message":"email";
+    const secHead=(title,sub,cls)=>h("div",{style:"display:flex;flex-direction:column;gap:2px;margin-top:6px"},h("h3",{class:cls||"",text:title}),sub?h("span",{class:"muted small",text:sub}):null);
+    body=[
+      over.length?h("div",{class:"card",style:"padding:14px 0 6px;border:2px solid var(--ink)"},
+        h("div",{style:"padding:0 18px"},secHead("Overdue · "+over.length,"Follow-ups that slipped. Clear these first.")),
+        h("div",{class:"list",style:"box-shadow:none"},...over.map(c=>contactRow(c,()=>open(c))))):null,
+      h("div",{class:"card",style:"padding:14px 0 6px"},
+        h("div",{style:"padding:0 18px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap"},
+          secHead("This batch · "+done+" of "+batch.length+" done","Up to "+BATCH_N+" to "+verb+" until "+nextBatchTime()+". The next "+BATCH_N+" arrive then."),
+          done===batch.length&&waiting?h("button",{class:"btn small",onclick:()=>{getBatch(oLane,true);render()}},"Load next "+Math.min(BATCH_N,waiting)+" now"):null),
+        batch.length?h("div",{class:"list",style:"box-shadow:none"},...batch.map(({c,done})=>{const r=contactRow(c,()=>open(c));if(done){r.style.opacity=".45";r.querySelector(".when").textContent="Done ✓"}return r}))
+          :h("div",{class:"empty",style:"padding:18px"},h("p",{text:"Nothing to "+verb+" right now."+(waiting?"":" Import a list or add someone.")}))),
+      h("p",{class:"muted small",text:(waiting?waiting+" more waiting in "+LANES.find(l=>l[0]===oLane)[1]+". They come through "+BATCH_N+" at a time.":"No one else waiting in this list.")+(noContact?" "+noContact+" companies have no phone or email yet. Find them in Browse all, add the details, and they join a batch.":"")})];
+  }
+  const listcol=h("div",{class:"listcol",style:"display:flex;flex-direction:column;gap:12px;min-width:0"},head,laneTabs,...body);
   return[h("div",{class:"split"+(selected?" open":"")},listcol,contactDetail())];
 }
 function contactDetail(){
