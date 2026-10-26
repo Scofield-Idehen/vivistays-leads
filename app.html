@@ -1050,42 +1050,35 @@ function ctx(c){
     what:c.kind==="event"?(c.eventName||"your event"):(p?p.name:(c.projectName||c.company||"your project")),
     place:c.kind==="event"?(c.eventTown||(a?a.name:"the area")):(p?p.place:(c.place||(a?a.name:"the site")))};
 }
-const SIGN="[Your name]\nVivistays\nwww.vivistays.com\nteam@vivistays.com | WhatsApp +44 7578 255663";
+const SIGN="The Vivistays team\nwww.vivistays.com\nteam@vivistays.com | WhatsApp +44 7578 255663";
 const dear=c=>{const f=cFirst(c);return f?"Dear "+f+",":"Dear Sir or Madam,"};
 const T_O={
-  email:c=>{const x=ctx(c);return`Subject: Accommodation for your personnel – ${x.what}
+  email:c=>{const x=ctx(c);const near=x.a?x.a.name:"";const pj=x.p?x.p.name+" ("+x.p.place+")":"";
+return`Subject: Accommodation for your site team${near?" near "+near:""}
 
 ${dear(c)}
 
-I am writing from Vivistays, a furnished accommodation provider managing over 100 properties across the UK.
+${pj?`I understand your organisation is involved in ${pj}.\n\n`:""}Vivistays manages furnished whole homes for visiting site teams${x.a?` in ${x.t}`:" across Scotland and the North of England"}. We offer weekly and monthly stays, free parking and Wi-Fi, and we invoice the company directly.
 
-We understand your organisation is involved in ${x.what} (${x.place}). We manage ${x.n} properties nearby, in ${x.t}, suitable for personnel working on site. Our properties offer:
+If your team needs accommodation, I'd be glad to send availability and rates. If someone else arranges this, I'd be grateful if you could pass this on.
 
-• Whole homes, from 1 to 5 bedrooms
-• Free parking and fast Wi-Fi
-• Weekly and monthly stays at corporate rates
-• Invoicing for company bookings
-• One point of contact for the whole booking
-
-Availability depends on dates, so we would welcome the details of your accommodation requirements. If accommodation is arranged by a colleague, I would be grateful if you could pass this on.
-
-Yours sincerely,
+Kind regards,
 
 ${SIGN}`},
-  emailFu:c=>{const x=ctx(c);return`Subject: Re: Accommodation for your personnel – ${x.what}
+  emailFu:c=>{const x=ctx(c);const near=x.a?x.a.name:"";return`Subject: Re: Accommodation for your site team${near?" near "+near:""}
 
 ${dear(c)}
 
-I am following up on my earlier email about accommodation for personnel working on ${x.what}. We manage ${x.n} properties near the site, in ${x.t}, available for weekly and monthly stays with invoicing for company bookings.
+I'm following up on my earlier email about accommodation for your team. We have furnished homes${x.a?` in ${x.t}`:""}, available for weekly and monthly stays, with invoicing for company bookings.
 
-If another member of your team handles accommodation, I would be grateful for their contact details.
+If someone else in your team handles accommodation, I'd be grateful for their contact details.
 
-Yours sincerely,
+Kind regards,
 
 ${SIGN}`},
   call:c=>{const x=ctx(c);return`What to say:
 
-"Good morning, my name is [Your name] from Vivistays. We manage furnished homes near ${x.place}, in ${x.t}. I understand you're working on ${x.what}. Who looks after accommodation for your site teams?"
+"Good morning, I'm calling from Vivistays. We manage furnished homes for visiting site teams${x.a?" in "+x.t:""}.${x.p?" I understand you're working on "+x.p.name+".":""} Who looks after accommodation for your site teams?"
 
 If they give you a name or email, add it under Edit details and change the channel to Email.`},
   liInvite:c=>{const x=ctx(c);const f=cFirst(c);return`Hi${f?" "+f:""}, I work with Vivistays. We manage furnished homes near ${x.place} for teams working on ${x.what}. Would be good to connect.`},
