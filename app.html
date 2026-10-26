@@ -973,7 +973,7 @@ function contractorEmail(p){
 
 Dear Sir or Madam,
 
-I am writing from Vivistays, a furnished accommodation provider managing over 400 properties across the UK.
+I am writing from Vivistays, a furnished accommodation provider managing over 100 properties across the UK.
 
 We understand your organisation is working on ${p.name} (${p.place}). We manage ${n} properties nearby, in ${towns}, suitable for personnel on site. Our properties offer:
 
@@ -1047,8 +1047,8 @@ const cTitle=c=>c.name||c.company||(c.kind==="event"?c.eventName:"")||"Unnamed c
 function ctx(c){
   const p=c.kind==="event"?null:projById(c.projectId);const a=AREAS[c.area||(p&&p.area)]||null;
   return{p,a,n:a?propCount(a):0,t:a?townsOf(a).slice(0,4).join(", "):"the area",
-    what:c.kind==="event"?(c.eventName||"your event"):(p?p.name:(c.company||"your project")),
-    place:c.kind==="event"?(c.eventTown||(a?a.name:"the area")):(p?p.place:"the site")};
+    what:c.kind==="event"?(c.eventName||"your event"):(p?p.name:(c.projectName||c.company||"your project")),
+    place:c.kind==="event"?(c.eventTown||(a?a.name:"the area")):(p?p.place:(c.place||(a?a.name:"the site")))};
 }
 const SIGN="[Your name]\nVivistays\nwww.vivistays.com\nteam@vivistays.com | WhatsApp +44 7578 255663";
 const dear=c=>{const f=cFirst(c);return f?"Dear "+f+",":"Dear Sir or Madam,"};
@@ -1057,7 +1057,7 @@ const T_O={
 
 ${dear(c)}
 
-I am writing from Vivistays, a furnished accommodation provider managing over 400 properties across the UK.
+I am writing from Vivistays, a furnished accommodation provider managing over 100 properties across the UK.
 
 We understand your organisation is involved in ${x.what} (${x.place}). We manage ${x.n} properties nearby, in ${x.t}, suitable for personnel working on site. Our properties offer:
 
@@ -1100,7 +1100,7 @@ team@vivistays.com`},
 
 ${dear(c)}
 
-I am writing from Vivistays, a furnished accommodation provider managing over 400 properties across the UK.
+I am writing from Vivistays, a furnished accommodation provider managing over 100 properties across the UK.
 
 We noticed ${x.what} is taking place in ${x.place}${c.eventDate?" on "+c.eventDate:""}. We manage ${x.n} properties nearby, in ${x.t}, which may suit attendees, speakers or staff travelling in for the event. Guests get a whole home with parking and Wi-Fi, booked directly with us.
 
@@ -1189,7 +1189,7 @@ function outreachView(){
     if(!list.length)return[h("div",{class:"empty"},h("h3",{text:contacts.length?"Nothing here":"No one yet"}),h("p",{text:"Add a LinkedIn person, an event organiser or a company email."}),h("button",{class:"btn primary",onclick:()=>{addKind="linkedin";go("add")}},"+ Add someone"))];
     return[h("div",{class:"list"},...list.map(c=>contactRow(c,()=>{selected=c.id;render();window.scrollTo(0,0)})))]};
   const listcol=h("div",{class:"listcol",style:"display:flex;flex-direction:column;gap:12px;min-width:0"},
-    h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Outreach"}),h("span",{class:"muted small",text:contacts.filter(c=>!O_CLOSED.has(c.status)).length+" open"})),
+    h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px"},h("h1",{text:"Outreach"}),h("span",{style:"display:flex;gap:10px;align-items:center"},h("span",{class:"muted small",text:contacts.filter(c=>!O_CLOSED.has(c.status)).length+" open"}),importBtn())),
     h("p",{class:"muted",text:"Everyone we're messaging about projects and events, by email, LinkedIn or phone."}),
     h("div",{class:"chips",role:"group","aria-label":"Show"},...F.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(oFilter===k),onclick:()=>{oFilter=k;render()}},t))),
     h("input",{class:"search",id:"oq",type:"search",placeholder:"Search name, company, project or event",value:query,oninput:e=>{query=e.target.value;const r=$("#orows");if(r)r.replaceChildren(...rows(filteredContacts()))}}),
@@ -1251,6 +1251,43 @@ function setOStatus(c,status){
   const n=O_NEXT[status];const patch={status,nextFollowUp:n==null?null:addDays(n)};
   if(status==="sent"&&!c.firstContacted)patch.firstContacted=today();
   saveC(c,patch);render();toast("Saved"+(patch.nextFollowUp&&n>0?". Next step "+niceDate(patch.nextFollowUp).toLowerCase():""));
+}
+
+/* ---------- IMPORT a researched list (companies to call/email + Facebook groups) ---------- */
+let impBusy=false;
+function importBtn(label){
+  const inp=h("input",{type:"file",accept:".json,application/json",style:"position:absolute;inset:0;opacity:0;cursor:pointer",onchange:e=>{const f=e.target.files[0];e.target.value="";e.target.blur();if(f)importList(f)}});
+  return h("label",{class:"btn small",style:"position:relative;overflow:hidden;cursor:pointer"},inp,impBusy?"Importing…":(label||"Import list"));
+}
+async function importList(file){
+  if(!db){toast("Sign in to import");return}
+  let j;try{j=JSON.parse(await file.text())}catch(e){toast("That file isn't a leads list");return}
+  const cos=Array.isArray(j.companies)?j.companies:[],gs=Array.isArray(j.groups)?j.groups:[];
+  if(!cos.length&&!gs.length){toast("Nothing to import in that file");return}
+  impBusy=true;render();
+  const norm=x=>String(x||"").toLowerCase().replace(/\b(ltd|limited|plc|uk|group|the)\b/g,"").replace(/[^a-z0-9]/g,"");
+  const haveC=new Set(allContacts.map(c=>norm(c.company)).filter(Boolean));
+  const haveG=new Set(groups.flatMap(g=>[norm(g.name),String(g.url||"").replace(/\/+$/,"").toLowerCase()]).filter(Boolean));
+  let nc=0,ng=0,skip=0;const now=new Date().toISOString();
+  for(const x of cos){
+    const company=String(x.company||"").trim();if(!company){skip++;continue}
+    const k=norm(company);if(haveC.has(k)){skip++;continue}haveC.add(k);
+    const email=String(x.email||"").trim(),phone=String(x.phone||"").trim();
+    const notes=[x.priority?"Priority "+x.priority:"",x.project?"Project: "+x.project:"",x.why||"",x.project_source?"News: "+x.project_source:"",x.contact_source?"Contact found at: "+x.contact_source:""].filter(Boolean).join("\n");
+    try{await db.collection("contacts").add({kind:"project",channel:email?"email":(phone?"phone":"email"),name:"",role:"",company,email,phone,url:safeUrl(x.website)||"",notes,
+      projectId:"",projectName:String(x.project||"").trim(),place:"",priority:String(x.priority||""),eventName:"",eventDate:"",eventTown:"",area:AREAS[x.area]?x.area:"",
+      source:"Imported list",status:"new",nextFollowUp:today(),created:now,updated:now,createdBy:myId||null});nc++}catch(e){skip++}
+  }
+  let order=60;
+  for(const g of gs){
+    const name=String(g.name||"").trim(),url=safeUrl(g.url)||"";if(!name){skip++;continue}
+    const ku=url.replace(/\/+$/,"").toLowerCase();if(haveG.has(norm(name))||(ku&&haveG.has(ku))){skip++;continue}haveG.add(norm(name));if(ku)haveG.add(ku);
+    const aud=g.audience==="owners"?"Owners":g.audience==="guests"?"Guests":"Owners & guests";
+    const where=AREAS[g.area]?AREAS[g.area].name:(g.area==="uk"?"UK-wide":(g.area||""));
+    try{await db.collection("groups").add({name,url,joined:false,order:order++,region:[aud,where].filter(Boolean).join(" · "),members:String(g.members||""),why:String(g.notes||""),audience:g.audience||"",created:now});ng++}catch(e){skip++}
+  }
+  impBusy=false;render();
+  toast("Added "+nc+" companies and "+ng+" groups"+(skip?" ("+skip+" already there or skipped)":""));
 }
 
 /* ---------- ADD: LinkedIn person, event organiser, company email ---------- */
@@ -1416,6 +1453,7 @@ function groupsView(){
     toJoin.length?h("div",{class:"card"},h("h3",{text:"Groups to join"}),h("p",{class:"muted small",text:"Join with the account you'll message from. Start with the first three, and answer the join questions honestly."}),...toJoin.map(rowFor)):null,
     joined.length?h("div",{class:"card"},h("h3",{text:"Groups you've joined"}),...joined.map(rowFor),h("p",{class:"muted small",text:"No leads from a group after a few weeks? Leave it."})):null,
     h("div",{class:"card"},h("h3",{text:"Where guests post"}),h("p",{class:"muted small",text:"People looking for a place to stay post in local town groups, not host groups. Search Facebook for “Hawick community”, “Peterhead noticeboard” and so on for towns where we have properties."})),
+    h("div",{class:"card"},h("h3",{text:"Import groups"}),h("p",{class:"muted small",text:"Got a researched list file? Import it here. New groups go into Groups to join, and companies go to Outreach."}),h("div",{class:"btns"},importBtn("Import list file"))),
     h("div",{class:"card"},h("h3",{text:"Add a group you joined"}),h("div",{class:"btns",style:"align-items:flex-end"},h("div",{class:"field",style:"flex:1;min-width:200px"},h("label",{for:"g-name",text:"Group name"}),h("input",{id:"g-name",placeholder:"As it appears on Facebook",oninput:e=>nf.name=e.target.value})),h("button",{class:"btn primary",onclick:addOwn},"Add group")))];
 }
 
