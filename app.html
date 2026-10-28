@@ -283,7 +283,7 @@ details.more .facts{border-top:0;margin-top:8px}
   h1{font-size:30px}
   .split{grid-template-columns:minmax(0,1fr)}
   .listcol{position:static}
-  .split.open .listcol{display:none}
+  .split.open .listcol{display:none!important}
   .split:not(.open) .detail{display:none}
   .back{display:inline-block}
   .form{grid-template-columns:minmax(0,1fr)}
@@ -297,7 +297,26 @@ details.more .facts{border-top:0;margin-top:8px}
   .tabbar .tab-n{position:absolute;top:0;left:calc(50% + 6px);background:var(--ink);color:var(--inv);border-radius:99px;font-size:11px;padding:0 5px;line-height:16px}
   .tabbar .fab{color:var(--ink)}
   .tabbar .fab svg{background:var(--ink);color:var(--inv);border-radius:50%;padding:3px}
+  .tabbar button{white-space:nowrap;font-size:11.5px}
+  .codebig{font-size:30px;padding:10px 14px}
 }
+/* lock codes */
+.codesearch{font-size:20px;padding-block:14px}
+.codecard .codeblock{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--line)}
+.codecard .codeblock:first-of-type{border-top:0;padding-top:0}
+.codes{display:flex;flex-wrap:wrap;gap:10px}
+.codebig{font:700 34px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;background:var(--well);color:var(--ink);border:0;border-radius:12px;padding:12px 18px;cursor:pointer}
+/* phone "More" sheet */
+.moresheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.35);display:flex;align-items:flex-end}
+.morepanel{background:var(--card);width:100%;border-radius:18px 18px 0 0;padding:8px 12px calc(14px + env(safe-area-inset-bottom,0px));max-height:80vh;overflow:auto}
+.moregrab{width:40px;height:5px;border-radius:3px;background:var(--line2);margin:4px auto 8px}
+.morehead{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 8px;font-size:17px}
+.moreitem{display:flex;align-items:center;gap:14px;width:100%;border:0;background:none;color:var(--ink);font-size:17px;padding:13px 8px;border-top:1px solid var(--line);text-align:left;cursor:pointer;text-decoration:none}
+.moreitem svg{width:24px;height:24px;flex:none;color:var(--ink2)}
+.moreitem .ml{flex:1}
+.moreitem .mn{background:var(--ink);color:var(--inv);border-radius:99px;font-size:12px;padding:1px 8px}
+.moreitem[aria-current="true"]{font-weight:600}
+.signoutm{color:var(--ink2)}
 </style>
 
 <div class="shell">
@@ -441,7 +460,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","codes","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -462,10 +481,12 @@ const ICON={
   newsletter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>',
   manuals:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5Z"/><path d="M15 3v4h4"/><circle cx="10" cy="14" r="2.2"/><path d="M12 14h4.5M15 14v2"/></svg>',
   social:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>',
-  add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>'
+  add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>',
+  codes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.5 11.5 9-9"/><path d="m17 6 3 3"/><path d="m14.5 8.5 2 2"/></svg>',
+  more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>'
 };
-const NAV=[["today","Dashboard"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
-const SHORT={today:"Home",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
+const NAV=[["today","Dashboard"],["codes","Lock codes"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
+const SHORT={today:"Home",codes:"Codes",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
@@ -477,10 +498,25 @@ function renderTabs(){
   const c=navCounts();
   const n=id=>c[id]?h("span",{class:"tab-n"+(id==="today"?" due":""),text:c[id]}):null;
   $("#nav").replaceChildren(h("div",{class:"navlabel",text:"Menu"}),...NAV.map(([id,label])=>{const b=h("button",{"aria-current":String(view===id),onclick:()=>go(id)},label,n(id));b.insertAdjacentHTML("afterbegin",ICON[id]);return b}));
-  const tb=[...NAV.slice(0,2).map(x=>x[0]),"add",...NAV.slice(2).map(x=>x[0])];
+  /* phone: four main tabs plus "More", so labels never overlap */
+  const tb=["today","leads","add","codes","more"];
+  const inMore=!["today","leads","add","codes"].includes(view);
   $("#tabbar").replaceChildren(...tb.map(id=>{
-    const b=h("button",{class:id==="add"?"fab":"","aria-current":String(view===id),onclick:()=>{if(id==="add"){addKind="facebook"}go(id)}},id==="add"?"Add":SHORT[id],id==="today"&&c.today?h("span",{class:"tab-n",text:c.today}):null);
+    const cur=id==="more"?inMore:view===id;
+    const b=h("button",{class:id==="add"?"fab":"","aria-current":String(cur),onclick:()=>{if(id==="more"){openMore();return}if(id==="add"){addKind="facebook"}go(id)}},id==="add"?"Add":SHORT[id],id==="today"&&c.today?h("span",{class:"tab-n",text:c.today}):null);
     b.insertAdjacentHTML("afterbegin",ICON[id]);return b}));
+}
+function openMore(){
+  const c=navCounts();
+  const close=()=>{sh.remove();document.removeEventListener("keydown",esc)};
+  const esc=e=>{if(e.key==="Escape")close()};
+  const items=NAV.filter(([id])=>!["today","leads","codes"].includes(id)).map(([id,label])=>{
+    const b=h("button",{class:"moreitem","aria-current":String(view===id),onclick:()=>{close();go(id)}},h("span",{class:"ml",text:label}),c[id]?h("span",{class:"mn",text:c[id]}):null);
+    b.insertAdjacentHTML("afterbegin",ICON[id]);return b});
+  const sh=h("div",{class:"moresheet",role:"dialog","aria-label":"More sections",onclick:e=>{if(e.target===sh)close()}},
+    h("div",{class:"morepanel"},h("div",{class:"moregrab"}),h("div",{class:"morehead"},h("b",{text:"More"}),h("button",{class:"btn link small",onclick:close},"Close")),...items,
+      document.querySelector(".signout")?h("a",{class:"moreitem signoutm",href:"?logout=1"},h("span",{class:"ml",text:"Sign out"})):null));
+  document.body.append(sh);document.addEventListener("keydown",esc);
 }
 
 /* one-line help cards for beginners, dismissible and remembered on this device */
@@ -502,9 +538,9 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="codes"?codesView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
-  const hc=helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
+  const hc=selected&&window.innerWidth<=820?null:helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
 }
 
@@ -2249,6 +2285,47 @@ function mAllCard(list){
       m.pdfAt?h("button",{class:"btn small",onclick:()=>mDownload(m)},"Download"):null)));
   if(!rows.length)return null;
   return h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:"All manuals"}),h("span",{class:"muted small",text:list.filter(m=>m.pdfAt).length+" of "+list.length+" have a PDF"})),...rows);
+}
+/* ---------- LOCK CODES: type a property name, see its lockbox / door code ---------- */
+let cQuery="";
+function cNorm(t){return (t||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
+function cInfo(m){
+  const out=[];
+  (m.sections||[]).forEach(s=>{
+    const title=mTitle(s.title);
+    const d=document.createElement("div");d.innerHTML=s.html;
+    const spans=[...d.querySelectorAll("span.code")].map(e=>e.textContent.trim()).filter(Boolean);
+    d.querySelectorAll("li,p,br,div").forEach(e=>e.append(" "));
+    const text=d.textContent.replace(/\s+/g," ").trim();
+    let codes=spans;
+    if(!codes.length&&/lock|key ?safe|key ?box|door|keypad|access|entry/i.test(title)){
+      codes=[...text.matchAll(/(?:enter|code(?:\s+is)?|pin(?:\/security code)?(?:\s+is)?)\s*:?\s*(\d{3,8})\b/gi)].map(x=>x[1]);
+    }
+    if(codes.length)out.push({title,codes:[...new Set(codes)],text});
+  });
+  return out;
+}
+function codesView(){
+  const head=h("div",{},h("h1",{text:"Lock codes"}),h("p",{class:"muted",text:"Type a property name to see its lockbox or door code."}));
+  if(!db)return[head,h("div",{class:"card"},h("p",{text:"Loading…"}))];
+  const inp=h("input",{class:"search codesearch",type:"search",placeholder:"e.g. 21 Troon",value:cQuery,autocomplete:"off",autocapitalize:"off",spellcheck:"false","aria-label":"Property name",
+    oninput:e=>{cQuery=e.target.value;const pos=e.target.selectionStart;render();const s=$("#main .codesearch");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}}});
+  requestAnimationFrame(()=>{const s=$("#main .codesearch");if(s&&document.activeElement!==s&&!cQuery&&window.innerWidth>820)s.focus()});
+  const q=cNorm(cQuery),words=q.split(" ").filter(Boolean);
+  if(!words.length)return[head,h("div",{class:"card"},inp,h("p",{class:"muted small",text:manuals.length+" properties. Codes come from each property's guest manual; change them under Guest manuals."}))];
+  const list=manuals.filter(m=>{const n=cNorm(m.name);return words.every(w=>n.split(" ").some(x=>x.startsWith(w))||n.includes(w))})
+    .sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true})).slice(0,12);
+  const copy=async v=>{try{await navigator.clipboard.writeText(v);toast("Copied "+v)}catch(e){toast(v)}};
+  const cards=list.map(m=>{
+    const info=cInfo(m);
+    return h("div",{class:"card codecard"},
+      h("div",{class:"cardhead"},h("h3",{text:m.name}),h("button",{class:"btn link small",onclick:()=>{mSel=m.id;mDirty=null;go("manuals")}},"Open manual")),
+      info.length?info.map(i=>h("div",{class:"codeblock"},h("div",{class:"muted small",text:i.title}),
+        h("div",{class:"codes"},...i.codes.map(v=>h("button",{class:"codebig",title:"Copy",onclick:()=>copy(v)},v))),
+        h("p",{class:"small",text:i.text.length>260?i.text.slice(0,257)+"…":i.text})))
+      :h("p",{class:"muted small",text:"No code found in this manual. Add it under Guest manuals."}));
+  });
+  return[head,h("div",{class:"card"},inp),...(cards.length?cards:[h("div",{class:"card"},h("p",{class:"muted",text:"No property matches \""+cQuery+"\"."}))])];
 }
 function manualsView(){
   const head=[h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"},h("h1",{text:"Guest manuals"}),h("span",{class:"muted small",text:"Change a lock code or a link, then rebuild the PDF"}))];
