@@ -305,7 +305,7 @@ details.more .facts{border-top:0;margin-top:8px}
 .codecard .codeblock{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--line)}
 .codecard .codeblock:first-of-type{border-top:0;padding-top:0}
 .codes{display:flex;flex-wrap:wrap;gap:10px}
-.wifirow{display:flex;align-items:center;gap:10px;margin:6px 0;flex-wrap:wrap}.wifirow .muted{min-width:72px}.wifival{font:600 18px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--well);color:var(--ink);border:0;border-radius:10px;padding:8px 12px;cursor:pointer;word-break:break-all;text-align:left}.warn{color:#b45309}
+.wifihead{display:flex;justify-content:space-between;align-items:center;gap:10px}.wifirow{display:flex;align-items:center;gap:10px;margin:6px 0;flex-wrap:wrap}.wifirow .muted{min-width:72px}.wifival{font:600 18px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--well);color:var(--ink);border:0;border-radius:10px;padding:8px 12px;cursor:pointer;word-break:break-all;text-align:left}.warn{color:#b45309}
 .codebig{font:700 34px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;background:var(--well);color:var(--ink);border:0;border-radius:12px;padding:12px 18px;cursor:pointer}
 /* phone "More" sheet */
 .moresheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.35);display:flex;align-items:flex-end}
@@ -2306,11 +2306,33 @@ function cInfo(m){
   });
   return out;
 }
-function wifiBlock(w,copy){
-  if(!w)return h("div",{class:"codeblock"},h("div",{class:"muted small",text:"WiFi"}),h("p",{class:"muted small",text:"No WiFi details saved yet."}));
-  if(w.note)return h("div",{class:"codeblock"},h("div",{class:"muted small",text:"WiFi"}),h("p",{class:"small",text:w.note}));
+let wifiEdit=null;
+async function wifiSave(m,network,password){
+  network=network.trim();password=password.trim();
+  if(!network){toast("Enter the WiFi name");return}
+  const log=(m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what:"WiFi changed"});
+  try{
+    await db.collection("manuals").doc(m.id).update({wifi:{network,password,sure:true},updated:new Date().toISOString(),log});
+    m.wifi={network,password,sure:true};wifiEdit=null;toast("WiFi saved for "+m.name);render();
+  }catch(e){toast("Couldn't save WiFi: "+(e.message||e))}
+}
+function wifiBlock(m,copy){
+  const w=m.wifi;
+  const title=h("div",{class:"wifihead"},h("span",{class:"muted small",text:"WiFi"}),
+    wifiEdit===m.id?null:h("button",{class:"btn link small",onclick:()=>{wifiEdit=m.id;render()}},w&&!w.note?"Change":"Add WiFi"));
+  if(wifiEdit===m.id){
+    const n=h("input",{type:"text",value:(w&&w.network)||"",placeholder:"WiFi name",autocomplete:"off",autocapitalize:"off",spellcheck:"false","aria-label":"WiFi name"});
+    const p=h("input",{type:"text",value:(w&&w.password)||"",placeholder:"Password",autocomplete:"off",autocapitalize:"off",spellcheck:"false","aria-label":"WiFi password"});
+    return h("div",{class:"codeblock"},title,
+      h("div",{class:"field"},h("label",{text:"WiFi name"}),n),
+      h("div",{class:"field"},h("label",{text:"Password"}),p),
+      h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>wifiSave(m,n.value,p.value)},"Save"),h("button",{class:"btn",onclick:()=>{wifiEdit=null;render()}},"Cancel")),
+      h("p",{class:"muted small",text:"This only updates the app. Remember to update the router and the guest manual too."}));
+  }
+  if(!w)return h("div",{class:"codeblock"},title,h("p",{class:"muted small",text:"No WiFi details saved yet."}));
+  if(w.note)return h("div",{class:"codeblock"},title,h("p",{class:"small",text:w.note}));
   const row=(label,v)=>h("div",{class:"wifirow"},h("span",{class:"muted small",text:label}),h("button",{class:"wifival",title:"Copy",onclick:()=>copy(v)},v));
-  return h("div",{class:"codeblock"},h("div",{class:"muted small",text:"WiFi"}),row("Network",w.network||"—"),row("Password",w.password||"—"),
+  return h("div",{class:"codeblock"},title,row("Network",w.network||"—"),row("Password",w.password||"—"),
     w.sure===false?h("p",{class:"small warn",text:"Read from the manual image, double-check against the manual before sending."}):null);
 }
 function codesView(){
@@ -2332,7 +2354,7 @@ function codesView(){
         h("div",{class:"codes"},...i.codes.map(v=>h("button",{class:"codebig",title:"Copy",onclick:()=>copy(v)},v))),
         h("p",{class:"small",text:i.text.length>260?i.text.slice(0,257)+"…":i.text})))
       :h("p",{class:"muted small",text:"No code found in this manual. Add it under Guest manuals."}),
-      wifiBlock(m.wifi,copy));
+      wifiBlock(m,copy));
   });
   return[head,h("div",{class:"card"},inp),...(cards.length?cards:[h("div",{class:"card"},h("p",{class:"muted",text:"No property matches \""+cQuery+"\"."}))])];
 }
