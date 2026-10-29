@@ -2202,8 +2202,89 @@ async function mBuildPdf(m,file){
   }finally{stage.remove()}
 }
 
-async function mUpdatePdf(m,forcePick){
-  if(mBusy)return;
+/* ---------- Wi-Fi page: redraw the QR code, network and password on the manual's Wi-Fi page ---------- */
+async function mWifiPageNo(pdf){
+  // the WI-FI icon in the header links to the Wi-Fi page
+  for(let i=1;i<=Math.min(4,pdf.numPages);i++){
+    const pg=await pdf.getPage(i);const vp=pg.getViewport({scale:1});const anns=await pg.getAnnotations();
+    for(const a of anns){
+      if(a.subtype!=="Link"||!a.dest)continue;
+      const cx=(a.rect[0]+a.rect[2])/2/vp.width,cy=(a.rect[1]+a.rect[3])/2/vp.height;
+      if(cx>0.395&&cx<0.505&&cy>0.86){
+        let d=a.dest;if(typeof d==="string")d=await pdf.getDestination(d);
+        if(d&&d[0])try{return (await pdf.getPageIndex(d[0]))+1}catch(e){}
+      }
+    }
+  }
+  return null;
+}
+function mWifiQrText(w){
+  const e=s=>String(s||"").replace(/([\\;,:"])/g,"\\$1");
+  return w.password?`WIFI:T:WPA;S:${e(w.network)};P:${e(w.password)};;`:`WIFI:T:nopass;S:${e(w.network)};;`;
+}
+async function mWifiPdf(m,bytes){
+  const w=m.wifi;
+  if(!w||w.note||!w.network)return{out:bytes,done:false,why:"no WiFi details saved"};
+  await mLibs();await mScript("qrcode.js");
+  const pdf=await window.pdfjsLib.getDocument({data:bytes.slice()}).promise;
+  const pn=await mWifiPageNo(pdf);
+  if(!pn)return{out:bytes,done:false,why:"couldn't find the Wi-Fi page"};
+  const p=await pdf.getPage(pn);const vp=p.getViewport({scale:200/72});
+  const cv=document.createElement("canvas");cv.width=Math.ceil(vp.width);cv.height=Math.ceil(vp.height);
+  const ctx=cv.getContext("2d");
+  await p.render({canvasContext:ctx,viewport:vp}).promise;
+  const W=cv.width,H=cv.height;
+  const px=(x,y)=>ctx.getImageData(Math.round(x),Math.round(y),1,1).data;
+  const bgc=px(W*0.02,H*0.55),bg=`rgb(${bgc[0]},${bgc[1]},${bgc[2]})`;
+  // gold from the "Wi-Fi Code" title
+  let gold="rgb(201,165,92)";
+  {const y0=Math.round(H*0.2),y1=Math.round(H*0.31),d=ctx.getImageData(0,y0,W,y1-y0).data;let r=0,g=0,b=0,n=0;
+    for(let i=0;i<d.length;i+=16){if(d[i]>140&&d[i]-d[i+2]>45){r+=d[i];g+=d[i+1];b+=d[i+2];n++}}
+    if(n>50)gold=`rgb(${Math.round(r/n)},${Math.round(g/n)},${Math.round(b/n)})`}
+  // QR box: the white square on the page, or the standard template position
+  let box={x:W*47/413,y:H*216/585,s:W*192/413};
+  {const y0=Math.round(H*0.25),y1=Math.round(H*0.8),x0=Math.round(W*0.05),x1=Math.round(W*0.75),bw=x1-x0,bh=y1-y0;
+    const d=ctx.getImageData(x0,y0,bw,bh).data;const rows=new Float32Array(bh),cols=new Float32Array(bw);
+    for(let y=0;y<bh;y++)for(let x=0;x<bw;x++){const i=(y*bw+x)*4;if(d[i]>240&&d[i+1]>240&&d[i+2]>240){rows[y]++;cols[x]++}}
+    const run=(a,len,lim)=>{let best=[0,-1],s=-1;for(let i=0;i<=len;i++){const on=i<len&&a[i]>lim;if(on&&s<0)s=i;if(!on&&s>=0){if(i-1-s>best[1]-best[0])best=[s,i-1];s=-1}}return best};
+    const r=run(rows,bh,bw*0.12),c=run(cols,bw,bh*0.12);const bwid=c[1]-c[0],bht=r[1]-r[0];
+    if(bwid>W*0.2&&bwid<W*0.6&&bwid/bht>0.8&&bwid/bht<1.25&&Math.abs(x0+c[0]-box.x)<W*0.08&&Math.abs(y0+r[0]-box.y)<H*0.08)
+      box={x:x0+c[0],y:y0+r[0],s:Math.max(bwid,bht)}}
+  // clear the middle of the page (old QR, old values, or the "router sticker" card)
+  ctx.fillStyle=bg;ctx.fillRect(W*0.03,H*0.352,W*0.94,H*0.4);
+  // QR
+  ctx.fillStyle="#fff";ctx.fillRect(box.x,box.y,box.s,box.s);
+  const q=window.qrcode(0,"H");q.addData(mWifiQrText(w));q.make();
+  const n=q.getModuleCount(),mg=box.s*0.06,cell=(box.s-2*mg)/n;ctx.fillStyle=gold;
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))ctx.fillRect(Math.floor(box.x+mg+c*cell),Math.floor(box.y+mg+r*cell),Math.ceil(cell),Math.ceil(cell));
+  const cs=box.s*0.22,cx0=box.x+(box.s-cs)/2,cy0=box.y+(box.s-cs)/2;
+  ctx.fillStyle="#fff";ctx.fillRect(cx0,cy0,cs,cs);ctx.strokeStyle=gold;ctx.lineWidth=box.s*0.008;ctx.strokeRect(cx0+cs*0.08,cy0+cs*0.08,cs*0.84,cs*0.84);
+  await Promise.all(["400 12pt VOpen","700 12pt VOpen"].map(f=>document.fonts.load(f)));
+  ctx.fillStyle=gold;ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.font=`700 ${Math.round(cs*0.2)}px VOpen, Arial, sans-serif`;ctx.fillText("SCAN",box.x+box.s/2,cy0+cs*0.38);ctx.fillText("ME",box.x+box.s/2,cy0+cs*0.62);
+  // network and password, centred in the column to the right of the QR
+  const colX0=box.x+box.s,colX1=W*0.95,ccx=(colX0+colX1)/2,colW=(colX1-colX0)*0.9;
+  const put=(txt,weight,frac,size)=>{let fs=size;ctx.font=`${weight} ${fs}px VOpen, Arial, sans-serif`;while(ctx.measureText(txt).width>colW&&fs>size*0.45){fs-=1;ctx.font=`${weight} ${fs}px VOpen, Arial, sans-serif`}ctx.fillText(txt,ccx,box.y+box.s*frac)};
+  ctx.fillStyle="#fff";
+  const fsz=Math.round(box.s*0.058);
+  put("WiFi Network:",700,0.22,fsz);put(w.network,400,0.34,fsz);
+  if(w.password){put("Password:",700,0.62,fsz);put(w.password,400,0.74,fsz)}else put("No password needed",400,0.62,fsz);
+  // put the new page image into the PDF, keeping the header navigation links
+  const jpg=await new Promise(r=>cv.toBlob(b=>r(b),"image/jpeg",0.9));
+  const {PDFDocument,PDFName}=window.PDFLib;
+  const doc=await PDFDocument.load(bytes,{ignoreEncryption:true});
+  const page=doc.getPage(pn-1);const sz=page.getSize();
+  const img=await doc.embedJpg(new Uint8Array(await jpg.arrayBuffer()));
+  page.node.set(PDFName.of("Contents"),doc.context.obj([]));
+  page.drawImage(img,{x:0,y:0,width:sz.width,height:sz.height});
+  return{out:await doc.save({useObjectStreams:true}),done:true,page:pn};
+}
+
+/* Rebuild the manual: House Manual page (codes and links) and the Wi-Fi page.
+   opts.auto: called after a save, so never ask for a file. opts.house / opts.wifi: which pages to redo. */
+async function mUpdatePdf(m,forcePick,opts={}){
+  const house=opts.house!==false,wifi=opts.wifi!==false;
+  if(mBusy){if(opts.auto)toast("Another manual is updating, press \"Update the PDF\" for "+m.name+" in a moment");return}
   let file=null;
   if(!forcePick&&m.pdfAt){
     mBusy="Fetching the current PDF…";render();
@@ -2211,17 +2292,23 @@ async function mUpdatePdf(m,forcePick){
     mBusy="";
   }
   if(!file&&!forcePick){const c=await mCacheGet(m.id);if(c)file=new File([c.bytes],c.name,{type:"application/pdf"})}
+  if(!file&&opts.auto){toast("Saved. "+m.name+" has no PDF in the app yet, so the manual wasn't updated. Upload it under Guest manuals.");render();return}
   if(!file){toast("Pick the current PDF for "+m.name);file=await mPick();if(!file){render();return}}
-  mBusy="Building the new House Manual page…";render();
+  mBusy="Updating the "+m.name+" manual…";render();
   try{
-    const{out,fs}=await mBuildPdf(m,file);
+    let out=new Uint8Array(await file.arrayBuffer()),fs=12,did=[],skip=[];
+    if(house){const r=await mBuildPdf(m,file);out=r.out;fs=r.fs;did.push("House Manual page")}
+    if(wifi){try{const r=await mWifiPdf(m,out);if(r.done){out=r.out;did.push("Wi-Fi page")}else if(!house||(m.wifi&&!m.wifi.note))skip.push("Wi-Fi page ("+r.why+")")}
+      catch(e){console.error(e);skip.push("Wi-Fi page ("+(e.message||"error")+")")}}
+    if(!did.length){toast("Manual not changed: "+skip.join(", "));mBusy="";render();return}
     const name=m.file||(m.name+" - Guest Manual ViVi Stays.pdf");
-    mBusy="Saving the new PDF to the app…";render();
+    mBusy="Saving the new "+m.name+" manual…";render();
     await mUploadPdf(m.id,new Blob([out],{type:"application/pdf"}),name,m.name);
     await mCachePut(m.id,{name,bytes:out,saved:new Date().toISOString()});
-    const log=(m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what:"PDF rebuilt"});
+    const cur=manuals.find(x=>x.id===m.id)||m;
+    const log=(cur.log||m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what:"PDF updated: "+did.join(" + ")});
     await db.collection("manuals").doc(m.id).update({log});
-    toast((fs<11?"Done (text shrunk slightly to fit). ":"Done. ")+"Use \"Download PDF\" to get it.");
+    toast(m.name+" manual updated ("+did.join(" + ")+")"+(fs<11?", text shrunk slightly to fit":"")+(skip.length?". Not done: "+skip.join(", "):""));
   }catch(e){console.error(e);toast((e&&e.message)||"Couldn't build the PDF")}
   mBusy="";render();
 }
@@ -2275,7 +2362,7 @@ function mPick2(accept){return new Promise(res=>{const i=h("input",{type:"file",
 async function mSave(m,what){
   const log=(m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what});
   await db.collection("manuals").doc(m.id).update({sections:m.sections,updated:new Date().toISOString(),log});
-  mDirty=null;toast("Saved. Now press \"Update the PDF\".");
+  m.log=log;mDirty=null;toast("Saved. Updating the manual…");
 }
 
 function mAllCard(list){
@@ -2313,8 +2400,9 @@ async function wifiSave(m,network,password){
   const log=(m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what:"WiFi changed"});
   try{
     await db.collection("manuals").doc(m.id).update({wifi:{network,password,sure:true},updated:new Date().toISOString(),log});
-    m.wifi={network,password,sure:true};wifiEdit=null;toast("WiFi saved for "+m.name);render();
-  }catch(e){toast("Couldn't save WiFi: "+(e.message||e))}
+    m.wifi={network,password,sure:true};m.log=log;wifiEdit=null;toast("WiFi saved for "+m.name+". Updating the manual…");render();
+  }catch(e){toast("Couldn't save WiFi: "+(e.message||e));return}
+  await mUpdatePdf(m,false,{auto:true,house:false});
 }
 function wifiBlock(m,copy){
   const w=m.wifi;
@@ -2327,7 +2415,7 @@ function wifiBlock(m,copy){
       h("div",{class:"field"},h("label",{text:"WiFi name"}),n),
       h("div",{class:"field"},h("label",{text:"Password"}),p),
       h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>wifiSave(m,n.value,p.value)},"Save"),h("button",{class:"btn",onclick:()=>{wifiEdit=null;render()}},"Cancel")),
-      h("p",{class:"muted small",text:"This only updates the app. Remember to update the router and the guest manual too."}));
+      h("p",{class:"muted small",text:"Saving also updates the Wi-Fi page in this property's guest manual. Remember to change the router itself."}));
   }
   if(!w)return h("div",{class:"codeblock"},title,h("p",{class:"muted small",text:"No WiFi details saved yet."}));
   if(w.note)return h("div",{class:"codeblock"},title,h("p",{class:"small",text:w.note}));
@@ -2336,7 +2424,7 @@ function wifiBlock(m,copy){
     w.sure===false?h("p",{class:"small warn",text:"Read from the manual image, double-check against the manual before sending."}):null);
 }
 function codesView(){
-  const head=h("div",{},h("h1",{text:"Lock codes"}),h("p",{class:"muted",text:"Type a property name to see its lockbox code and WiFi."}));
+  const head=h("div",{},h("h1",{text:"Lock codes"}),h("p",{class:"muted",text:"Type a property name to see its lockbox code and WiFi."}),mBusy?h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+mBusy})):null);
   if(!db)return[head,h("div",{class:"card"},h("p",{text:"Loading…"}))];
   const inp=h("input",{class:"search codesearch",type:"search",placeholder:"e.g. 21 Troon",value:cQuery,autocomplete:"off",autocapitalize:"off",spellcheck:"false","aria-label":"Property name",
     oninput:e=>{cQuery=e.target.value;const pos=e.target.selectionStart;render();const s=$("#main .codesearch");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}}});
@@ -2359,7 +2447,7 @@ function codesView(){
   return[head,h("div",{class:"card"},inp),...(cards.length?cards:[h("div",{class:"card"},h("p",{class:"muted",text:"No property matches \""+cQuery+"\"."}))])];
 }
 function manualsView(){
-  const head=[h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"},h("h1",{text:"Guest manuals"}),h("span",{class:"muted small",text:"Change a lock code or a link, then rebuild the PDF"}))];
+  const head=[h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"},h("h1",{text:"Guest manuals"}),h("span",{class:"muted small",text:"Change a lock code, link or WiFi and the manual updates itself"}))];
   if(!db)return[...head,h("div",{class:"card"},h("p",{text:"Loading…"}))];
   if(mBusy)head.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+mBusy})));
   if(!manuals.length)return[...head,h("div",{class:"card"},h("h3",{text:"Load the manuals"}),
@@ -2385,13 +2473,14 @@ function manualsView(){
     h("h3",{text:"Links"}),
     links.length?h("div",{class:"form"},...links.map(l=>h("div",{class:"field wide"},h("label",{text:l.title+" · \""+l.text+"\""}),h("input",{value:l.value,type:"url",oninput:e=>{mSet(m,"link",l.si,l.ei,e.target.value.trim());touch()}})))):h("p",{class:"muted small",text:"No links on this page yet."}),
     mAddLink(m,touch),
+    wifiBlock(m0,async v=>{try{await navigator.clipboard.writeText(v);toast("Copied "+v)}catch(e){toast(v)}}),
     h("div",{class:"btns"},
-      h("button",{class:"btn primary",disabled:!!mBusy,onclick:async()=>{await mSave(m,"Edited codes/links");render()}},"Save changes"),
-      h("button",{class:"btn primary",disabled:!!mBusy,onclick:async()=>{if(mDirty)await mSave(m,"Edited codes/links");mUpdatePdf(m,false)}},"Update the PDF"),
+      h("button",{class:"btn primary",disabled:!!mBusy,onclick:async()=>{await mSave(m,"Edited codes/links");mUpdatePdf(m,false,{auto:true})}},"Save changes"),
+      h("button",{class:"btn",disabled:!!mBusy,onclick:async()=>{if(mDirty)await mSave(m,"Edited codes/links");mUpdatePdf(m,false)}},"Update the PDF"),
       m0.pdfAt?h("button",{class:"btn",onclick:()=>mDownload(m0)},"Download PDF"):null,
       h("button",{class:"btn link",disabled:!!mBusy,onclick:()=>mUpdatePdf(m,true)},"Rebuild from another PDF file"),
       h("button",{class:"btn link",onclick:()=>{mShowWording=!mShowWording;render()}},mShowWording?"Hide wording":"Edit wording")),
-    h("p",{class:"muted small",text:m0.pdfAt?"Current PDF saved "+new Date(m0.pdfAt).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+(m0.pdfBy?" by "+m0.pdfBy:"")+(m0.pdfSize?" · "+(m0.pdfSize/1048576).toFixed(1)+" MB":"")+". \"Update the PDF\" rebuilds the House Manual page and saves the new file here.":"No PDF saved for this property yet. Upload it with \"Upload manual PDFs\" above, or press \"Update the PDF\" and pick the file."}),
+    h("p",{class:"muted small",text:m0.pdfAt?"Current PDF saved "+new Date(m0.pdfAt).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+(m0.pdfBy?" by "+m0.pdfBy:"")+(m0.pdfSize?" · "+(m0.pdfSize/1048576).toFixed(1)+" MB":"")+". Saving a code, link or WiFi change updates the manual automatically. \"Update the PDF\" redoes it by hand.":"No PDF saved for this property yet. Upload it with \"Upload manual PDFs\" above, or press \"Update the PDF\" and pick the file."}),
     mShowWording?mWording(m,touch):null,
     h("h3",{text:"Preview"}),mPreview(m),
     (m.log&&m.log.length)?h("details",{},h("summary",{class:"small",text:"History"}),h("ul",{class:"small muted"},...m.log.slice().reverse().map(x=>h("li",{text:new Date(x.at).toLocaleString("en-GB")+" · "+(x.by||"")+" · "+x.what})))):null));
