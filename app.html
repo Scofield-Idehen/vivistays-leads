@@ -351,8 +351,8 @@ details.more .facts{border-top:0;margin-top:8px}
 .tk-fill{position:absolute;left:0;top:0;bottom:0;background:var(--vz);border-radius:0 4px 4px 0;min-width:2px}
 .tk-row .n{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
 .tk-drop{grid-column:2/4;font-size:12px;color:var(--ink3);margin:-6px 0 0}
-.tk-chart svg{width:100%;height:180px;display:block;overflow:visible}
-.tk-chart .ax{fill:var(--ink3);font-size:10px}
+.tk-chart svg{width:100%;height:auto;display:block;overflow:visible}
+.tk-chart .ax{fill:var(--ink3);font-size:11px}
 .tk-chart .gl{stroke:var(--line);stroke-width:1}
 .tk-chart rect.b{fill:var(--vz)}
 .tk-chart rect.hit{fill:transparent;cursor:default}
@@ -366,9 +366,9 @@ details.more .facts{border-top:0;margin-top:8px}
 .tk-ev time{font-size:12px;color:var(--ink3);white-space:nowrap}
 .tk-pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--vz-soft);color:var(--ink);margin-left:6px;vertical-align:1px}
 .tk-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tk-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink2)}
+.tk-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink2);min-width:0}
 .tk-form .w{grid-column:1/3}
-.tk-form input,.tk-form select,.tk-form textarea{font:inherit;font-size:14px;padding:9px 11px;border-radius:12px;border:1px solid var(--line2);background:var(--well);color:var(--ink);min-width:0}
+.tk-form input,.tk-form select,.tk-form textarea,.tk-form .btn{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:9px 11px;border-radius:12px;border:1px solid var(--line2);background:var(--well);color:var(--ink);min-width:0}
 .tk-form textarea{min-height:64px;resize:vertical}
 .tk-tbl{width:100%;border-collapse:collapse;font-size:14px}
 .tk-tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--ink2);padding:6px 8px;border-bottom:1px solid var(--line2)}
@@ -623,10 +623,10 @@ const tkMine=(l,w)=>l.owner===w||(l.activity||[]).some(a=>a.by===w);
 function tkEvents(w){const out=[];for(const l of allLeads)for(const a of l.activity||[])if(a.by===w)out.push({...a,lead:l});return out.sort((a,b)=>b.at.localeCompare(a.at))}
 function tkTip(e,t){let d=$(".tk-tip");if(!d){d=h("div",{class:"tk-tip"});document.body.append(d)}d.textContent=t;d.style.left=e.clientX+"px";d.style.top=e.clientY+"px";d.hidden=false}
 function tkTipOff(){const d=$(".tk-tip");if(d)d.hidden=true}
-function tkSvg(html){const t=document.createElementNS("http://www.w3.org/2000/svg","svg");t.setAttribute("viewBox","0 0 600 180");t.setAttribute("preserveAspectRatio","none");t.innerHTML=html;return t}
+function tkSvg(html){const t=document.createElementNS("http://www.w3.org/2000/svg","svg");t.setAttribute("viewBox","0 0 600 180");t.innerHTML=html;return t}
 function tkBars(data,label){ // data:[{k,label,n}] single series, one hue
   const W=600,H=180,L=26,B=22,T=10,max=Math.max(1,...data.map(d=>d.n)),step=Math.max(1,Math.ceil(max/4)),top=step*Math.ceil(max/step);
-  const bw=(W-L)/data.length,gap=Math.min(6,bw*.25);let g="";
+  const bw=(W-L)/data.length,gap=Math.max(Math.min(6,bw*.25),bw-70);let g="";
   for(let v=0;v<=top;v+=step){const y=T+(H-T-B)*(1-v/top);g+=`<line class="gl" x1="${L}" x2="${W}" y1="${y}" y2="${y}"/><text class="ax" x="${L-6}" y="${y+3}" text-anchor="end">${v}</text>`}
   data.forEach((d,i)=>{const x=L+i*bw+gap/2,w=bw-gap,hgt=(H-T-B)*(d.n/top),y=H-B-hgt;
     g+=`<rect class="hit" x="${L+i*bw}" y="${T}" width="${bw}" height="${H-T-B}" data-i="${i}"/>`;
