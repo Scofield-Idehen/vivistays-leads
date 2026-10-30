@@ -2558,7 +2558,27 @@ async function mImportFile(f){
 }
 function mPick2(accept){return new Promise(res=>{const i=h("input",{type:"file",accept,style:"position:fixed;left:-9999px"});document.body.append(i);i.onchange=()=>{res(i.files[0]||null);i.remove()};i.click()})}
 
+/* a code that was cleared or removed takes its whole line (list item / paragraph) with it,
+   and a section left with nothing in it is dropped, so no "enter  on the keypad" is left behind */
+function mPrune(m){
+  let removed=0;
+  m.sections=m.sections.filter(s=>{
+    const d=document.createElement("div");d.innerHTML=s.html;
+    d.querySelectorAll("span.code").forEach(e=>{if(!e.textContent.trim()){const line=e.closest("li,p")||e;line.remove();removed++}});
+    d.querySelectorAll("ul").forEach(u=>{if(!u.querySelector("li"))u.remove()});
+    s.html=d.innerHTML.trim();
+    if(!d.textContent.trim()){removed++;return false}
+    return true;
+  });
+  return removed;
+}
+function mRemoveCode(m,si,ei){
+  const s=m.sections[si];const d=document.createElement("div");d.innerHTML=s.html;
+  const el=d.querySelectorAll("span.code")[ei];if(!el)return;
+  el.textContent="";s.html=d.innerHTML;mPrune(m);
+}
 async function mSave(m,what){
+  mPrune(m);
   const log=(m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what});
   await db.collection("manuals").doc(m.id).update({sections:m.sections,updated:new Date().toISOString(),log});
   m.log=log;mDirty=null;toast("Saved. Updating the manual…");
@@ -2623,7 +2643,7 @@ function wifiBlock(m,copy){
     w.sure===false?h("p",{class:"small warn",text:"Read from the manual image, double-check against the manual before sending."}):null);
 }
 function codesView(){
-  const head=h("div",{},h("h1",{text:"Lock codes"}),h("p",{class:"muted",text:"Type a property name to see its lockbox code and WiFi."}),mBusy?h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+mBusy})):null);
+  const head=h("div",{},h("h1",{text:"Lock codes"}),h("p",{class:"muted",text:"Type a property name to see its door or lockbox code and WiFi."}),mBusy?h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+mBusy})):null);
   if(!db)return[head,h("div",{class:"card"},h("p",{text:"Loading…"}))];
   const inp=h("input",{class:"search codesearch",type:"search",placeholder:"e.g. 21 Troon",value:cQuery,autocomplete:"off",autocapitalize:"off",spellcheck:"false","aria-label":"Property name",
     oninput:e=>{cQuery=e.target.value;const pos=e.target.selectionStart;render();const s=$("#main .codesearch");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}}});
@@ -2668,7 +2688,9 @@ function manualsView(){
   const {codes,links}=mFields(m);
   out.push(h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:m.name}),h("span",{class:"muted small",text:"House Manual page "+(m.page||3)+(m.updated?" · saved "+new Date(m.updated).toLocaleDateString("en-GB"):"")})),
     h("h3",{text:"Lock codes"}),
-    codes.length?h("div",{class:"form"},...codes.map(c=>h("div",{class:"field"},h("label",{text:c.title}),h("input",{value:c.value,inputmode:"text",oninput:e=>{mSet(m,"code",c.si,c.ei,e.target.value.trim());touch()}})))):h("p",{class:"muted small",text:"No code on this page."}),
+    codes.length?h("div",{class:"form"},...codes.map(c=>h("div",{class:"field"},h("label",{text:c.title}),h("input",{value:c.value,inputmode:"text",oninput:e=>{mSet(m,"code",c.si,c.ei,e.target.value.trim());touch()}}),
+      h("button",{class:"btn link small",style:"align-self:flex-start;padding:4px 0",onclick:()=>{if(!confirm("Remove this code and its line from the manual? ("+c.title+")"))return;mRemoveCode(m,c.si,c.ei);touch();render();toast("Removed. Press Save changes to update the manual.")}},"Remove this code")))):h("p",{class:"muted small",text:"No code on this page."}),
+    h("p",{class:"muted small",text:"To take a code out (e.g. a lockbox replaced by a smart lock), press \"Remove this code\" or clear the box, then Save changes. Its whole line comes out of the manual. Words on the picture pages (Check-In, Location) can't be changed here."}),
     h("h3",{text:"Links"}),
     links.length?h("div",{class:"form"},...links.map(l=>h("div",{class:"field wide"},h("label",{text:l.title+" · \""+l.text+"\""}),h("input",{value:l.value,type:"url",oninput:e=>{mSet(m,"link",l.si,l.ei,e.target.value.trim());touch()}})))):h("p",{class:"muted small",text:"No links on this page yet."}),
     mAddLink(m,touch),
