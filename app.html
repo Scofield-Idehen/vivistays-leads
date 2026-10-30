@@ -318,6 +318,65 @@ details.more .facts{border-top:0;margin-top:8px}
 .moreitem .mn{background:var(--ink);color:var(--inv);border-radius:99px;font-size:12px;padding:1px 8px}
 .moreitem[aria-current="true"]{font-weight:600}
 .signoutm{color:var(--ink2)}
+
+/* ---------- lead tracker ---------- */
+.tk{--vz:#2a78d6;--vz-soft:rgba(42,120,214,.12)}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])) .tk{--vz:#3987e5;--vz-soft:rgba(57,135,229,.18)}}
+:root[data-theme="dark"] .tk{--vz:#3987e5;--vz-soft:rgba(57,135,229,.18)}
+.tk-hero{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:22px 24px;display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center}
+.tk-ring{width:118px;height:118px;position:relative}
+.tk-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.tk-ring b{position:absolute;inset:0;display:grid;place-items:center;font:700 26px/1 var(--disp);font-variant-numeric:tabular-nums}
+.tk-ring small{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-size:11px;color:var(--ink2)}
+.tk-hero h1{margin:0;font:700 26px/1.15 var(--disp)}
+.tk-hero p{margin:6px 0 0;color:var(--ink2);font-size:14px;max-width:520px}
+.tk-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.tk-ctl select{font:inherit;font-size:14px;padding:8px 12px;border-radius:12px;border:1px solid var(--line2);background:var(--well);color:var(--ink)}
+.tk-seg{display:inline-flex;background:var(--well);border-radius:12px;padding:3px}
+.tk-seg button{font:inherit;font-size:13px;border:0;background:none;color:var(--ink2);padding:6px 12px;border-radius:9px;cursor:pointer}
+.tk-seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600}
+.tk-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:16px}
+.tk-kpi{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px}
+.tk-kpi span{display:block;font-size:13px;color:var(--ink2)}
+.tk-kpi b{display:block;font:700 30px/1.1 var(--disp);margin-top:4px;font-variant-numeric:tabular-nums}
+.tk-kpi i{font-style:normal;font-size:12px;color:var(--ink3)}
+.tk-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;margin-top:16px}
+.tk-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 20px;min-width:0}
+.tk-card h3{margin:0 0 4px;font:700 17px/1.2 var(--disp)}
+.tk-card .sub{margin:0 0 14px;font-size:13px;color:var(--ink2)}
+.tk-fun{display:flex;flex-direction:column;gap:10px}
+.tk-row{display:grid;grid-template-columns:96px 1fr 56px;gap:10px;align-items:center;font-size:14px}
+.tk-row .lab{color:var(--ink2)}
+.tk-track{height:26px;background:var(--well);border-radius:6px;position:relative;overflow:hidden}
+.tk-fill{position:absolute;left:0;top:0;bottom:0;background:var(--vz);border-radius:0 4px 4px 0;min-width:2px}
+.tk-row .n{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.tk-drop{grid-column:2/4;font-size:12px;color:var(--ink3);margin:-6px 0 0}
+.tk-chart svg{width:100%;height:180px;display:block;overflow:visible}
+.tk-chart .ax{fill:var(--ink3);font-size:10px}
+.tk-chart .gl{stroke:var(--line);stroke-width:1}
+.tk-chart rect.b{fill:var(--vz)}
+.tk-chart rect.hit{fill:transparent;cursor:default}
+.tk-chart rect.hit:hover+rect.b,.tk-chart rect.b:hover{opacity:.8}
+.tk-tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--inv);font-size:12px;padding:6px 9px;border-radius:8px;z-index:50;white-space:nowrap;transform:translate(-50%,-120%)}
+.tk-feed{display:flex;flex-direction:column;gap:2px;max-height:330px;overflow:auto}
+.tk-ev{display:grid;grid-template-columns:10px 1fr auto;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.tk-ev:first-child{border-top:0}
+.tk-dot{width:8px;height:8px;border-radius:50%;background:var(--vz);margin-top:6px}
+.tk-ev .who{font-weight:600}.tk-ev .said{color:var(--ink2);margin-top:2px}
+.tk-ev time{font-size:12px;color:var(--ink3);white-space:nowrap}
+.tk-pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--vz-soft);color:var(--ink);margin-left:6px;vertical-align:1px}
+.tk-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tk-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink2)}
+.tk-form .w{grid-column:1/3}
+.tk-form input,.tk-form select,.tk-form textarea{font:inherit;font-size:14px;padding:9px 11px;border-radius:12px;border:1px solid var(--line2);background:var(--well);color:var(--ink);min-width:0}
+.tk-form textarea{min-height:64px;resize:vertical}
+.tk-tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tk-tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--ink2);padding:6px 8px;border-bottom:1px solid var(--line2)}
+.tk-tbl td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.tk-tbl tr:hover td{background:var(--well);cursor:pointer}
+.tk-empty{color:var(--ink3);font-size:14px;padding:12px 0}
+@media (max-width:900px){.tk-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.tk-grid{grid-template-columns:1fr}.tk-hero{grid-template-columns:auto 1fr}.tk-ctl{grid-column:1/3;justify-content:flex-start}}
+@media (max-width:560px){.tk-form{grid-template-columns:1fr}.tk-form .w{grid-column:1}.tk-tbl .hide-s{display:none}}
 </style>
 
 <div class="shell">
@@ -461,7 +520,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","codes","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -473,6 +532,7 @@ function go(v,sel){view=v;selected=sel||null;query="";try{localStorage.setItem("
 
 /* ---------- navigation ---------- */
 const ICON={
+  tracker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M21 20H3"/></svg>',
   today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="9" rx="2"/><rect x="13.5" y="3" width="7.5" height="5" rx="2"/><rect x="13.5" y="11" width="7.5" height="10" rx="2"/><rect x="3" y="15" width="7.5" height="6" rx="2"/></svg>',
   leads:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.3c2.1.6 3.5 2.6 3.5 5.7"/></svg>',
   outreach:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="m21 3-7 18-4-7-7-4Z"/></svg>',
@@ -486,8 +546,8 @@ const ICON={
   codes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.5 11.5 9-9"/><path d="m17 6 3 3"/><path d="m14.5 8.5 2 2"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>'
 };
-const NAV=[["today","Dashboard"],["codes","Lock codes"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
-const SHORT={today:"Home",codes:"Codes",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
+const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
+const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
@@ -539,10 +599,149 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="codes"?codesView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
   const hc=selected&&window.innerWidth<=820?null:helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
+}
+
+
+/* ---------- LEAD TRACKER (per worker: outreach, replies, conversion) ---------- */
+let tkWho=null,tkRange=30,tkAdd={name:"",phone:"",email:"",source:"Facebook group",location:"",channel:"WhatsApp",said:"",status:"messaged"},tkLog={id:"",channel:"WhatsApp",said:"",status:"",next:""},tkQ="";
+const TK_CH=["WhatsApp","Phone call","Email","Facebook Messenger","Facebook comment","Instagram","Text","In person","Other"];
+const TK_SRC=["Facebook group","Facebook ad","Stayful","Referral","Instagram","Website","Phone","Other"];
+const TK_REACHED=new Set(["commented","messaged","fu1","fu2","replied","call","quoted","signed","booked"]);
+const TK_REPLIED=new Set(["replied","call","quoted","signed","booked"]);
+const TK_CALL=new Set(["call","quoted","signed","booked"]);
+const TK_WON=new Set(["signed","booked"]);
+function tkWorkers(){
+  const s=new Set(["Valencia"]);if(window.VL_USER)s.add(window.VL_USER);
+  for(const l of allLeads){if(l.owner)s.add(l.owner);for(const a of l.activity||[])if(a.by)s.add(a.by)}
+  return[...s].sort((a,b)=>a.localeCompare(b));
+}
+const tkMine=(l,w)=>l.owner===w||(l.activity||[]).some(a=>a.by===w);
+function tkEvents(w){const out=[];for(const l of allLeads)for(const a of l.activity||[])if(a.by===w)out.push({...a,lead:l});return out.sort((a,b)=>b.at.localeCompare(a.at))}
+function tkTip(e,t){let d=$(".tk-tip");if(!d){d=h("div",{class:"tk-tip"});document.body.append(d)}d.textContent=t;d.style.left=e.clientX+"px";d.style.top=e.clientY+"px";d.hidden=false}
+function tkTipOff(){const d=$(".tk-tip");if(d)d.hidden=true}
+function tkSvg(html){const t=document.createElementNS("http://www.w3.org/2000/svg","svg");t.setAttribute("viewBox","0 0 600 180");t.setAttribute("preserveAspectRatio","none");t.innerHTML=html;return t}
+function tkBars(data,label){ // data:[{k,label,n}] single series, one hue
+  const W=600,H=180,L=26,B=22,T=10,max=Math.max(1,...data.map(d=>d.n)),step=Math.max(1,Math.ceil(max/4)),top=step*Math.ceil(max/step);
+  const bw=(W-L)/data.length,gap=Math.min(6,bw*.25);let g="";
+  for(let v=0;v<=top;v+=step){const y=T+(H-T-B)*(1-v/top);g+=`<line class="gl" x1="${L}" x2="${W}" y1="${y}" y2="${y}"/><text class="ax" x="${L-6}" y="${y+3}" text-anchor="end">${v}</text>`}
+  data.forEach((d,i)=>{const x=L+i*bw+gap/2,w=bw-gap,hgt=(H-T-B)*(d.n/top),y=H-B-hgt;
+    g+=`<rect class="hit" x="${L+i*bw}" y="${T}" width="${bw}" height="${H-T-B}" data-i="${i}"/>`;
+    if(d.n)g+=`<path class="b" d="M${x},${H-B} V${y+Math.min(4,hgt)} Q${x},${y} ${x+Math.min(4,w/2)},${y} H${x+w-Math.min(4,w/2)} Q${x+w},${y} ${x+w},${y+Math.min(4,hgt)} V${H-B} Z" fill="var(--vz)" data-i="${i}"/>`;
+    if(data.length<=16||i%2===0)g+=`<text class="ax" x="${x+w/2}" y="${H-6}" text-anchor="middle">${d.label}</text>`});
+  const svg=tkSvg(g);
+  svg.addEventListener("mousemove",e=>{const i=e.target.getAttribute&&e.target.getAttribute("data-i");if(i==null){tkTipOff();return}const d=data[+i];tkTip(e,d.full||d.label+": "+d.n+" "+label)});
+  svg.addEventListener("mouseleave",tkTipOff);
+  return h("div",{class:"tk-chart"},svg);
+}
+function tkRing(pct){
+  const r=50,c=2*Math.PI*r,off=c*(1-Math.min(1,pct/100));
+  const d=h("div",{class:"tk-ring"});
+  d.innerHTML=`<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--well)" stroke-width="12"/><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--vz)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg><b>${pct}%</b><small>converted</small>`;
+  return d;
+}
+async function tkSaveNew(w){
+  if(!db){toast("Sign in to save");return}
+  const a=tkAdd;if(!a.name.trim()){toast("Add the lead's name");return}
+  const at=new Date().toISOString();
+  const data={kind:"owner",name:a.name.trim(),phone:a.phone.trim(),email:a.email.trim(),source:a.source,group:a.source,location:a.location.trim(),score:"warm",type:"other",properties:"",need:a.said.trim(),notes:"",status:a.status,owner:w,createdBy:window.VL_USER||w,created:at,updated:at,
+    nextFollowUp:(NEXT_DAYS.owner[a.status]==null?null:addDays(NEXT_DAYS.owner[a.status])),activity:[{at,by:w,status:a.status,channel:a.channel,said:a.said.trim()}]};
+  try{await db.collection("leads").add(data);tkAdd={...tkAdd,name:"",phone:"",email:"",location:"",said:""};toast("Lead added for "+w);render()}catch(e){toast("Couldn't save. Try again.")}
+}
+async function tkSaveLog(w){
+  const l=allLeads.find(x=>x.id===tkLog.id);if(!l){toast("Pick a lead first");return}
+  if(!tkLog.said.trim()&&!tkLog.status){toast("Write what they said or pick a stage");return}
+  const status=tkLog.status||l.status||"messaged",at=new Date().toISOString();
+  const n=NEXT_DAYS[kindOf(l)][status];
+  const patch={status,owner:l.owner||w,activity:[...(l.activity||[]),{at,by:w,status,channel:tkLog.channel,said:tkLog.said.trim()}].slice(-60),
+    nextFollowUp:tkLog.next||(n==null?(l.nextFollowUp||null):addDays(n))};
+  await save(l,patch);tkLog={id:"",channel:tkLog.channel,said:"",status:"",next:""};tkQ="";toast("Update saved");render();
+}
+function trackerView(){
+  if(!ready)return[h("div",{class:"card"},h("p",{text:"Loading…"}))];
+  const workers=tkWorkers();if(!tkWho||!workers.includes(tkWho))tkWho=workers.includes("Valencia")?"Valencia":workers[0];
+  const w=tkWho,since=tkRange?iso(new Date(Date.now()-(tkRange-1)*864e5)):"0000";
+  const mine=allLeads.filter(l=>tkMine(l,w));
+  const ev=tkEvents(w),evP=ev.filter(e=>e.at.slice(0,10)>=since);
+  const uniq=set=>new Set(evP.filter(e=>set.has(e.status)).map(e=>e.lead.id)).size;
+  const added=mine.filter(l=>(l.createdBy===w||l.owner===w)&&(l.created||"").slice(0,10)>=since).length;
+  const reached=uniq(TK_REACHED),replied=uniq(TK_REPLIED),calls=uniq(TK_CALL),won=uniq(TK_WON);
+  const conv=reached?Math.round(won/reached*100):0;
+  const rangeName=tkRange?("last "+tkRange+" days"):"all time";
+  // hero
+  const sel=h("select",{"aria-label":"Team member",onchange:e=>{tkWho=e.target.value;render()}},...workers.map(x=>h("option",{value:x,text:x})));sel.value=w;
+  const seg=h("div",{class:"tk-seg",role:"group","aria-label":"Time range"},...[[7,"7 days"],[30,"30 days"],[0,"All"]].map(([v,t])=>h("button",{"aria-pressed":String(tkRange===v),onclick:()=>{tkRange=v;render()}},t)));
+  const hero=h("div",{class:"tk-hero"},tkRing(conv),
+    h("div",{},h("h1",{text:w+"'s lead tracker"}),h("p",{text:`Who ${w} is reaching out to, who replies, and who signs. ${conv}% of the people ${w} reached in the ${rangeName} became a signed owner or booking.`})),
+    h("div",{class:"tk-ctl"},sel,seg));
+  const kpi=(t,n,note)=>h("div",{class:"tk-kpi"},h("span",{text:t}),h("b",{text:n}),h("i",{text:note}));
+  const pc=(a,b)=>b?Math.round(a/b*100)+"% of reached":"–";
+  const kpis=h("div",{class:"tk-kpis"},kpi("Leads added",added,rangeName),kpi("Reached out",reached,evP.length+" messages logged"),kpi("Replied",replied,pc(replied,reached)),kpi("Calls booked",calls,pc(calls,reached)),kpi("Signed",won,pc(won,reached)));
+  // funnel: current stage of everyone assigned to w
+  const cnt=set=>mine.filter(l=>set.has(l.status)).length;
+  const steps=[["All leads",mine.length],["Reached",cnt(TK_REACHED)],["Replied",cnt(TK_REPLIED)],["Call booked",cnt(TK_CALL)],["Signed",cnt(TK_WON)]];
+  const fmax=Math.max(1,steps[0][1]);
+  const fun=h("div",{class:"tk-fun"});
+  steps.forEach(([lab,n],i)=>{
+    const row=h("div",{class:"tk-row"},h("span",{class:"lab",text:lab}),h("div",{class:"tk-track"},h("div",{class:"tk-fill",style:`width:${n/fmax*100}%`})),h("span",{class:"n",text:n}));
+    row.addEventListener("mousemove",e=>tkTip(e,`${lab}: ${n} (${Math.round(n/fmax*100)}% of all ${w}'s leads)`));row.addEventListener("mouseleave",tkTipOff);
+    fun.append(row);
+    if(i>0&&i<steps.length-1&&steps[i][1])fun.append(h("div",{class:"tk-row"},h("span"),h("p",{class:"tk-drop",text:`↓ ${Math.round(steps[i+1][1]/steps[i][1]*100)}% move on to ${steps[i+1][0].toLowerCase()}`})));
+  });
+  const funCard=h("div",{class:"tk-card"},h("h3",{text:"Where "+w+"'s leads are now"}),h("p",{class:"sub",text:"Each bar is how many of "+w+"'s "+mine.length+" leads have reached that stage."}),
+    mine.length?fun:h("p",{class:"tk-empty",text:"No leads yet. Add one below and it shows up here."}));
+  // activity per day
+  const days=tkRange&&tkRange<=30?tkRange:30,arr=[];
+  for(let i=days-1;i>=0;i--){const d=new Date(Date.now()-i*864e5),k=iso(d);const n=ev.filter(e=>e.at.slice(0,10)===k).length;arr.push({k,n,label:d.toLocaleDateString("en-GB",{day:"numeric"}),full:d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})+": "+n+" update"+(n===1?"":"s")})}
+  const dayCard=h("div",{class:"tk-card"},h("h3",{text:"Outreach per day"}),h("p",{class:"sub",text:"Messages, calls and updates "+w+" logged each day, last "+days+" days."}),tkBars(arr,"updates"));
+  // channels
+  const chs=TK_CH.map(c=>({label:c.replace("Facebook ","FB ").replace("Phone call","Call"),full:"",n:evP.filter(e=>e.channel===c).length})).filter(d=>d.n);
+  chs.forEach(d=>d.full=d.label+": "+d.n);
+  const chCard=h("div",{class:"tk-card"},h("h3",{text:"How "+w+" reaches people"}),h("p",{class:"sub",text:"Updates by channel, "+rangeName+"."}),chs.length?tkBars(chs,"updates"):h("p",{class:"tk-empty",text:"No channels logged yet."}));
+  // feed
+  const feed=h("div",{class:"tk-feed"},...(ev.slice(0,30).map(e=>h("div",{class:"tk-ev"},h("span",{class:"tk-dot"}),
+    h("div",{},h("div",{},h("span",{class:"who",text:e.lead.name||"Lead"}),e.status?h("span",{class:"tk-pill",text:STATUS_LABEL[e.status]||e.status}):null,e.channel?h("span",{class:"tk-pill",text:e.channel}):null),e.said?h("div",{class:"said",text:"“"+e.said+"”"}):null),
+    h("time",{text:new Date(e.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})})))));
+  const feedCard=h("div",{class:"tk-card"},h("h3",{text:"Latest updates"}),h("p",{class:"sub",text:"What people said and where each lead moved to."}),ev.length?feed:h("p",{class:"tk-empty",text:"Nothing logged yet. Use “Log an update” below after each message or call."}));
+  // forms
+  const inp=(o,k,attrs={})=>h("input",{...attrs,value:o[k]||"",oninput:e=>o[k]=e.target.value});
+  const pick=(o,k,opts,lab)=>{const s=h("select",{"aria-label":lab,onchange:e=>o[k]=e.target.value},...opts.map(x=>Array.isArray(x)?h("option",{value:x[0],text:x[1]}):h("option",{value:x,text:x})));s.value=o[k]||"";return s};
+  const addCard=h("div",{class:"tk-card"},h("h3",{text:"Add a new lead"}),h("p",{class:"sub",text:"Someone new "+w+" has found or contacted. It goes straight into the Leads board."}),
+    h("div",{class:"tk-form"},
+      h("label",{},"Name",inp(tkAdd,"name",{placeholder:"e.g. Jordan Gray"})),
+      h("label",{},"Where they came from",pick(tkAdd,"source",TK_SRC,"Source")),
+      h("label",{},"Phone",inp(tkAdd,"phone",{type:"tel",placeholder:"07…"})),
+      h("label",{},"Email",inp(tkAdd,"email",{type:"email"})),
+      h("label",{},"Property / area",inp(tkAdd,"location",{placeholder:"e.g. 2-bed, Glasgow"})),
+      h("label",{},"How you reached them",pick(tkAdd,"channel",TK_CH,"Channel")),
+      h("label",{class:"w"},"What they said",h("textarea",{placeholder:"e.g. Interested, wants a call next week",oninput:e=>tkAdd.said=e.target.value},tkAdd.said)),
+      h("label",{},"Stage",pick(tkAdd,"status",OWNER_STATUSES,"Stage")),
+      h("label",{}," ",h("button",{class:"btn primary",onclick:()=>tkSaveNew(w)},"Add lead"))));
+  const pool=allLeads.filter(l=>!l.archived).filter(l=>!tkQ||(l.name||"").toLowerCase().includes(tkQ.toLowerCase())).sort((a,b)=>tkMine(b,w)-tkMine(a,w)||(b.updated||"").localeCompare(a.updated||"")).slice(0,60);
+  const leadSel=h("select",{"aria-label":"Lead",onchange:e=>{tkLog.id=e.target.value;const l=allLeads.find(x=>x.id===e.target.value);tkLog.status=l?l.status:"";render()}},h("option",{value:"",text:"Choose a lead…"}),...pool.map(l=>h("option",{value:l.id,text:(l.name||"(no name)")+" · "+(STATUS_LABEL[l.status]||"New")})));leadSel.value=tkLog.id;
+  const logCard=h("div",{class:"tk-card"},h("h3",{text:"Log an update"}),h("p",{class:"sub",text:"After every message or call: what they said and where they are now."}),
+    h("div",{class:"tk-form"},
+      h("label",{},"Find",h("input",{type:"search",placeholder:"Type a name",value:tkQ,oninput:e=>{tkQ=e.target.value;const pos=e.target.selectionStart;render();const s=$("#main .tk-q");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}},class:"tk-q"})),
+      h("label",{},"Lead",leadSel),
+      h("label",{},"Channel",pick(tkLog,"channel",TK_CH,"Channel")),
+      h("label",{},"New stage",pick(tkLog,"status",[["","Keep current stage"],...OWNER_STATUSES],"Stage")),
+      h("label",{class:"w"},"What they said",h("textarea",{placeholder:"e.g. Not now, try again in January",oninput:e=>tkLog.said=e.target.value},tkLog.said)),
+      h("label",{},"Next follow-up",inp(tkLog,"next",{type:"date"})),
+      h("label",{}," ",h("button",{class:"btn primary",onclick:()=>tkSaveLog(w)},"Save update"))));
+  // table
+  const last=l=>(l.activity||[]).filter(a=>a.by===w).slice(-1)[0];
+  const rows=mine.slice().sort((a,b)=>((last(b)||{}).at||b.updated||"").localeCompare((last(a)||{}).at||a.updated||""));
+  const tbl=h("table",{class:"tk-tbl"},h("thead",{},h("tr",{},h("th",{text:"Lead"}),h("th",{text:"Stage"}),h("th",{class:"hide-s",text:"Last thing they said"}),h("th",{text:"Next"}))),
+    h("tbody",{},...rows.map(l=>{const a=last(l);return h("tr",{onclick:()=>go(l.source==="stayful"?"stayful":"leads",l.id)},
+      h("td",{},h("b",{text:l.name||"(no name)"}),h("div",{class:"small muted",text:[l.location,l.phone].filter(Boolean).join(" · ")})),
+      h("td",{text:STATUS_LABEL[l.status]||"New"}),
+      h("td",{class:"hide-s small",text:(a&&a.said)||l.need||""}),
+      h("td",{class:"small",text:l.nextFollowUp?niceDate(l.nextFollowUp):"–"}))})));
+  const tblCard=h("div",{class:"tk-card",style:"margin-top:16px"},h("h3",{text:w+"'s leads ("+rows.length+")"}),h("p",{class:"sub",text:"Tap a lead to open it."}),rows.length?h("div",{style:"overflow:auto"},tbl):h("p",{class:"tk-empty",text:"No leads assigned yet."}));
+  return[h("div",{class:"tk"},hero,kpis,h("div",{class:"tk-grid"},funCard,dayCard),h("div",{class:"tk-grid"},addCard,logCard),h("div",{class:"tk-grid"},feedCard,chCard),tblCard)];
 }
 
 /* ---------- DASHBOARD ---------- */
@@ -847,7 +1046,7 @@ async function save(l,patch){
   try{await db.collection("leads").doc(l.id).update({...patch,updated:new Date().toISOString()})}catch(e){toast(e&&e.code==="permission_denied"?"You don't have permission to edit leads":"Couldn't save. Try again.")}
 }
 function setStatus(l,status){
-  const n=NEXT_DAYS[kindOf(l)][status];const patch={status,followUpDraft:null};
+  const n=NEXT_DAYS[kindOf(l)][status];const patch={status,followUpDraft:null,activity:[...(l.activity||[]),{at:new Date().toISOString(),by:window.VL_USER||"",status,channel:"",said:""}].slice(-60)};
   patch.nextFollowUp=n==null?(status==="call"?(l.nextFollowUp||null):null):addDays(n);
   save(l,patch);render();toast("Saved"+(patch.nextFollowUp?". Next step "+niceDate(patch.nextFollowUp).toLowerCase():""));
 }
