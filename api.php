@@ -179,7 +179,7 @@ try {
         case 'shoot_link':
             require_once __DIR__ . '/newsletter.php';
             $base = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? '');
-            out(['url' => $base . '/shoot.php?k=' . substr(hash_hmac('sha256', 'shoot-days-link', nl_secret()), 0, 20)]);
+            out(['url' => $base . '/shoot.php?k=' . substr(hash_hmac('sha256', 'shoot-days-link', nl_secret()), 0, 20), 'sync' => $base . '/shoot.php?s=' . substr(hash_hmac('sha256', 'shoot-sync', nl_secret()), 0, 24)]);
 
         case 'delete':
             $col = col_ok($in['collection'] ?? ''); $id = id_ok($in['id'] ?? '');

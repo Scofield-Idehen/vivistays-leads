@@ -22,6 +22,24 @@ $get = function ($id) use ($db) {
     return $r === false ? null : json_decode($r, true);
 };
 
+// Calendar sync from Guesty (sent by the team's browser while it has Guesty open). Separate key, never shown to the photographer.
+$s = (string)($_GET['s'] ?? '');
+if ($s !== '' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Access-Control-Allow-Origin: https://app.guesty.com');
+    if (!hash_equals(substr(hash_hmac('sha256', 'shoot-sync', nl_secret()), 0, 24), $s)) { http_response_code(403); echo '{"error":"Bad key"}'; exit; }
+    $c = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($c) || !isset($c['listings']) || !is_array($c['listings']) || count($c['listings']) > 300) { http_response_code(400); echo '{"error":"Bad data"}'; exit; }
+    $clean = ['syncedAt' => gmdate('c'), 'start' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $c['start'] ?? '') ? $c['start'] : gmdate('Y-m-d'), 'listings' => []];
+    foreach ($c['listings'] as $l) {
+        if (!preg_match('/^[A-Za-z0-9]{6,40}$/', (string)($l['id'] ?? ''))) continue;
+        $clean['listings'][] = ['id' => $l['id'], 'name' => substr((string)($l['name'] ?? ''), 0, 80), 'area' => substr((string)($l['area'] ?? ''), 0, 40), 'n' => preg_replace('/[^1BX]/', '', substr((string)($l['n'] ?? ''), 0, 400))];
+    }
+    $db->prepare("INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES ('shoot', 'calendar', ?, ?)")->execute([json_encode($clean, JSON_UNESCAPED_UNICODE), gmdate('c')]);
+    echo json_encode(['ok' => true, 'count' => count($clean['listings'])]);
+    exit;
+}
+
 if ($ok && $_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
     $in = json_decode(file_get_contents('php://input'), true) ?: [];
