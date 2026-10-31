@@ -176,6 +176,11 @@ try {
             $db->prepare('INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?)')->execute(['manuals', $id, json_encode($doc, JSON_UNESCAPED_UNICODE), gmdate('c')]);
             out(['ok' => true, 'size' => strlen($pdf)]);
 
+        case 'shoot_link':
+            require_once __DIR__ . '/newsletter.php';
+            $base = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? '');
+            out(['url' => $base . '/shoot.php?k=' . substr(hash_hmac('sha256', 'shoot-days-link', nl_secret()), 0, 20)]);
+
         case 'delete':
             $col = col_ok($in['collection'] ?? ''); $id = id_ok($in['id'] ?? '');
             $db->prepare('DELETE FROM docs WHERE col = ? AND id = ?')->execute([$col, $id]);

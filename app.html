@@ -520,7 +520,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","shoot","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -532,6 +532,7 @@ function go(v,sel){view=v;selected=sel||null;query="";try{localStorage.setItem("
 
 /* ---------- navigation ---------- */
 const ICON={
+  shoot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   tracker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M21 20H3"/></svg>',
   today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="9" rx="2"/><rect x="13.5" y="3" width="7.5" height="5" rx="2"/><rect x="13.5" y="11" width="7.5" height="10" rx="2"/><rect x="3" y="15" width="7.5" height="6" rx="2"/></svg>',
   leads:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.3c2.1.6 3.5 2.6 3.5 5.7"/></svg>',
@@ -546,8 +547,8 @@ const ICON={
   codes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.5 11.5 9-9"/><path d="m17 6 3 3"/><path d="m14.5 8.5 2 2"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>'
 };
-const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
-const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
+const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["shoot","Shoot days"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
+const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",shoot:"Shoot",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
@@ -599,7 +600,7 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="shoot"?shootView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
   const hc=selected&&window.innerWidth<=820?null:helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
@@ -2593,6 +2594,22 @@ function mAllCard(list){
   if(!rows.length)return null;
   return h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:"All manuals"}),h("span",{class:"muted small",text:list.filter(m=>m.pdfAt).length+" of "+list.length+" have a PDF"})),...rows);
 }
+
+/* ---------- SHOOT DAYS: when the photographer can go into each caravan (from Guesty) ---------- */
+let shootUrl=null,shootBusy=false;
+async function shootLink(){if(shootUrl||shootBusy)return;shootBusy=true;try{const r=await fetch("api.php?action=shoot_link",{method:"POST",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:"{}"});const j=await r.json();shootUrl=j.url||null}catch(e){}shootBusy=false;render()}
+function shootView(){
+  if(!shootUrl)shootLink();
+  const copy=async()=>{try{await navigator.clipboard.writeText(shootUrl+"&by=Yasin");toast("Link copied. Send it to Yasin.")}catch(e){toast(shootUrl+"&by=Yasin")}};
+  const msg=()=>"Hi Yasin, here are the days and times you can go into our caravans for photos and videos. It shows the best days first. Tap the box next to each caravan when you've done it: "+shootUrl+"&by=Yasin";
+  const copyMsg=async()=>{try{await navigator.clipboard.writeText(msg());toast("Message copied. Paste it into WhatsApp.")}catch(e){toast(msg())}};
+  return[h("div",{},h("h1",{text:"Shoot days"}),h("p",{class:"muted",text:"Which caravans are empty for Yasin's photos and videos, and when he can go in. Checked with Guesty several times a day."})),
+    h("div",{class:"card"},h("h3",{text:"Yasin's link"}),
+      h("p",{class:"muted small",text:"No login needed. He sees the best days, the times for each caravan, and ticks off each one when it's done."}),
+      shootUrl?h("div",{class:"btns"},h("button",{class:"btn primary",onclick:copyMsg},"Copy WhatsApp message"),h("button",{class:"btn",onclick:copy},"Copy link only"),h("a",{class:"btn link",href:shootUrl,target:"_blank",rel:"noopener"},"Open his page")):h("p",{class:"muted small",text:"Getting link…"})),
+    shootUrl?h("iframe",{src:shootUrl+"&embed=1&by="+encodeURIComponent(window.VL_USER||"Team"),title:"Shoot days",style:"width:100%;height:1400px;border:0;border-radius:12px;background:transparent"}):null];
+}
+
 /* ---------- LOCK CODES: type a property name, see its lockbox / door code ---------- */
 let cQuery="";
 function cNorm(t){return (t||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
