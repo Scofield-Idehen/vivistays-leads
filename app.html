@@ -2641,7 +2641,7 @@ function pfLinkCard(){
     h("div",{class:"msg",style:"font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px",text:t}),
     h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>copy(t)},"Copy link template"),
       h("button",{class:"btn",onclick:()=>copy("Hi {{guest_first_name}}, we're getting {{listing_nickname}} ready for you. Let us know your arrival time and anything you need (cot, extra towels, bed setup) here: "+t)},"Copy with a message")),
-    h("div",{class:"tipbox small"},h("b",{text:"Before you save it in Guesty: "}),"replace each {{…}} with Guesty's own variable names for confirmation code, listing nickname, check-in date and guest first name (pick them from Guesty's variable list in the message editor). Then send yourself a test message and open the link: the property, date and name should show at the top of the form."));
+    h("div",{class:"tipbox small"},h("b",{text:"Before you save it in Guesty: "}),"replace each {{…}} with Guesty's own variable names for confirmation code, listing nickname and check-in date (pick them from Guesty's variable list in the message editor). Then send yourself a test message and open the link: the property and date should show in the line under the heading."));
 }
 function pfSlackCard(){
   const s=pfMeta.slack;

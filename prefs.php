@@ -1,6 +1,6 @@
 <?php
 // Guest preferences -> Slack for the cleaners.
-//  - Guests open prefs.php?c=<confirmation code>&p=<listing nickname>&in=<check-in date>&g=<first name>
+//  - Guests open s?c=<confirmation code>&p=<listing nickname>&d=<check-in date> (short alias of prefs.php; old in=/g= params still work)
 //    from a Guesty pre-arrival message (no login, no key: Guesty can only fill in its own variables).
 //  - Their answers are saved (docs col 'prefs', id = confirmation code) and posted to the cleaners'
 //    Slack channel. Sending the form again for the same code replaces the answers and posts "Updated".
@@ -166,7 +166,7 @@ function pref_digest($force = false) {
 }
 // The link to paste into Guesty. Placeholders are examples: use Guesty's own variable names.
 function pref_template($base) {
-    return rtrim($base, '/') . '/prefs.php?c={{confirmation_code}}&in={{check_in_date}}&g={{guest_first_name}}&p={{listing_nickname}}';
+    return rtrim($base, '/') . '/s?c={{confirmation_code}}&p={{listing_nickname}}&d={{check_in_date}}';
 }
 // Simple per-IP limit, kept in files under data/prefs-rate/ (IP is hashed, files older than a day removed).
 function pref_rate_ok() {
@@ -199,7 +199,7 @@ $src = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
 $fromLink = [
     'c'  => pref_param($_GET['c'] ?? '', 40),
     'p'  => pref_param($_GET['p'] ?? '', 120),
-    'in' => pref_param($_GET['in'] ?? '', 40),
+    'in' => pref_param(($_GET['d'] ?? '') !== '' ? $_GET['d'] : ($_GET['in'] ?? ''), 40),
     'g'  => pref_param($_GET['g'] ?? '', 60),
 ];
 if (!pref_code_ok($fromLink['c'])) $fromLink['c'] = '';
@@ -216,8 +216,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         http_response_code(429);
         $errors[] = 'Too many submissions from this connection. Please try again in an hour, or WhatsApp us on 07578 255663.';
     } else {
-        if (!pref_code_ok($val['c'])) $errors[] = 'Please enter your booking confirmation code (letters, numbers and dashes only).';
-        if ($val['p'] === '') $errors[] = 'Please enter the property you are staying at.';
+        // Guests are already booked: we never ask them for booking details. If the link came without a code, keep the answers under a generated id.
+        if (!pref_code_ok($val['c'])) $val['c'] = 'NOCODE-' . strtoupper(bin2hex(random_bytes(3)));
         if (mb_strlen((string)($_POST['notes'] ?? '')) > 500) $errors[] = 'Please keep the note to 500 characters.';
         if (!$errors) {
             $id = strtoupper($val['c']);
@@ -284,7 +284,7 @@ ul.sum{margin:8px 0 0;padding-left:20px}
 <p class="sub">We've passed your answers to the team getting <?= $h($val['p'] ?: 'your stay') ?> ready.</p>
 <?php else: ?>
 <h1>Help us get your stay ready</h1>
-<p class="sub"><?= $first !== '' ? 'Hi ' . $h($first) . ', a' : 'A' ?> few quick questions so the place is just right when you arrive. It takes about a minute.</p>
+<p class="sub"><?= $first !== '' ? 'Hi ' . $h($first) . ', a' : 'A' ?> few quick questions so <?= $val['p'] !== '' ? $h($val['p']) : 'the place' ?> is just right when you arrive<?= $showDate !== '' ? ' on ' . $h($showDate) : '' ?>. It takes about a minute.</p>
 <?php endif; ?>
 </header>
 
@@ -294,31 +294,13 @@ ul.sum{margin:8px 0 0;padding-left:20px}
 <?php $lines = pref_lines(['property' => $val['p'], 'answers' => $answers]); if ($lines): ?>
 <ul class="sum"><?php foreach ($lines as [$l, $v]): ?><li><?= $h($l) ?>: <b><?= $h($v) ?></b></li><?php endforeach; ?></ul>
 <?php endif; ?>
-<p class="sub">Need to change something? <a href="<?= $h('prefs.php?' . http_build_query(array_filter($val, fn($v) => $v !== ''))) ?>">Send the form again</a> and we'll use your latest answers. Early check-in and late check-out are subject to availability; we'll confirm with you.</p>
+<p class="sub">Need to change something? <a href="<?= $h('s?' . http_build_query(array_filter($val, fn($v) => $v !== ''))) ?>">Send the form again</a> and we'll use your latest answers. Early check-in and late check-out are subject to availability; we'll confirm with you.</p>
 </section>
 <?php else: ?>
 <form method="post" class="wrap" style="padding:0" novalidate>
 <?php if ($errors): ?><div class="err" role="alert"><?php foreach ($errors as $e): ?><p><?= $h($e) ?></p><?php endforeach; ?></div><?php endif; ?>
 
-<section class="card" aria-labelledby="bh"><h2 id="bh">Your booking</h2>
-<?php
-$bk = [
-    'p'  => ['Property', 'text', 'e.g. 22 Aberlady', 'Property'],
-    'in' => ['Check-in date', 'date', '', 'Check-in'],
-    'g'  => ['Your first name', 'text', '', 'Name'],
-    'c'  => ['Booking confirmation code', 'text', 'From your booking confirmation', 'Booking code'],
-];
-$fixed = array_filter($bk, fn($k) => $fromLink[$k] !== '', ARRAY_FILTER_USE_KEY);
-$open = array_diff_key($bk, $fixed);
-if ($fixed): ?>
-<dl class="facts"><?php foreach ($fixed as $k => $b): ?><dt><?= $h($b[3]) ?></dt><dd><?= $h($k === 'in' ? $showDate : $val[$k]) ?></dd><?php endforeach; ?></dl>
-<?php foreach ($fixed as $k => $_): ?><input type="hidden" name="<?= $h($k) ?>" value="<?= $h($val[$k]) ?>"><?php endforeach; ?>
-<?php endif; ?>
-<?php foreach ($open as $k => [$lab, $type, $ph, $_s]): $v = $k === 'in' ? (pref_date($val['in']) ?: '') : $val[$k]; ?>
-<label class="q" style="<?= $fixed ? 'margin-top:14px' : '' ?>"><span><?= $h($lab) ?><?= in_array($k, ['c', 'p'], true) ? '' : ' <small>(optional)</small>' ?></span>
-<input type="<?= $type ?>" name="<?= $h($k) ?>" value="<?= $h($v) ?>" placeholder="<?= $h($ph) ?>" <?= $k === 'c' ? 'required maxlength="40" pattern="[A-Za-z0-9-]+" autocapitalize="characters" autocomplete="off"' : ($k === 'g' ? 'autocomplete="given-name" maxlength="60"' : ($k === 'p' ? 'required maxlength="120"' : '')) ?>></label>
-<?php endforeach; ?>
-</section>
+<?php foreach (['c', 'p', 'in', 'g'] as $k): if ($val[$k] !== ''): ?><input type="hidden" name="<?= $h($k) ?>" value="<?= $h($val[$k]) ?>"><?php endif; endforeach; ?>
 
 <section class="card" aria-labelledby="ph"><h2 id="ph">Your preferences</h2>
 <?php foreach ($fields as $k => $f): $v = $answers[$k] ?? ($f['default'] ?? ''); $id = 'f-' . $k; ?>
