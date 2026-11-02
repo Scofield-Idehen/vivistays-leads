@@ -17,4 +17,8 @@ if ((int)$uk->format('N') <= 5 && (int)$uk->format('G') >= 8 && (int)$uk->format
 }
 require_once __DIR__ . '/licence.php';
 $lic = 0; try { $lic = lic_chase_due(10); } catch (Throwable $e) {}
-echo json_encode(['licenceChased' => $lic, 'ok' => empty($r['error']), 'added' => (int)($r['added'] ?? 0), 'newsletterSent' => (int)($nl['sent'] ?? 0)]);
+// Guest preferences: morning Slack digest of tomorrow's arrivals (once a day) and retry failed posts.
+require_once __DIR__ . '/prefs.php';
+$pd = ''; $pr = 0;
+try { $pd = pref_digest(); $pr = pref_retry_failed(5); } catch (Throwable $e) { $pd = 'error'; }
+echo json_encode(['prefsDigest' => $pd, 'prefsRetried' => $pr, 'licenceChased' => $lic,'ok' => empty($r['error']), 'added' => (int)($r['added'] ?? 0), 'newsletterSent' => (int)($nl['sent'] ?? 0)]);

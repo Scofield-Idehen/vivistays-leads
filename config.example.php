@@ -29,6 +29,10 @@ $NL_REPLY_TO    = 'team@vivistays.com';   // replies land here
 $NL_DAILY_LIMIT = 150;                     // start low, raise slowly (e.g. +100 a week)
 $NL_ADDRESS     = '';                      // company postal address for the email footer
 
+// 2d. Guest preferences > Slack (optional). A Slack Incoming Webhook URL for the cleaners' channel.
+//     Easiest is to paste it in the app (Guest prefs > Slack settings) instead; a value here wins over that.
+$SLACK_WEBHOOK_URL = '';
+
 // 3. AI models (you can leave these alone).
 $MODEL_QUICK   = 'claude-haiku-5-5';   // reading pasted LinkedIn and event pages
 $MODEL_DEFAULT = 'claude-sonnet-5-5';  // reading Facebook posts, writing messages

@@ -3,3 +3,6 @@ data/*.sqlite*
 data/seed.imported-*
 .DS_Store
 data/licence/
+data/slack-webhook.txt
+data/prefs-rate/
+data/prefs-digest.txt

@@ -520,7 +520,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","shoot","licences","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","shoot","licences","prefs","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -533,6 +533,7 @@ function go(v,sel){view=v;selected=sel||null;query="";try{localStorage.setItem("
 /* ---------- navigation ---------- */
 const ICON={
   licences:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6Z"/><path d="M15 3v4h4"/><path d="m9 14 2 2 4-4"/></svg>',
+  prefs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"/><path d="M5 18v-3a7 7 0 0 1 14 0v3"/><path d="M12 8V6"/><path d="M10 6h4"/></svg>',
   shoot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   tracker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M21 20H3"/></svg>',
   today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="9" rx="2"/><rect x="13.5" y="3" width="7.5" height="5" rx="2"/><rect x="13.5" y="11" width="7.5" height="10" rx="2"/><rect x="3" y="15" width="7.5" height="6" rx="2"/></svg>',
@@ -548,8 +549,8 @@ const ICON={
   codes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.5 11.5 9-9"/><path d="m17 6 3 3"/><path d="m14.5 8.5 2 2"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>'
 };
-const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["shoot","Shoot days"],["licences","Licences"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
-const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",shoot:"Shoot",licences:"Licences",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
+const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["shoot","Shoot days"],["licences","Licences"],["prefs","Guest prefs"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
+const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",shoot:"Shoot",licences:"Licences",prefs:"Prefs",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
@@ -601,7 +602,7 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="shoot"?shootView():view==="licences"?licencesView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="shoot"?shootView():view==="licences"?licencesView():view==="prefs"?prefsView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
   const hc=selected&&window.innerWidth<=820?null:helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
@@ -2599,6 +2600,73 @@ function mAllCard(list){
 /* ---------- SHOOT DAYS: when the photographer can go into each caravan (from Guesty) ---------- */
 let shootUrl=null,shootBusy=false;
 async function shootLink(){if(shootUrl||shootBusy)return;shootBusy=true;try{const r=await fetch("api.php?action=shoot_link",{method:"POST",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:"{}"});const j=await r.json();shootUrl=j.url||null}catch(e){}shootBusy=false;render()}
+/* ---------- GUEST PREFS: guests' answers from the pre-arrival form, posted to the cleaners' Slack ---------- */
+let prefs=[],pfMeta=null,pfSel=null,pfBusy="",pfDate="",pfShow="upcoming",pfHook="";
+const PF_SLACK={sent:["Sent to Slack","good"],failed:["Slack failed, will retry","hot"],not_configured:["Not sent: Slack not set up","warm"],pending:["Sending…","warm"]};
+async function pfLoadMeta(){if(pfMeta||pfBusy==="meta")return;pfBusy="meta";try{pfMeta=await licApi("prefs_meta")}catch(e){toast("Couldn't load: "+e.message)}pfBusy="";render()}
+const pfNice=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"})};
+const pfWhen=iso=>iso?new Date(iso).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
+function pfLines(p){const a=p.answers||{};return(pfMeta?pfMeta.fields:[]).filter(f=>a[f.k]&&a[f.k]!==f.default).map(f=>[f.short,a[f.k]])}
+async function pfResend(p){try{pfBusy="Sending to Slack…";render();await licApi("prefs_resend",{id:p.id});toast("Sent to Slack")}catch(e){toast(e.message)}pfBusy="";render()}
+async function pfSettings(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_settings",body);pfMeta.slack=r.slack;pfHook="";toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
+function prefsView(){
+  const head=h("div",{},h("h1",{text:"Guest prefs"}),h("p",{class:"muted",text:"What guests asked for before arrival: arrival time, guests, cots, beds, dogs and notes. Each answer goes to the cleaners' Slack channel, plus a morning list of tomorrow's arrivals."}));
+  if(!pfMeta){pfLoadMeta();return[head,h("div",{class:"card"},h("p",{text:"Loading…"}))]}
+  const out=[head];
+  if(pfBusy&&pfBusy!=="meta")out.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+pfBusy})));
+  const p=pfSel&&prefs.find(x=>x.id===pfSel);
+  if(p)return[...out,...pfDetail(p)];
+  const td=today();
+  let list=prefs.slice();
+  if(pfDate)list=list.filter(x=>x.checkin===pfDate);
+  else if(pfShow==="upcoming")list=list.filter(x=>!x.checkin||x.checkin>=td);
+  list.sort((a,b)=>(b.submittedAt||"").localeCompare(a.submittedAt||""));
+  const chip=(v,t)=>h("button",{class:"chip","aria-pressed":String(!pfDate&&pfShow===v),onclick:()=>{pfShow=v;pfDate="";render()}},t);
+  const filters=h("div",{class:"btns",style:"align-items:center"},h("div",{class:"chips"},chip("upcoming","Upcoming"),chip("all","All")),
+    h("label",{class:"small muted",style:"display:flex;gap:8px;align-items:center"},"Check-in on",h("input",{type:"date",value:pfDate,style:"width:auto",onchange:e=>{pfDate=e.target.value;render()}})),
+    pfDate?h("button",{class:"btn link small",onclick:()=>{pfDate="";render()}},"Clear date"):null);
+  const rows=list.map(x=>{const st=PF_SLACK[x.slackStatus]||["",""];const n=pfLines(x).filter(([l])=>l!=="Arrival"&&l!=="Guests").length;
+    return h("button",{class:"row",onclick:()=>{pfSel=x.id;render();window.scrollTo(0,0)}},h("span",{class:"dot"+(x.slackStatus==="failed"?" hot":"")}),h("span",{class:"nm",text:(x.property||"Property not given")+(x.guest?" · "+x.guest:"")}),
+      h("span",{class:"when",text:x.checkin?pfNice(x.checkin):(x.checkinRaw||"no date")}),
+      h("span",{class:"sub",text:[(x.answers&&x.answers.arrival)?"Arrival "+x.answers.arrival:"",(x.answers&&x.answers.guests)?x.answers.guests+(x.answers.guests==="1"?" guest":" guests"):"",n?n+" request"+(n>1?"s":""):"no special requests",st[0],"sent "+pfWhen(x.submittedAt)].filter(Boolean).join(" · ")}))});
+  out.push(h("div",{class:"card"},h("h3",{text:"Submissions"}),filters,
+    rows.length?h("div",{class:"list"},...rows):h("p",{class:"muted small",text:prefs.length?"Nothing for this filter.":"No answers yet. Add the guest link below to a Guesty pre-arrival message and they'll appear here."})));
+  out.push(pfLinkCard(),pfSlackCard());
+  return out;
+}
+function pfLinkCard(){
+  const t=pfMeta.template;
+  return h("div",{class:"card"},h("h3",{text:"Copy Guesty link template"}),
+    h("p",{class:"muted small",text:"Paste this link into a Guesty automated pre-arrival message (for example 3 days before check-in). Guesty fills in each guest's details."}),
+    h("div",{class:"msg",style:"font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px",text:t}),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>copy(t)},"Copy link template"),
+      h("button",{class:"btn",onclick:()=>copy("Hi {{guest_first_name}}, we're getting {{listing_nickname}} ready for you. Let us know your arrival time and anything you need (cot, extra towels, bed setup) here: "+t)},"Copy with a message")),
+    h("div",{class:"tipbox small"},h("b",{text:"Before you save it in Guesty: "}),"replace each {{…}} with Guesty's own variable names for confirmation code, listing nickname, check-in date and guest first name (pick them from Guesty's variable list in the message editor). Then send yourself a test message and open the link: the property, date and name should show at the top of the form."));
+}
+function pfSlackCard(){
+  const s=pfMeta.slack;
+  return h("div",{class:"card"},h("h3",{text:"Slack settings"}),
+    h("p",{class:"small"},h("span",{class:"pill "+(s?"good":"warm"),text:s?"Webhook is set"+(s==="config"?" (in config.local.php)":""):"Not set up yet"})),
+    h("p",{class:"muted small",text:"In Slack: Apps > Incoming Webhooks > Add to Slack, choose the cleaners' channel, copy the Webhook URL and paste it here. Until then answers are still saved here, just not posted."}),
+    s==="config"?null:h("div",{class:"field"},h("label",{text:s?"Replace webhook URL":"Webhook URL"}),h("input",{type:"password",autocomplete:"off",placeholder:"https://hooks.slack.com/services/…",value:pfHook,oninput:e=>pfHook=e.target.value.trim()})),
+    h("div",{class:"btns"},s==="config"?null:h("button",{class:"btn primary",onclick:()=>{if(!pfHook){toast("Paste the webhook URL first");return}pfSettings({slack_webhook:pfHook},"Saved. Send a test to check it.")}},"Save"),
+      s?h("button",{class:"btn",onclick:()=>pfSettings({test:true},"Test message sent. Check the Slack channel.")},"Send a test message"):null,
+      s==="app"?h("button",{class:"btn link small",onclick:()=>{if(confirm("Remove the Slack webhook? Answers will be saved but not posted."))pfSettings({slack_webhook:""},"Removed")}},"Remove"):null));
+}
+function pfDetail(p){
+  const back=h("button",{class:"btn link",onclick:()=>{pfSel=null;render()}},"← All submissions");
+  const st=PF_SLACK[p.slackStatus]||[p.slackStatus||"",""];
+  const a=p.answers||{};
+  const rows=(pfMeta?pfMeta.fields:[]).map(f=>{const v=a[f.k]||"";const special=v&&v!==f.default;
+    return h("p",{class:"small",style:"display:grid;grid-template-columns:minmax(120px,40%) minmax(0,1fr);gap:12px;margin:0;padding:8px 0;border-top:1px solid var(--line)"},h("span",{class:"muted",text:f.label}),h(special?"b":"span",{text:v||"Not answered",style:"white-space:pre-wrap;overflow-wrap:anywhere"}))});
+  const top=h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:p.property||"Property not given"}),h("span",{class:"pill "+st[1],text:st[0]})),
+    h("p",{class:"small",text:["Check-in: "+(p.checkin?pfNice(p.checkin):(p.checkinRaw||"not given")),"Guest: "+(p.guest||"not given"),"Code: "+(p.code||p.id)].join(" · ")}),
+    h("p",{class:"muted small",text:"Sent "+pfWhen(p.submittedAt)+((p.submissions||1)>1?" (updated, "+p.submissions+" times in total)":"")+(p.slackAt?" · posted to Slack "+pfWhen(p.slackAt):"")+(p.slackStatus==="failed"?" · tries: "+(p.slackTries||0):"")}),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>pfResend(p)},"Resend to Slack"),
+      h("button",{class:"btn link small",onclick:async()=>{if(!confirm("Delete these answers from "+(p.guest||p.code)+"?"))return;try{await db.collection("prefs").doc(p.id).delete();pfSel=null;render();toast("Deleted")}catch(e){toast("Couldn't delete")}}},"Delete")));
+  return[back,top,h("div",{class:"card"},h("h3",{text:"Answers"}),...rows,h("p",{class:"muted small",text:"Bold = something to do. Plain = the usual setup."}))];
+}
+
 /* ---------- LICENCES: short-term let licence applications (checklist, owner link, drafts, chasing) ---------- */
 let licences=[],licMeta=null,licSel=null,licNew=null,licBusy="";
 const LIC_STAGES=[["collecting","Collecting documents"],["ready","Ready to submit"],["submitted","Submitted to council"],["granted","Licence granted"]];
@@ -2955,6 +3023,7 @@ render();
   db.collection("photos").onSnapshot(snap=>{photosUp=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   db.collection("nl_campaigns").onSnapshot(snap=>{nlCamps=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="newsletter"&&!busy())render()},()=>{});
   db.collection("licence").onSnapshot(snap=>{const old=Object.fromEntries(licences.map(x=>[x.id,x._link]));licences=snap.docs.map(x=>({id:x.id,...x.data(),_link:old[x.id]}));if(view==="licences"&&!busy())render()},()=>{});
+  db.collection("prefs").onSnapshot(snap=>{prefs=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="prefs"&&!busy())render()},()=>{});
   db.collection("manuals").onSnapshot(snap=>{manuals=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="manuals"&&!busy()&&!mBusy)render()},()=>{});
   db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   stayfulCheck(false);setInterval(()=>{if(document.visibilityState==="visible")stayfulCheck(false)},15*60e3);

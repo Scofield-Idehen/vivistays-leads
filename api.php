@@ -224,6 +224,37 @@ try {
             try { lic_store_file($id, $item, $tmp, (string)($in['name'] ?? ''), $user); } catch (Throwable $e) { @unlink($tmp); fail($e->getMessage()); }
             out(['ok' => true]);
 
+        case 'prefs_meta':
+            // Field labels, the Guesty link template and whether Slack is set up (never the URL itself).
+            require_once __DIR__ . '/prefs.php';
+            $base = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? '');
+            $fields = [];
+            foreach (PREF_FIELDS as $k => $f) $fields[] = ['k' => $k, 'label' => $f['label'], 'short' => $f['short'] ?? $f['label'], 'default' => $f['default'] ?? ''];
+            out(['fields' => $fields, 'template' => pref_template($base), 'slack' => vl_slack_source()]);
+
+        case 'prefs_settings':
+            // Save, clear or test the Slack webhook. Replies only with whether it is set.
+            require_once __DIR__ . '/prefs.php';
+            if (!empty($in['test'])) {
+                $r = vl_slack_post('Test from ViVi Stays Leads: guest preferences will be posted in this channel. (' . vl_slack_esc($user) . ')');
+                if ($r !== 'sent') fail($r === 'not_configured' ? 'Slack is not set up yet' : 'Slack did not accept the message. Check the webhook URL.');
+                out(['ok' => true, 'slack' => vl_slack_source()]);
+            }
+            if (vl_slack_source() === 'config') fail('The webhook is set in config.local.php on the server. Change it there.');
+            $url = trim((string)($in['slack_webhook'] ?? ''));
+            if ($url !== '' && !preg_match('#^https://hooks\.slack\.com/(services|workflows|triggers)/[A-Za-z0-9/_\-]{10,200}$#', $url)) fail('That is not a Slack incoming webhook URL (it starts https://hooks.slack.com/services/…)');
+            vl_slack_set($url);
+            out(['ok' => true, 'slack' => vl_slack_source()]);
+
+        case 'prefs_resend':
+            require_once __DIR__ . '/prefs.php';
+            $id = id_ok($in['id'] ?? '');
+            $doc = pref_get($id); if (!$doc) fail('Not found', 404);
+            $r = pref_send($id, $doc, !empty($in['updated']) || (int)($doc['submissions'] ?? 1) > 1);
+            if ($r === 'not_configured') fail('Slack is not set up yet. Paste the webhook URL in Slack settings first.');
+            if ($r === 'failed') fail('Slack did not accept the message. Check the webhook URL and try again.');
+            out(['ok' => true]);
+
         case 'shoot_link':
             require_once __DIR__ . '/newsletter.php';
             $base = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? '');
