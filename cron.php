@@ -15,4 +15,6 @@ $nl = null;
 if ((int)$uk->format('N') <= 5 && (int)$uk->format('G') >= 8 && (int)$uk->format('G') < 18) {
     try { $nl = nl_run(40); } catch (Throwable $e) { $nl = ['error' => 'newsletter']; }
 }
-echo json_encode(['ok' => empty($r['error']), 'added' => (int)($r['added'] ?? 0), 'newsletterSent' => (int)($nl['sent'] ?? 0)]);
+require_once __DIR__ . '/licence.php';
+$lic = 0; try { $lic = lic_chase_due(10); } catch (Throwable $e) {}
+echo json_encode(['licenceChased' => $lic, 'ok' => empty($r['error']), 'added' => (int)($r['added'] ?? 0), 'newsletterSent' => (int)($nl['sent'] ?? 0)]);
