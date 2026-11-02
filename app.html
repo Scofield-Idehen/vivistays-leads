@@ -520,7 +520,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","shoot","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","shoot","licences","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -532,6 +532,7 @@ function go(v,sel){view=v;selected=sel||null;query="";try{localStorage.setItem("
 
 /* ---------- navigation ---------- */
 const ICON={
+  licences:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6Z"/><path d="M15 3v4h4"/><path d="m9 14 2 2 4-4"/></svg>',
   shoot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   tracker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M21 20H3"/></svg>',
   today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="9" rx="2"/><rect x="13.5" y="3" width="7.5" height="5" rx="2"/><rect x="13.5" y="11" width="7.5" height="10" rx="2"/><rect x="3" y="15" width="7.5" height="6" rx="2"/></svg>',
@@ -547,8 +548,8 @@ const ICON={
   codes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.5 11.5 9-9"/><path d="m17 6 3 3"/><path d="m14.5 8.5 2 2"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>'
 };
-const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["shoot","Shoot days"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
-const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",shoot:"Shoot",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
+const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["shoot","Shoot days"],["licences","Licences"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
+const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",shoot:"Shoot",licences:"Licences",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
@@ -600,7 +601,7 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="shoot"?shootView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="shoot"?shootView():view==="licences"?licencesView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
   const hc=selected&&window.innerWidth<=820?null:helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
@@ -2598,6 +2599,190 @@ function mAllCard(list){
 /* ---------- SHOOT DAYS: when the photographer can go into each caravan (from Guesty) ---------- */
 let shootUrl=null,shootBusy=false;
 async function shootLink(){if(shootUrl||shootBusy)return;shootBusy=true;try{const r=await fetch("api.php?action=shoot_link",{method:"POST",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:"{}"});const j=await r.json();shootUrl=j.url||null}catch(e){}shootBusy=false;render()}
+/* ---------- LICENCES: short-term let licence applications (checklist, owner link, drafts, chasing) ---------- */
+let licences=[],licMeta=null,licSel=null,licNew=null,licBusy="";
+const LIC_STAGES=[["collecting","Collecting documents"],["ready","Ready to submit"],["submitted","Submitted to council"],["granted","Licence granted"]];
+const LIC_ST=[["missing","Still needed"],["received","Received"],["checked","Checked, OK"],["draft","Draft ready"],["na","Not needed"]];
+async function licApi(action,body){const r=await fetch("api.php?action="+action,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:JSON.stringify(body||{})});const j=await r.json().catch(()=>({}));if(!r.ok||j.error)throw new Error(j.error||"Server error");return j}
+async function licLoadMeta(){if(licMeta||licBusy==="meta")return;licBusy="meta";try{licMeta=await licApi("licence_meta")}catch(e){toast("Couldn't load the checklist: "+e.message)}licBusy="";render()}
+function licItems(a){return Object.entries(licMeta.items).filter(([k,it])=>it.councils.includes(a.council))}
+function licSt(a,k){return(a.items&&a.items[k]&&a.items[k].status)||"missing"}
+function licProgress(a){const its=licItems(a);const done=its.filter(([k])=>licSt(a,k)!=="missing").length+(a.info&&a.info.answered?1:0);return{done,total:its.length+1}}
+function licOwnerMissing(a){const m=licItems(a).filter(([k,it])=>it.who==="owner"&&licSt(a,k)==="missing").map(([k,it])=>it.label);if(!(a.info&&a.info.answered))m.push("Answer the property safety questions");return m}
+function licWaDue(a){if(!licOwnerMissing(a).length||!a.owner||!a.owner.phone||["submitted","granted"].includes(a.stage))return false;const every=((a.chase&&a.chase.every)||3)*864e5;const last=Math.max(Date.parse((a.chase&&a.chase.lastWhatsApp)||0)||0,Date.parse(a.created||0)||0);return Date.now()-last>=every-36e5}
+function licExpiry(a,k){const it=licMeta.items[k];const x=a.items&&a.items[k];if(!it.renew||!x||!x.expires)return null;const d=Math.round((Date.parse(x.expires)-Date.now())/864e5);return d}
+async function licSave(a,patch,what){const log=(a.log||[]).slice(-59);if(what)log.push({at:new Date().toISOString(),by:window.VL_USER||"",what});try{await db.collection("licence").doc(a.id).update({...patch,log,updated:new Date().toISOString()});Object.assign(a,patch,{log});render()}catch(e){toast("Couldn't save: "+(e.message||e))}}
+async function licSetItem(a,k,patch,what){const items={...(a.items||{})};items[k]={...(items[k]||{}),...patch,at:new Date().toISOString(),by:window.VL_USER||""};await licSave(a,{items},what)}
+function licWaText(a){const first=((a.owner&&a.owner.name)||"").trim().split(/\s+/)[0]||"there";const miss=licOwnerMissing(a);return"Hi "+first+", it's ViVi Stays. For the short-term let licence for "+a.property+" we still need:\n"+miss.map(m=>"- "+m).join("\n")+"\n\nYou can upload everything here: "+(a._link||"")+"\n\nThank you!"}
+async function licLink(a){if(a._link)return a._link;try{a._link=(await licApi("licence_link",{id:a.id})).link}catch(e){}return a._link}
+async function licWhatsApp(a){await licLink(a);const ph=((a.owner&&a.owner.phone)||"").replace(/[^\d+]/g,"").replace(/^\+/,"").replace(/^0/,"44");if(!ph){toast("Add the owner's phone number first");return}
+  window.open("https://wa.me/"+ph+"?text="+encodeURIComponent(licWaText(a)),"_blank","noopener");try{await licApi("licence_chase",{id:a.id,channel:"whatsapp"})}catch(e){}}
+async function licEmailNow(a){try{licBusy="Sending reminder email…";render();await licApi("licence_chase",{id:a.id});toast("Reminder email sent to "+a.owner.email)}catch(e){toast(e.message)}licBusy="";render()}
+async function licCreate(){const n=licNew;if(!n.property.trim()||!n.council){toast("Enter the property and pick the council");return}
+  try{licBusy="Creating…";render();const r=await licApi("licence_new",n);licSel=r.id;licNew=null;toast("Application started. Copy the owner link and send it.")}catch(e){toast(e.message)}licBusy="";render()}
+async function licTeamUpload(a,k,file){if(!file)return;if(file.size>10*1024*1024){toast("File is over 10 MB");return}
+  const b64=await new Promise((ok,no)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=no;fr.readAsDataURL(file)});
+  try{licBusy="Uploading…";render();await licApi("licence_upload",{id:a.id,item:k,data:b64,name:file.name});toast("Uploaded")}catch(e){toast(e.message)}licBusy="";render()}
+const licFileUrl=(a,f)=>"licence.php?a="+encodeURIComponent(a.id)+"&dl="+encodeURIComponent(f);
+
+function licencesView(){
+  const head=h("div",{},h("h1",{text:"Licences"}),h("p",{class:"muted",text:"Short-term let licence applications: what each council needs, what owners still owe us, and drafts of the fire, water and escape documents."}));
+  if(!licMeta){licLoadMeta();return[head,h("div",{class:"card"},h("p",{text:"Loading…"}))]}
+  const out=[head];
+  if(licBusy&&licBusy!=="meta")out.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+licBusy})));
+  const a=licSel&&licences.find(x=>x.id===licSel);
+  if(a)return[...out,...licDetail(a)];
+  if(licNew)return[...out,licNewForm()];
+  const due=licences.filter(licWaDue);
+  out.push(h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>{licNew={property:"",address:"",council:"",owner:{name:"",email:"",phone:""},every:3};render()}},"Start an application")));
+  if(due.length)out.push(h("div",{class:"card"},h("h3",{text:"WhatsApp reminders due today ("+due.length+")"}),
+    h("p",{class:"muted small",text:"Reminder emails go out by themselves. These owners are also due a WhatsApp nudge. Tap to open WhatsApp with the message written."}),
+    ...due.map(x=>h("div",{class:"btns",style:"align-items:center"},h("b",{text:x.property,style:"flex:1;min-width:160px"}),h("span",{class:"muted small",text:licOwnerMissing(x).length+" items missing"}),h("button",{class:"btn",onclick:()=>licWhatsApp(x)},"WhatsApp "+(((x.owner&&x.owner.name)||"owner").split(" ")[0]))))));
+  if(!licences.length)out.push(h("div",{class:"card"},h("h3",{text:"No applications yet"}),h("p",{class:"muted small",text:"Start one for each property. You'll get a link for the owner: they upload their certificates and answer a few safety questions there, and we chase them automatically until everything is in."})));
+  else{
+    const rows=licences.slice().sort((x,y)=>(x.stage==="granted")-(y.stage==="granted")||(x.property||"").localeCompare(y.property||"",undefined,{numeric:true})).map(x=>{const p=licProgress(x);const miss=licOwnerMissing(x).length;
+      return h("button",{class:"row",onclick:()=>{licSel=x.id;render();window.scrollTo(0,0)}},h("span",{class:"dot"}),h("span",{class:"nm",text:x.property}),h("span",{class:"when",text:p.done+"/"+p.total}),
+        h("span",{class:"sub",text:(licMeta.councils[x.council]||"")+" · "+(Object.fromEntries(LIC_STAGES)[x.stage]||"")+(miss?" · owner owes "+miss:" · nothing missing from owner")}))});
+    out.push(h("div",{class:"card"},h("h3",{text:"Applications"}),h("div",{class:"list"},...rows)));
+  }
+  return out;
+}
+function licNewForm(){const n=licNew;
+  const f=(label,val,set,attrs)=>h("div",{class:"field"},h("label",{text:label}),h("input",{type:"text",value:val,...(attrs||{}),oninput:e=>set(e.target.value)}));
+  const names=[...new Set(manuals.map(m=>m.name))].sort((x,y)=>x.localeCompare(y,undefined,{numeric:true}));
+  const dl=h("datalist",{id:"lic-props"},...names.map(nm=>h("option",{value:nm})));
+  return h("div",{class:"card"},h("h3",{text:"Start a licence application"}),dl,
+    h("div",{class:"form"},
+      f("Property",n.property,v=>n.property=v,{list:"lic-props",placeholder:"e.g. 9 Princes Street, Hawick"}),
+      f("Full address with postcode",n.address,v=>n.address=v),
+      h("div",{class:"field"},h("label",{text:"Council"}),h("select",{onchange:e=>n.council=e.target.value},h("option",{value:"",text:"Choose…"}),...Object.entries(licMeta.councils).map(([k,v])=>{const o=h("option",{value:k,text:v});if(n.council===k)o.selected=true;return o}))),
+      f("Owner's name",n.owner.name,v=>n.owner.name=v),
+      f("Owner's email (for automatic reminders)",n.owner.email,v=>n.owner.email=v,{type:"email"}),
+      f("Owner's WhatsApp number",n.owner.phone,v=>n.owner.phone=v,{type:"tel",placeholder:"07…"}),
+      h("div",{class:"field"},h("label",{text:"Remind the owner every"}),h("select",{onchange:e=>n.every=+e.target.value},...[2,3,5,7].map(d=>{const o=h("option",{value:d,text:d+" days"});if(n.every===d)o.selected=true;return o})))),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:licCreate},"Start application"),h("button",{class:"btn",onclick:()=>{licNew=null;render()}},"Cancel")));
+}
+function licDetail(a){
+  const p=licProgress(a);const its=licItems(a);
+  const back=h("button",{class:"btn link",onclick:()=>{licSel=null;render()}},"← All applications");
+  if(!a._link)licLink(a).then(()=>render());
+  const copyLink=async()=>{const l=await licLink(a);copy(l)};
+  const stageSel=h("select",{"aria-label":"Stage",onchange:e=>licSave(a,{stage:e.target.value},"Stage: "+Object.fromEntries(LIC_STAGES)[e.target.value])},...LIC_STAGES.map(([k,v])=>{const o=h("option",{value:k,text:v});if(a.stage===k)o.selected=true;return o}));
+  const ch=a.chase||{};
+  const top=h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:a.property}),h("span",{class:"pill",text:p.done+" of "+p.total+" done"})),
+    h("p",{class:"muted small",text:[licMeta.councils[a.council],a.address].filter(Boolean).join(" · ")}),
+    h("div",{class:"field"},h("label",{text:"Stage"}),stageSel),
+    h("p",{class:"small",text:"Owner: "+[a.owner&&a.owner.name,a.owner&&a.owner.email,a.owner&&a.owner.phone].filter(Boolean).join(" · ")}),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:copyLink},"Copy owner link"),a._link?h("a",{class:"btn",href:a._link,target:"_blank",rel:"noopener"},"Open owner page"):null,
+      h("button",{class:"btn",onclick:()=>licWhatsApp(a)},"WhatsApp reminder"),a.owner&&a.owner.email?h("button",{class:"btn",onclick:()=>licEmailNow(a)},"Email reminder now"):null),
+    h("label",{class:"small",style:"display:flex;gap:8px;align-items:center"},h("input",{type:"checkbox",checked:ch.auto!==false?true:null,onchange:e=>licSave(a,{chase:{...ch,auto:e.target.checked}},e.target.checked?"Automatic reminders on":"Automatic reminders off")}),
+      "Email the owner automatically every "+(ch.every||3)+" days until everything is in (weekdays 9am–5pm UK)"),
+    h("p",{class:"muted small",text:"Reminders sent: "+(ch.count||0)+(ch.lastEmail?" · last email "+new Date(ch.lastEmail).toLocaleDateString("en-GB"):"")+(ch.lastWhatsApp?" · last WhatsApp "+new Date(ch.lastWhatsApp).toLocaleDateString("en-GB"):"")}));
+  const itemRow=([k,it])=>{const st=licSt(a,k);const x=(a.items&&a.items[k])||{};const exp=licExpiry(a,k);
+    const sel=h("select",{"aria-label":"Status of "+it.label,onchange:e=>licSetItem(a,k,{status:e.target.value},it.label+": "+Object.fromEntries(LIC_ST)[e.target.value])},...LIC_ST.map(([v,t])=>{const o=h("option",{value:v,text:t});if(st===v)o.selected=true;return o}));
+    const up=h("label",{class:"btn small",style:"position:relative;overflow:hidden;cursor:pointer"},"Upload",h("input",{type:"file",accept:".pdf,image/*",style:"position:absolute;inset:0;opacity:0;cursor:pointer",onchange:e=>{const f=e.target.files[0];e.target.value="";licTeamUpload(a,k,f)}}));
+    const gen=it.doc?h("button",{class:"btn small",onclick:()=>licDoc(a,it.doc)},"Open draft"):null;
+    const expIn=it.renew&&st!=="missing"&&st!=="na"?h("label",{class:"small muted",style:"display:flex;gap:6px;align-items:center"},"Expires",h("input",{type:"date",value:x.expires||"",style:"width:auto",onchange:e=>licSetItem(a,k,{expires:e.target.value},null)})):null;
+    return h("div",{style:"display:grid;gap:6px;padding:12px 0;border-top:1px solid var(--line)"},
+      h("div",{style:"display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap"},h("b",{text:it.label,style:"flex:1;min-width:200px"}),sel),
+      x.text?h("p",{class:"small",style:"white-space:pre-wrap;background:var(--well);padding:8px 10px;border-radius:10px",text:x.text}):null,
+      (x.files||[]).length?h("div",{class:"btns"},...x.files.map(f=>h("a",{class:"btn link small",href:licFileUrl(a,f.f),target:"_blank",rel:"noopener"},(f.orig||f.f)+" ("+f.by+", "+new Date(f.at).toLocaleDateString("en-GB")+")"))):null,
+      h("div",{class:"btns",style:"align-items:center"},gen,up,expIn,exp!=null?h("span",{class:"pill",text:exp<0?"Expired":exp<60?"Expires in "+exp+" days":"Valid"}):null,x.note?h("span",{class:"muted small",text:x.note}):null));
+  };
+  const group=(title,who,note)=>{const list=its.filter(([k,it])=>who.includes(it.who));return list.length?h("div",{class:"card"},h("h3",{text:title}),note?h("p",{class:"muted small",text:note}):null,...list.map(itemRow)):null};
+  const info=a.info||{};
+  const answers=h("div",{class:"card"},h("h3",{text:"Owner's safety answers"}),
+    info.answered?h("div",{class:"facts"},...licMeta.questions.filter(q=>info[q.k]).map(q=>h("p",{class:"small"},h("span",{class:"muted",text:q.q+" "}),h("b",{text:info[q.k]})))):h("p",{class:"muted small",text:"Not answered yet. The owner answers these on their link. The FRA, LRA and escape plan drafts use them."}));
+  const log=h("div",{class:"card"},h("h3",{text:"History"}),...(a.log||[]).slice().reverse().slice(0,25).map(l=>h("p",{class:"small"},h("span",{class:"muted",text:new Date(l.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" · "+(l.by||"")+" · "}),l.what)));
+  return[back,top,group("From the owner",["owner"],"The owner uploads these on their link. You can also upload anything they send by email or WhatsApp."),
+    group("Drafted by us from the owner's answers",["gen"],"Open a draft, check it on site, print or save it as PDF, then set it to Checked."),
+    group("Done by us",["us"]),answers,log];
+}
+
+/* Drafts: printable documents built from the owner's answers. Always marked DRAFT until checked. */
+function licDoc(a,kind){
+  const i=a.info||{};const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const v=k=>i[k]?esc(i[k]):'<span class="gap">not answered</span>';
+  const yes=(k,good)=>i[k]&&good.some(g=>i[k].startsWith(g));
+  const today=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  const review=new Date(Date.now()+365*864e5).toLocaleDateString("en-GB",{month:"long",year:"numeric"});
+  const fuel=i.heating&&/gas|LPG|Oil/i.test(i.heating);
+  const row=(check,ok,action)=>`<tr><td>${check}</td><td class="${ok===true?"ok":ok===false?"bad":"chk"}">${ok===true?"Satisfactory":ok===false?"Action needed":"Check on site"}</td><td>${ok===true?"":action}</td></tr>`;
+  let title="",body="";
+  if(kind==="fra"){
+    title="Fire safety risk assessment";
+    const acts=[];
+    const R=[];
+    R.push(row("Smoke alarms in the living room and every hallway/landing, all interlinked",yes("smoke",["Yes, linked"])?true:i.smoke?false:null,"Fit interlinked smoke alarms in the living room and every circulation space (hall, landing), mains-wired or sealed long-life battery, interlinked with the heat alarm."));
+    R.push(row("Heat alarm in the kitchen, interlinked",yes("heat",["Yes"])?true:i.heat?false:null,"Fit an interlinked heat alarm in the kitchen."));
+    R.push(row("Carbon monoxide alarm by every fuel-burning appliance and flue",i.co==="No such appliances"?true:yes("co",["Yes"])?true:i.co?false:null,"Fit a CO alarm in each room with a gas, LPG, oil or solid-fuel appliance or flue."));
+    R.push(row("Fire blanket in the kitchen",yes("blanket",["Yes"])?true:i.blanket?false:null,"Fit a fire blanket on the kitchen wall, away from the hob."));
+    R.push(row("Fire extinguisher (optional, recommended)",yes("extinguisher",["Yes"])?true:null,"Consider a multi-purpose extinguisher in the kitchen or hall, with guest instructions."));
+    R.push(row("Exit doors open from inside without a key",yes("keys",["Yes"])?true:i.keys?false:null,"Fit thumb-turn locks on exit doors so guests can leave without a key."));
+    R.push(row("Upstairs bedrooms have an escape window",i.escape_windows==="No upstairs bedrooms"||yes("escape_windows",["Yes"])?true:i.escape_windows?false:null,"Check upstairs bedroom windows open wide enough to escape from, or confirm a protected stair route."));
+    R.push(row("Upholstered furniture and mattresses carry fire-safety labels",yes("furniture",["Yes, all"])?true:i.furniture?false:null,"Replace or remove any item without a fire-safety label (Furniture and Furnishings (Fire) (Safety) Regulations)."));
+    R.push(row("Gas / LPG appliances safety-checked in the last 12 months",fuel?((a.items&&a.items.gas&&["received","checked"].includes(a.items.gas.status))||null):true,"Get a Gas Safe engineer to issue a gas safety certificate."));
+    R.push(row("Electrical installation (EICR) and appliances (PAT) tested",((a.items&&a.items.eicr&&["received","checked"].includes(a.items.eicr.status))&&(a.items.pat&&["received","checked"].includes(a.items.pat.status)))||null,"Get an EICR and PAT test from a qualified electrician."));
+    R.push(row("Escape route kept clear, fire information and escape plan displayed for guests",null,"Display the fire escape plan by the main door. Keep halls and stairs free of storage."));
+    R.push(row("Alarms tested and recorded at each changeover; housekeeping checks bins, heaters and candles",null,"Add an alarm test to the cleaning checklist and keep a log."));
+    body=`<h2>1. Premises</h2><table class="kv"><tr><td>Property</td><td>${esc(a.property)}</td></tr><tr><td>Address</td><td>${esc(a.address)||'<span class="gap">add address</span>'}</td></tr><tr><td>Type</td><td>${v("ptype")}</td></tr><tr><td>Floors used by guests</td><td>${v("floors")}</td></tr><tr><td>Bedrooms / maximum guests</td><td>${v("bedrooms")} / ${v("sleeps")}</td></tr><tr><td>Heating</td><td>${v("heating")}</td></tr><tr><td>Exits</td><td>${v("exits")}</td></tr><tr><td>Assembly point</td><td>${v("assembly")}</td></tr></table>
+<h2>2. Fire hazards</h2><p>Sources of ignition: cooking appliances, ${fuel?esc(i.heating)+" heating, ":"electric heating, "}electrical appliances, guest smoking (not permitted indoors) and candles (not permitted). Fuel: furniture, bedding, waste. People at risk: up to ${v("sleeps")} guests who do not know the building, may be asleep, and may include children or people with limited mobility.</p>
+<h2>3. Checks and findings</h2><table class="grid"><tr><th>Check</th><th>Finding</th><th>Action</th></tr>${R.join("")}</table>
+<h2>4. Emergency plan</h2><p>On hearing an alarm guests leave by the nearest exit (${v("exits")}), close doors behind them, gather at ${v("assembly")}, and call 999 giving the address above. Guests must not go back inside. The escape plan and this information are displayed in the property and included in the guest manual.</p>
+<h2>5. Overall risk</h2><p>Risk level once the actions above are complete: <b>Low / Normal</b> (assessor to confirm on site).</p>
+<p class="small">Prepared with reference to the Scottish Fire and Rescue Service fire safety checklist for short-term lets. Complete and attach the SFRS checklist with the application.</p>`;
+  }else if(kind==="lra"){
+    title="Legionella (water safety) risk assessment";
+    const tank=yes("coldtank",["Yes"]),cyl=/cylinder|tank/i.test(i.hotwater||""),low=yes("lowuse",["Yes"]);
+    const risk=tank||cyl?"Medium":"Low";
+    body=`<h2>1. Premises and water system</h2><table class="kv"><tr><td>Property</td><td>${esc(a.property)}</td></tr><tr><td>Address</td><td>${esc(a.address)||'<span class="gap">add address</span>'}</td></tr><tr><td>Water supply</td><td>${v("water_supply")}</td></tr><tr><td>Hot water</td><td>${v("hotwater")}</td></tr><tr><td>Cold water storage tank</td><td>${v("coldtank")}</td></tr><tr><td>Showers</td><td>${v("showers")}</td></tr><tr><td>Rarely used outlets</td><td>${v("lowuse")}</td></tr></table>
+<h2>2. Assessment</h2><table class="grid"><tr><th>Risk factor</th><th>Finding</th><th>Control</th></tr>
+<tr><td>Stored hot water</td><td>${cyl?"Present":"None (instant hot water)"}</td><td>${cyl?"Cylinder set to store at 60°C or above; hot water reaches 50°C at taps within 1 minute.":"No stored hot water to control."}</td></tr>
+<tr><td>Cold water storage</td><td>${tank?"Present":i.coldtank?"None":"Not known"}</td><td>${tank?"Tank must have a tight-fitting lid and insect screen; inspect yearly; cold water at taps below 20°C within 2 minutes.":"Mains-fed cold water."}</td></tr>
+<tr><td>Stagnant water between stays</td><td>Property can be empty for several days</td><td>Before each arrival after a gap of 7+ days, run every tap and shower for at least 2 minutes (added to the cleaning checklist).</td></tr>
+<tr><td>Showers</td><td>${v("showers")}</td><td>Run showers at each changeover; descale and disinfect shower heads every 3 months.</td></tr>
+<tr><td>Little-used outlets</td><td>${low?"Present":"None reported"}</td><td>${low?"Flush weekly or remove the outlet.":"—"}</td></tr>
+<tr><td>Private water supply</td><td>${/Private/.test(i.water_supply||"")?"Yes":"No"}</td><td>${/Private/.test(i.water_supply||"")?"Test the supply and keep the results; attach to the application.":"—"}</td></tr></table>
+<h2>3. Overall risk</h2><p>Risk level: <b>${risk}</b>, provided the controls above are followed. No guests in a high-risk group are expected beyond the general public.</p>
+<h2>4. Review</h2><p>Review this assessment by ${review}, or sooner if the water system changes or the property is empty for a long period.</p>
+<p class="small">Based on the HSE guidance for landlords (L8). Edinburgh: attach the applicant's self-declaration with this assessment.</p>`;
+  }else{
+    title="Fire escape plan";
+    body=`<div class="big"><h2>IN CASE OF FIRE</h2><ol>
+<li>If you hear the alarm or see fire or smoke, <b>shout to wake everyone</b>.</li>
+<li><b>Leave straight away</b> by the nearest exit: ${v("exits")}. Do not stop to collect belongings.</li>
+<li>If there is smoke, keep low. <b>Close doors behind you</b> to slow the fire.</li>
+<li>Exit doors open from the inside${yes("keys",["Yes"])?" without a key":" (keys are kept by the door)"}.</li>
+<li>Go to the assembly point: <b>${v("assembly")}</b>.</li>
+<li><b>Call 999</b> and give this address:<br><span class="addr">${esc(a.address||a.property)}</span></li>
+<li>Do not go back inside for any reason.</li></ol></div>
+<h2>Fire equipment in this property</h2><ul><li>Smoke and heat alarms: ${v("smoke")}</li><li>Fire blanket: ${v("blanket")}${yes("blanket",["Yes"])?" (kitchen)":""}</li><li>Fire extinguisher: ${v("extinguisher")}</li><li>Carbon monoxide alarm: ${v("co")}. If it sounds: open windows, turn off appliances, leave and call the Gas Emergency line 0800 111 999.</li></ul>
+<h2>Escape routes</h2><p>Mark the escape routes and exits on the floor plan below (arrows from each bedroom to the nearest exit) before printing.${yes("escape_windows",["Yes"])?" Upstairs bedroom windows can be used to escape if the stairs are blocked.":""}</p>
+<div class="plan">Floor plan with escape routes</div>
+<p class="small">Display by the main door and include in the guest manual.</p>`;
+  }
+  const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${title} – ${esc(a.property)}</title><style>
+body{font:14px/1.5 Arial,Helvetica,sans-serif;color:#111;max-width:780px;margin:24px auto;padding:0 20px}
+h1{font:700 24px Georgia,serif;margin:0 0 4px}h2{font:700 16px Arial;margin:22px 0 8px;border-bottom:2px solid #111;padding-bottom:4px}
+.draft{background:#fff3cd;border:1px solid #e0b84c;padding:8px 12px;border-radius:6px;margin:12px 0;font-weight:700}
+table{width:100%;border-collapse:collapse;margin:6px 0}td,th{border:1px solid #bbb;padding:6px 8px;vertical-align:top;text-align:left}th{background:#f0f0f0}
+.kv td:first-child{width:32%;background:#fafafa;font-weight:600}.ok{color:#1f7a4d;font-weight:700}.bad{color:#a33a2c;font-weight:700}.chk{color:#8a6a1c;font-weight:700}
+.gap{background:#ffe9e9;color:#a33a2c;padding:0 4px;border-radius:3px}.small{font-size:12px;color:#555}
+.big ol{font-size:17px;line-height:1.6}.big h2{font-size:26px;border:0;color:#b00}.addr{display:inline-block;font-size:18px;font-weight:700;border:2px solid #111;padding:4px 10px;margin-top:4px}
+.plan{border:2px dashed #999;height:320px;display:grid;place-items:center;color:#999;margin:10px 0}
+.sign td{height:34px}@media print{.noprint{display:none}body{margin:0}}
+</style></head><body>
+<p class="noprint"><button onclick="print()">Print or save as PDF</button></p>
+<h1>${title}</h1><p>${esc(a.property)} · ${esc(licMeta.councils[a.council]||"")} · ${today}</p>
+<div class="draft">DRAFT prepared by ViVi Stays from information supplied by the owner. Check every item on site before signing and submitting.</div>
+${body}
+<h2>Sign-off</h2><table class="sign"><tr><td style="width:32%">Assessed by</td><td></td></tr><tr><td>Signature</td><td></td></tr><tr><td>Date checked on site</td><td></td></tr><tr><td>Next review</td><td>${review}</td></tr></table>
+</body></html>`;
+  const w=window.open("","_blank");if(!w){toast("Allow pop-ups to open the draft");return}
+  w.document.write(html);w.document.close();
+  const k=kind==="escape"?"escape":kind;if(licSt(a,k)==="missing")licSetItem(a,k,{status:"draft"},licMeta.items[k].label+": draft made");
+}
+
 function shootView(){
   if(!shootUrl)shootLink();
   const copy=async()=>{try{await navigator.clipboard.writeText(shootUrl+"&by=Yasin");toast("Link copied. Send it to Yasin.")}catch(e){toast(shootUrl+"&by=Yasin")}};
@@ -2769,6 +2954,7 @@ render();
   db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});
   db.collection("photos").onSnapshot(snap=>{photosUp=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   db.collection("nl_campaigns").onSnapshot(snap=>{nlCamps=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="newsletter"&&!busy())render()},()=>{});
+  db.collection("licence").onSnapshot(snap=>{const old=Object.fromEntries(licences.map(x=>[x.id,x._link]));licences=snap.docs.map(x=>({id:x.id,...x.data(),_link:old[x.id]}));if(view==="licences"&&!busy())render()},()=>{});
   db.collection("manuals").onSnapshot(snap=>{manuals=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="manuals"&&!busy()&&!mBusy)render()},()=>{});
   db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   stayfulCheck(false);setInterval(()=>{if(document.visibilityState==="visible")stayfulCheck(false)},15*60e3);

@@ -176,6 +176,54 @@ try {
             $db->prepare('INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?)')->execute(['manuals', $id, json_encode($doc, JSON_UNESCAPED_UNICODE), gmdate('c')]);
             out(['ok' => true, 'size' => strlen($pdf)]);
 
+        case 'licence_meta':
+            require_once __DIR__ . '/licence.php';
+            out(['items' => LIC_ITEMS, 'councils' => LIC_COUNCILS, 'questions' => LIC_QUESTIONS]);
+
+        case 'licence_new':
+            require_once __DIR__ . '/licence.php';
+            $council = (string)($in['council'] ?? '');
+            if (!isset(LIC_COUNCILS[$council])) fail('Pick the council');
+            $prop = trim(mb_substr((string)($in['property'] ?? ''), 0, 120));
+            if ($prop === '') fail('Enter the property');
+            $o = $in['owner'] ?? [];
+            $id = bin2hex(random_bytes(10));
+            $doc = ['property' => $prop, 'address' => trim(mb_substr((string)($in['address'] ?? ''), 0, 200)), 'council' => $council,
+                'owner' => ['name' => trim(mb_substr((string)($o['name'] ?? ''), 0, 80)), 'email' => trim(mb_substr((string)($o['email'] ?? ''), 0, 120)), 'phone' => trim(mb_substr((string)($o['phone'] ?? ''), 0, 40))],
+                'stage' => 'collecting', 'items' => new stdClass(), 'info' => new stdClass(),
+                'chase' => ['auto' => true, 'every' => max(1, min(14, (int)($in['every'] ?? 3))), 'started' => gmdate('c'), 'count' => 0],
+                'log' => [['at' => gmdate('c'), 'by' => $user, 'what' => 'Application started']], 'created' => gmdate('c'), 'by' => $user];
+            lic_put($id, json_decode(json_encode($doc), true));
+            out(['id' => $id, 'link' => lic_link($id)]);
+
+        case 'licence_link':
+            require_once __DIR__ . '/licence.php';
+            $id = id_ok($in['id'] ?? '');
+            out(['link' => lic_link($id)]);
+
+        case 'licence_chase':
+            require_once __DIR__ . '/licence.php';
+            $id = id_ok($in['id'] ?? '');
+            $doc = lic_get($id); if (!$doc) fail('Not found', 404);
+            if (($in['channel'] ?? '') === 'whatsapp') {
+                $doc['chase']['lastWhatsApp'] = gmdate('c');
+                $doc['log'][] = ['at' => gmdate('c'), 'by' => $user, 'what' => 'WhatsApp reminder sent'];
+                lic_put($id, $doc);
+                out(['ok' => true]);
+            }
+            $r = lic_chase_email($id, $doc);
+            if (!empty($r['skipped'])) fail('Not sent: ' . $r['skipped']);
+            out(['ok' => true]);
+
+        case 'licence_upload':
+            require_once __DIR__ . '/licence.php';
+            $id = id_ok($in['id'] ?? ''); $item = (string)($in['item'] ?? '');
+            $raw = base64_decode(preg_replace('/^data:[^;]+;base64,/', '', (string)($in['data'] ?? '')), true);
+            if ($raw === false) fail('Bad file');
+            $tmp = tempnam(sys_get_temp_dir(), 'lic'); file_put_contents($tmp, $raw);
+            try { lic_store_file($id, $item, $tmp, (string)($in['name'] ?? ''), $user); } catch (Throwable $e) { @unlink($tmp); fail($e->getMessage()); }
+            out(['ok' => true]);
+
         case 'shoot_link':
             require_once __DIR__ . '/newsletter.php';
             $base = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? '');
