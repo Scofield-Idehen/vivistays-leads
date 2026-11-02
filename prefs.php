@@ -119,7 +119,9 @@ function pref_slack_text($doc, $updated) {
 }
 // Post one record to Slack and save the outcome on it.
 function pref_send($id, $doc, $updated) {
-    $status = vl_slack_post(pref_slack_text($doc, $updated));
+    $route = vl_slack_route_for($doc['property'] ?? '');
+    $doc['slackChannel'] = $route ? $route['match'] : (vl_slack_webhook() !== '' ? 'Default' : '');
+    $status = vl_slack_post(pref_slack_text($doc, $updated), vl_slack_url_for($doc['property'] ?? ''));
     $doc['slackStatus'] = $status;
     $doc['slackUpdated'] = (bool)$updated;
     if ($status === 'sent') { $doc['slackAt'] = gmdate('c'); $doc['slackTries'] = 0; }
@@ -134,7 +136,6 @@ function pref_all() {
 }
 // cron: re-send records whose Slack post failed.
 function pref_retry_failed($max = 5) {
-    if (vl_slack_webhook() === '') return 0;
     $n = 0;
     foreach (pref_all() as $id => $doc) {
         if ($n >= $max) break;
@@ -153,14 +154,21 @@ function pref_digest($force = false) {
         if ($hr < PREF_DIGEST_FROM || $hr >= PREF_DIGEST_UNTIL) return 'not_time';
         if (trim((string)@file_get_contents($f)) === $today) return 'done_today';
     }
-    if (vl_slack_webhook() === '') return 'not_configured';
+    if (vl_slack_webhook() === '' && !vl_slack_routes()) return 'not_configured';
     $tomorrow = (clone $uk)->modify('+1 day')->format('Y-m-d');
     $list = array_filter(pref_all(), fn($d) => ($d['checkin'] ?? '') === $tomorrow);
     if (!$list) { @file_put_contents($f, $today, LOCK_EX); return 'none'; }
     uasort($list, fn($a, $b) => strnatcasecmp($a['property'] ?? '', $b['property'] ?? ''));
-    $t = '*Arrivals tomorrow with requests* (' . pref_nice_date($tomorrow) . ')';
-    foreach ($list as $d) $t .= "\n\n*" . vl_slack_esc(($d['property'] ?? '') ?: 'Property not given') . "*\n" . pref_slack_block($d);
-    $r = vl_slack_post($t);
+    // One digest per channel, each listing only that channel's properties.
+    $groups = [];
+    foreach ($list as $d) { $u = vl_slack_url_for($d['property'] ?? ''); if ($u !== '') $groups[$u][] = $d; }
+    if (!$groups) { @file_put_contents($f, $today, LOCK_EX); return 'none'; }
+    $r = 'sent';
+    foreach ($groups as $u => $ds) {
+        $t = '*Arrivals tomorrow with requests* (' . pref_nice_date($tomorrow) . ')';
+        foreach ($ds as $d) $t .= "\n\n*" . vl_slack_esc(($d['property'] ?? '') ?: 'Property not given') . "*\n" . pref_slack_block($d);
+        if (vl_slack_post($t, $u) !== 'sent') $r = 'failed';
+    }
     if ($r === 'sent') @file_put_contents($f, $today, LOCK_EX);
     return $r;
 }

@@ -6,3 +6,4 @@ data/licence/
 data/slack-webhook.txt
 data/prefs-rate/
 data/prefs-digest.txt
+data/slack-routes.json

@@ -2601,13 +2601,14 @@ function mAllCard(list){
 let shootUrl=null,shootBusy=false;
 async function shootLink(){if(shootUrl||shootBusy)return;shootBusy=true;try{const r=await fetch("api.php?action=shoot_link",{method:"POST",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:"{}"});const j=await r.json();shootUrl=j.url||null}catch(e){}shootBusy=false;render()}
 /* ---------- GUEST PREFS: guests' answers from the pre-arrival form, posted to the cleaners' Slack ---------- */
-let prefs=[],pfMeta=null,pfSel=null,pfBusy="",pfDate="",pfShow="upcoming",pfHook="";
-const PF_SLACK={sent:["Sent to Slack","good"],failed:["Slack failed, will retry","hot"],not_configured:["Not sent: Slack not set up","warm"],pending:["Sending…","warm"]};
+let prefs=[],pfMeta=null,pfSel=null,pfBusy="",pfDate="",pfShow="upcoming",pfHook="",pfRm="",pfRu="";
+const PF_SLACK={sent:["Sent to Slack","good"],failed:["Slack failed, will retry","hot"],not_configured:["Not sent: no Slack channel for this property","warm"],pending:["Sending…","warm"]};
 async function pfLoadMeta(){if(pfMeta||pfBusy==="meta")return;pfBusy="meta";try{pfMeta=await licApi("prefs_meta")}catch(e){toast("Couldn't load: "+e.message)}pfBusy="";render()}
 const pfNice=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"})};
 const pfWhen=iso=>iso?new Date(iso).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
 function pfLines(p){const a=p.answers||{};return(pfMeta?pfMeta.fields:[]).filter(f=>a[f.k]&&a[f.k]!==f.default).map(f=>[f.short,a[f.k]])}
 async function pfResend(p){try{pfBusy="Sending to Slack…";render();await licApi("prefs_resend",{id:p.id});toast("Sent to Slack")}catch(e){toast(e.message)}pfBusy="";render()}
+async function pfRoutes(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_routes",body);pfMeta.routes=r.routes;if(body.op==="add"){pfRm="";pfRu=""}toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
 async function pfSettings(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_settings",body);pfMeta.slack=r.slack;pfHook="";toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
 function prefsView(){
   const head=h("div",{},h("h1",{text:"Guest prefs"}),h("p",{class:"muted",text:"What guests asked for before arrival: arrival time, guests, cots, beds, dogs and notes. Each answer goes to the cleaners' Slack channel, plus a morning list of tomorrow's arrivals."}));
@@ -2644,14 +2645,23 @@ function pfLinkCard(){
     h("div",{class:"tipbox small"},h("b",{text:"Before you save it in Guesty: "}),"replace each {{…}} with Guesty's own variable names for confirmation code, listing nickname and check-in date (pick them from Guesty's variable list in the message editor). Then send yourself a test message and open the link: the property and date should show in the line under the heading."));
 }
 function pfSlackCard(){
-  const s=pfMeta.slack;
-  return h("div",{class:"card"},h("h3",{text:"Slack settings"}),
-    h("p",{class:"small"},h("span",{class:"pill "+(s?"good":"warm"),text:s?"Webhook is set"+(s==="config"?" (in config.local.php)":""):"Not set up yet"})),
-    h("p",{class:"muted small",text:"In Slack: Apps > Incoming Webhooks > Add to Slack, choose the cleaners' channel, copy the Webhook URL and paste it here. Until then answers are still saved here, just not posted."}),
-    s==="config"?null:h("div",{class:"field"},h("label",{text:s?"Replace webhook URL":"Webhook URL"}),h("input",{type:"password",autocomplete:"off",placeholder:"https://hooks.slack.com/services/…",value:pfHook,oninput:e=>pfHook=e.target.value.trim()})),
-    h("div",{class:"btns"},s==="config"?null:h("button",{class:"btn primary",onclick:()=>{if(!pfHook){toast("Paste the webhook URL first");return}pfSettings({slack_webhook:pfHook},"Saved. Send a test to check it.")}},"Save"),
-      s?h("button",{class:"btn",onclick:()=>pfSettings({test:true},"Test message sent. Check the Slack channel.")},"Send a test message"):null,
-      s==="app"?h("button",{class:"btn link small",onclick:()=>{if(confirm("Remove the Slack webhook? Answers will be saved but not posted."))pfSettings({slack_webhook:""},"Removed")}},"Remove"):null));
+  const s=pfMeta.slack, routes=pfMeta.routes||[];
+  const rows=routes.map(r=>h("div",{class:"row",style:"cursor:default"},h("span",{class:"dot"}),h("span",{class:"nm",text:r.match}),h("span",{class:"when",text:"webhook …"+r.tail}),
+    h("span",{class:"sub"},h("button",{class:"btn link small",onclick:()=>pfRoutes({op:"test",match:r.match},"Test sent to "+r.match+"'s channel")},"Send test"),
+      h("button",{class:"btn link small",onclick:()=>{if(confirm("Remove the Slack channel for "+r.match+"?"))pfRoutes({op:"remove",match:r.match},"Removed")}},"Remove"))));
+  return h("div",{class:"card"},h("h3",{text:"Slack channels"}),
+    h("p",{class:"muted small",text:"Each property posts to its own channel. Add the property name as it appears in Guesty (or one word from it, e.g. Baronet) and that channel's webhook. Any property whose name contains that word goes there."}),
+    rows.length?h("div",{class:"list"},...rows):h("p",{class:"muted small",text:"No property channels yet."}),
+    h("div",{class:"field"},h("label",{text:"Property name or word"}),h("input",{type:"text",placeholder:"e.g. Baronet",value:pfRm,oninput:e=>pfRm=e.target.value})),
+    h("div",{class:"field"},h("label",{text:"That channel's webhook URL"}),h("input",{type:"password",autocomplete:"off",placeholder:"https://hooks.slack.com/services/…",value:pfRu,oninput:e=>pfRu=e.target.value.trim()})),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>{if(!pfRm.trim()||!pfRu){toast("Add the property and the webhook URL");return}pfRoutes({op:"add",match:pfRm.trim(),url:pfRu},"Saved. Send a test to check it.")}},"Add channel")),
+    h("h3",{text:"Default channel (optional)",style:"margin-top:18px"}),
+    h("p",{class:"small"},h("span",{class:"pill "+(s?"good":"warm"),text:s?"Default is set"+(s==="config"?" (in config.local.php)":""):"No default"})),
+    h("p",{class:"muted small",text:"Properties without their own channel go here. With no default they are saved in this list but not posted, so nothing lands in the wrong channel."}),
+    s==="config"?null:h("div",{class:"field"},h("label",{text:s?"Replace default webhook URL":"Default webhook URL"}),h("input",{type:"password",autocomplete:"off",placeholder:"https://hooks.slack.com/services/…",value:pfHook,oninput:e=>pfHook=e.target.value.trim()})),
+    h("div",{class:"btns"},s==="config"?null:h("button",{class:"btn",onclick:()=>{if(!pfHook){toast("Paste the webhook URL first");return}pfSettings({slack_webhook:pfHook},"Saved. Send a test to check it.")}},"Save default"),
+      s?h("button",{class:"btn",onclick:()=>pfSettings({test:true},"Test message sent to the default channel.")},"Send a test"):null,
+      s==="app"?h("button",{class:"btn link small",onclick:()=>{if(confirm("Remove the default channel? Properties without their own channel will be saved but not posted."))pfSettings({slack_webhook:""},"Removed")}},"Remove default"):null));
 }
 function pfDetail(p){
   const back=h("button",{class:"btn link",onclick:()=>{pfSel=null;render()}},"← All submissions");
@@ -2659,7 +2669,7 @@ function pfDetail(p){
   const a=p.answers||{};
   const rows=(pfMeta?pfMeta.fields:[]).map(f=>{const v=a[f.k]||"";const special=v&&v!==f.default;
     return h("p",{class:"small",style:"display:grid;grid-template-columns:minmax(120px,40%) minmax(0,1fr);gap:12px;margin:0;padding:8px 0;border-top:1px solid var(--line)"},h("span",{class:"muted",text:f.label}),h(special?"b":"span",{text:v||"Not answered",style:"white-space:pre-wrap;overflow-wrap:anywhere"}))});
-  const top=h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:p.property||"Property not given"}),h("span",{class:"pill "+st[1],text:st[0]})),
+  const top=h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:p.property||"Property not given"}),h("span",{class:"pill "+st[1],text:st[0]+(p.slackChannel&&p.slackStatus==="sent"?" ("+p.slackChannel+")":"")})),
     h("p",{class:"small",text:["Check-in: "+(p.checkin?pfNice(p.checkin):(p.checkinRaw||"not given")),"Guest: "+(p.guest||"not given"),"Code: "+(p.code||p.id)].join(" · ")}),
     h("p",{class:"muted small",text:"Sent "+pfWhen(p.submittedAt)+((p.submissions||1)>1?" (updated, "+p.submissions+" times in total)":"")+(p.slackAt?" · posted to Slack "+pfWhen(p.slackAt):"")+(p.slackStatus==="failed"?" · tries: "+(p.slackTries||0):"")}),
     h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>pfResend(p)},"Resend to Slack"),

@@ -91,9 +91,41 @@ function vl_slack_set($url) {
 }
 // Slack treats & < > specially in message text.
 function vl_slack_esc($s) { return str_replace(['&', '<', '>'], ['&amp;', '&lt;', '&gt;'], (string)$s); }
-// Post a message. Returns 'sent', 'not_configured' or 'failed'.
-function vl_slack_post($text) {
-    $url = vl_slack_webhook();
+// Per-property channels: each route is {match, url}. A property whose name contains
+// `match` (case-insensitive, longest match wins) posts to that channel's webhook.
+// Kept in data/slack-routes.json (secret, never served, never in GitHub).
+function vl_slack_routes_file() { return __DIR__ . '/data/slack-routes.json'; }
+function vl_slack_routes() {
+    $f = vl_slack_routes_file();
+    $r = is_file($f) ? json_decode((string)@file_get_contents($f), true) : [];
+    return is_array($r) ? array_values(array_filter($r, fn($x) => !empty($x['match']) && !empty($x['url']))) : [];
+}
+function vl_slack_routes_save($routes) {
+    $dir = __DIR__ . '/data';
+    if (!is_dir($dir)) mkdir($dir, 0750, true);
+    usort($routes, fn($a, $b) => strnatcasecmp($a['match'], $b['match']));
+    file_put_contents(vl_slack_routes_file(), json_encode(array_values($routes), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
+    @chmod(vl_slack_routes_file(), 0600);
+}
+function vl_slack_norm($s) { return trim(preg_replace('/[^a-z0-9]+/', ' ', mb_strtolower((string)$s))); }
+// The route that matches a property name, or null.
+function vl_slack_route_for($property) {
+    $p = ' ' . vl_slack_norm($property) . ' ';
+    $best = null;
+    foreach (vl_slack_routes() as $r) {
+        $m = vl_slack_norm($r['match']);
+        if ($m !== '' && strpos($p, " $m ") !== false && (!$best || strlen($m) > strlen(vl_slack_norm($best['match'])))) $best = $r;
+    }
+    return $best;
+}
+// Webhook for a property: its own channel, else the default channel, else ''.
+function vl_slack_url_for($property) {
+    $r = vl_slack_route_for($property);
+    return $r ? $r['url'] : vl_slack_webhook();
+}
+// Post a message. Returns 'sent', 'not_configured' or 'failed'. $url defaults to the default channel.
+function vl_slack_post($text, $url = null) {
+    if ($url === null) $url = vl_slack_webhook();
     if ($url === '') return 'not_configured';
     $ch = curl_init($url);
     curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 8,

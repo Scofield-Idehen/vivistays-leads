@@ -230,7 +230,32 @@ try {
             $base = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? '');
             $fields = [];
             foreach (PREF_FIELDS as $k => $f) $fields[] = ['k' => $k, 'label' => $f['label'], 'short' => $f['short'] ?? $f['label'], 'default' => $f['default'] ?? ''];
-            out(['fields' => $fields, 'template' => pref_template($base), 'slack' => vl_slack_source()]);
+            out(['fields' => $fields, 'template' => pref_template($base), 'slack' => vl_slack_source(),
+                 'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => substr($r['url'], -4)], vl_slack_routes())]);
+
+        case 'prefs_routes':
+            // Per-property Slack channels. add {match,url} / remove {match} / test {match}. Never returns URLs.
+            require_once __DIR__ . '/prefs.php';
+            $match = trim(preg_replace('/\s+/', ' ', (string)($in['match'] ?? '')));
+            if ($match === '' || mb_strlen($match) > 80) fail('Enter the property name (or a word from it), e.g. Baronet');
+            $routes = vl_slack_routes();
+            $key = vl_slack_norm($match);
+            $others = array_values(array_filter($routes, fn($r) => vl_slack_norm($r['match']) !== $key));
+            $mine = array_values(array_filter($routes, fn($r) => vl_slack_norm($r['match']) === $key));
+            $op = (string)($in['op'] ?? '');
+            if ($op === 'add') {
+                $url = trim((string)($in['url'] ?? ''));
+                if (!preg_match('#^https://hooks\.slack\.com/(services|workflows|triggers)/[A-Za-z0-9/_\-]{10,200}$#', $url)) fail('That is not a Slack incoming webhook URL (it starts https://hooks.slack.com/services/…)');
+                $others[] = ['match' => $match, 'url' => $url];
+                vl_slack_routes_save($others);
+            } elseif ($op === 'remove') {
+                vl_slack_routes_save($others);
+            } elseif ($op === 'test') {
+                if (!$mine) fail('No channel saved for that property');
+                $r = vl_slack_post('Test from ViVi Stays Leads: guest preferences for *' . vl_slack_esc($mine[0]['match']) . '* will be posted in this channel.', $mine[0]['url']);
+                if ($r !== 'sent') fail('Slack did not accept the message. Check the webhook URL.');
+            } else fail('Unknown request');
+            out(['ok' => true, 'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => substr($r['url'], -4)], vl_slack_routes())]);
 
         case 'prefs_settings':
             // Save, clear or test the Slack webhook. Replies only with whether it is set.
@@ -251,7 +276,7 @@ try {
             $id = id_ok($in['id'] ?? '');
             $doc = pref_get($id); if (!$doc) fail('Not found', 404);
             $r = pref_send($id, $doc, !empty($in['updated']) || (int)($doc['submissions'] ?? 1) > 1);
-            if ($r === 'not_configured') fail('Slack is not set up yet. Paste the webhook URL in Slack settings first.');
+            if ($r === 'not_configured') fail('No Slack channel for this property. Add one under Slack channels, or set a default channel.');
             if ($r === 'failed') fail('Slack did not accept the message. Check the webhook URL and try again.');
             out(['ok' => true]);
 
