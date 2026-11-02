@@ -18,3 +18,4 @@ Put them in `data/seed.json` (same shape as now) and push. On the next page load
 - `api.php` – data and AI endpoint (signed-in users only)
 - `index.php` – sign-in screen
 - `lib.php` – shared helpers and database
+- `prefs.php` – guest preferences form (no login, linked from a Guesty pre-arrival message); answers go to the cleaners' Slack channel (webhook set in the app: Guest prefs > Slack settings)

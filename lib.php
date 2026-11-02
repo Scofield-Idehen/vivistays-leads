@@ -9,7 +9,7 @@ if (is_file(__DIR__ . '/config.local.php')) {
     exit('Setup needed: in cPanel File Manager, copy config.example.php to config.local.php and set your passwords.');
 }
 
-const VL_COLLECTIONS = ['leads', 'posts', 'groups', 'contacts', 'projects', 'social', 'photos', 'nl_campaigns', 'manuals', 'shoot', 'licence'];
+const VL_COLLECTIONS = ['leads', 'posts', 'groups', 'contacts', 'projects', 'social', 'photos', 'nl_campaigns', 'manuals', 'shoot', 'licence', 'prefs'];
 
 function vl_start_session() {
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['SERVER_PORT'] ?? '') == 443);
@@ -64,4 +64,41 @@ function vl_db() {
         @rename($seed, $dir . '/seed.imported-' . gmdate('Ymd-His') . '.json');
     }
     return $pdo;
+}
+
+// ---------- Slack (guest preferences go to the cleaners' channel) ----------
+// The Incoming Webhook URL is a secret. It comes from $SLACK_WEBHOOK_URL in config.local.php
+// if set there, otherwise from the app (Guest prefs > Slack settings), which keeps it in
+// data/slack-webhook.txt (never in GitHub, never served: data/ is denied by .htaccess).
+function vl_slack_file() { return __DIR__ . '/data/slack-webhook.txt'; }
+function vl_slack_webhook() {
+    global $SLACK_WEBHOOK_URL;
+    if (!empty($SLACK_WEBHOOK_URL)) return trim($SLACK_WEBHOOK_URL);
+    $f = vl_slack_file();
+    return is_file($f) ? trim((string)@file_get_contents($f)) : '';
+}
+function vl_slack_source() {
+    global $SLACK_WEBHOOK_URL;
+    if (!empty($SLACK_WEBHOOK_URL)) return 'config';
+    return vl_slack_webhook() !== '' ? 'app' : '';
+}
+function vl_slack_set($url) {
+    $dir = __DIR__ . '/data';
+    if (!is_dir($dir)) mkdir($dir, 0750, true);
+    if ($url === '') { @unlink(vl_slack_file()); return; }
+    file_put_contents(vl_slack_file(), $url, LOCK_EX);
+    @chmod(vl_slack_file(), 0600);
+}
+// Slack treats & < > specially in message text.
+function vl_slack_esc($s) { return str_replace(['&', '<', '>'], ['&amp;', '&lt;', '&gt;'], (string)$s); }
+// Post a message. Returns 'sent', 'not_configured' or 'failed'.
+function vl_slack_post($text) {
+    $url = vl_slack_webhook();
+    if ($url === '') return 'not_configured';
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 8,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS => json_encode(['text' => $text], JSON_UNESCAPED_UNICODE)]);
+    $res = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+    return ($res !== false && $code >= 200 && $code < 300) ? 'sent' : 'failed';
 }
