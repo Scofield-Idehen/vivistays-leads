@@ -275,6 +275,7 @@ try {
             require_once __DIR__ . '/prefs.php';
             $id = id_ok($in['id'] ?? '');
             $doc = pref_get($id); if (!$doc) fail('Not found', 404);
+            if (isset($in['channel'])) { $doc['channelOverride'] = trim((string)$in['channel']); if (!empty($in['property']) && empty($doc['property'])) $doc['property'] = mb_substr(trim((string)$in['property']), 0, 120); }
             $r = pref_send($id, $doc, !empty($in['updated']) || (int)($doc['submissions'] ?? 1) > 1);
             if ($r === 'not_configured') fail('No Slack channel for this property. Add one under Slack channels, or set a default channel.');
             if ($r === 'failed') fail('Slack did not accept the message. Check the webhook URL and try again.');

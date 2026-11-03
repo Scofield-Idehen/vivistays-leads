@@ -40,6 +40,7 @@ const PREF_PROPERTY_OVERRIDES = [];
 const PREF_RATE_PER_HOUR = 10;     // form submissions per visitor (IP) per hour
 const PREF_DIGEST_FROM = 8;        // morning digest: first UK hour it may go out ...
 const PREF_DIGEST_UNTIL = 20;      // ... and the hour it stops trying (wide: GitHub runs the cron only a few times a day)
+const PREF_SLACK_MENTION = '<!channel>'; // tag everyone in the channel ('' to turn off)
 const PREF_RETRY_MAX = 12;         // give up re-sending a failed Slack post after this many tries
 
 function pref_fields($property) {
@@ -115,13 +116,16 @@ function pref_slack_block($doc) {
     return $t;
 }
 function pref_slack_text($doc, $updated) {
-    return '*' . ($updated ? 'Updated' : 'New') . ' guest preferences* — ' . vl_slack_esc(($doc['property'] ?? '') ?: 'Property not given') . "\n" . pref_slack_block($doc);
+    return (PREF_SLACK_MENTION !== '' ? PREF_SLACK_MENTION . ' ' : '') . '*' . ($updated ? 'Updated' : 'New') . ' guest preferences* — ' . vl_slack_esc(($doc['property'] ?? '') ?: 'Property not given') . "\n" . pref_slack_block($doc);
 }
 // Post one record to Slack and save the outcome on it.
 function pref_send($id, $doc, $updated) {
-    $route = vl_slack_route_for($doc['property'] ?? '');
+    // A channel picked by hand in Leads wins over matching on the property name.
+    $route = null;
+    if (!empty($doc['channelOverride'])) foreach (vl_slack_routes() as $r) if (vl_slack_norm($r['match']) === vl_slack_norm($doc['channelOverride'])) $route = $r;
+    if (!$route) $route = vl_slack_route_for($doc['property'] ?? '');
     $doc['slackChannel'] = $route ? $route['match'] : (vl_slack_webhook() !== '' ? 'Default' : '');
-    $status = vl_slack_post(pref_slack_text($doc, $updated), vl_slack_url_for($doc['property'] ?? ''));
+    $status = vl_slack_post(pref_slack_text($doc, $updated), $route ? $route['url'] : vl_slack_webhook());
     $doc['slackStatus'] = $status;
     $doc['slackUpdated'] = (bool)$updated;
     if ($status === 'sent') { $doc['slackAt'] = gmdate('c'); $doc['slackTries'] = 0; }
@@ -165,7 +169,7 @@ function pref_digest($force = false) {
     if (!$groups) { @file_put_contents($f, $today, LOCK_EX); return 'none'; }
     $r = 'sent';
     foreach ($groups as $u => $ds) {
-        $t = '*Arrivals tomorrow with requests* (' . pref_nice_date($tomorrow) . ')';
+ $t = (PREF_SLACK_MENTION !== '' ? PREF_SLACK_MENTION . ' ' : '') . '*Arrivals tomorrow with requests* (' . pref_nice_date($tomorrow) . ')';
         foreach ($ds as $d) $t .= "\n\n*" . vl_slack_esc(($d['property'] ?? '') ?: 'Property not given') . "*\n" . pref_slack_block($d);
         if (vl_slack_post($t, $u) !== 'sent') $r = 'failed';
     }

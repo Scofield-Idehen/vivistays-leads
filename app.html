@@ -2607,7 +2607,7 @@ async function pfLoadMeta(){if(pfMeta||pfBusy==="meta")return;pfBusy="meta";try{
 const pfNice=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"})};
 const pfWhen=iso=>iso?new Date(iso).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
 function pfLines(p){const a=p.answers||{};return(pfMeta?pfMeta.fields:[]).filter(f=>a[f.k]&&a[f.k]!==f.default).map(f=>[f.short,a[f.k]])}
-async function pfResend(p){try{pfBusy="Sending to Slack…";render();await licApi("prefs_resend",{id:p.id});toast("Sent to Slack")}catch(e){toast(e.message)}pfBusy="";render()}
+async function pfResend(p,extra){try{pfBusy="Sending to Slack…";render();await licApi("prefs_resend",Object.assign({id:p.id},extra||{}));toast("Sent to Slack")}catch(e){toast(e.message)}pfBusy="";render()}
 async function pfRoutes(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_routes",body);pfMeta.routes=r.routes;if(body.op==="add"){pfRm="";pfRu=""}toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
 async function pfSettings(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_settings",body);pfMeta.slack=r.slack;pfHook="";toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
 function prefsView(){
@@ -2672,6 +2672,9 @@ function pfDetail(p){
   const top=h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:p.property||"Property not given"}),h("span",{class:"pill "+st[1],text:st[0]+(p.slackChannel&&p.slackStatus==="sent"?" ("+p.slackChannel+")":"")})),
     h("p",{class:"small",text:["Check-in: "+(p.checkin?pfNice(p.checkin):(p.checkinRaw||"not given")),"Guest: "+(p.guest||"not given"),"Code: "+(p.code||p.id)].join(" · ")}),
     h("p",{class:"muted small",text:"Sent "+pfWhen(p.submittedAt)+((p.submissions||1)>1?" (updated, "+p.submissions+" times in total)":"")+(p.slackAt?" · posted to Slack "+pfWhen(p.slackAt):"")+(p.slackStatus==="failed"?" · tries: "+(p.slackTries||0):"")}),
+    (p.slackStatus!=="sent"&&(pfMeta.routes||[]).length)?h("div",{class:"tipbox small"},h("b",{text:"Not posted? "}),"Pick the property's channel and send it there.",
+      h("div",{class:"btns",style:"align-items:center;margin-top:8px"},h("select",{id:"pf-ch",style:"width:auto"},...(pfMeta.routes||[]).map(r=>h("option",{value:r.match,text:r.match}))),
+        h("button",{class:"btn primary",onclick:()=>{const c=document.getElementById("pf-ch").value;pfResend(p,{channel:c,property:p.property?"":c})}},"Send to this channel"))):null,
     h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>pfResend(p)},"Resend to Slack"),
       h("button",{class:"btn link small",onclick:async()=>{if(!confirm("Delete these answers from "+(p.guest||p.code)+"?"))return;try{await db.collection("prefs").doc(p.id).delete();pfSel=null;render();toast("Deleted")}catch(e){toast("Couldn't delete")}}},"Delete")));
   return[back,top,h("div",{class:"card"},h("h3",{text:"Answers"}),...rows,h("p",{class:"muted small",text:"Bold = something to do. Plain = the usual setup."}))];
