@@ -39,7 +39,7 @@ const PREF_FIELDS = [
 const PREF_PROPERTY_OVERRIDES = [];
 const PREF_RATE_PER_HOUR = 10;     // form submissions per visitor (IP) per hour
 const PREF_DIGEST_FROM = 8;        // morning digest: first UK hour it may go out ...
-const PREF_DIGEST_UNTIL = 11;      // ... and the hour it stops trying for the day
+const PREF_DIGEST_UNTIL = 20;      // ... and the hour it stops trying (wide: GitHub runs the cron only a few times a day)
 const PREF_RETRY_MAX = 12;         // give up re-sending a failed Slack post after this many tries
 
 function pref_fields($property) {
