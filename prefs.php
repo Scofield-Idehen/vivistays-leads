@@ -125,7 +125,7 @@ function pref_send($id, $doc, $updated) {
     if (!empty($doc['channelOverride'])) foreach (vl_slack_routes() as $r) if (vl_slack_norm($r['match']) === vl_slack_norm($doc['channelOverride'])) $route = $r;
     if (!$route) $route = vl_slack_route_for($doc['property'] ?? '');
     $doc['slackChannel'] = $route ? $route['match'] : (vl_slack_webhook() !== '' ? 'Default' : '');
-    $status = vl_slack_post(pref_slack_text($doc, $updated), $route ? $route['url'] : vl_slack_webhook());
+    $status = vl_slack_post(pref_slack_text($doc, $updated), $route ? vl_slack_target($route) : vl_slack_webhook());
     $doc['slackStatus'] = $status;
     $doc['slackUpdated'] = (bool)$updated;
     if ($status === 'sent') { $doc['slackAt'] = gmdate('c'); $doc['slackTries'] = 0; }

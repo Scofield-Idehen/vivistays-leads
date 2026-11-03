@@ -231,7 +231,23 @@ try {
             $fields = [];
             foreach (PREF_FIELDS as $k => $f) $fields[] = ['k' => $k, 'label' => $f['label'], 'short' => $f['short'] ?? $f['label'], 'default' => $f['default'] ?? ''];
             out(['fields' => $fields, 'template' => pref_template($base), 'slack' => vl_slack_source(),
-                 'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => substr($r['url'], -4)], vl_slack_routes())]);
+                 'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => vl_slack_label($r)], vl_slack_routes()), 'bot' => vl_slack_bot_token() !== '']);
+
+        case 'prefs_bot':
+            // Save / clear / check the Slack bot token. Never returns the token.
+            require_once __DIR__ . '/prefs.php';
+            if (array_key_exists('token', $in)) {
+                $tok = trim((string)$in['token']);
+                if ($tok !== '' && !preg_match('/^xoxb-[A-Za-z0-9-]{20,250}$/', $tok)) fail('That is not a Slack bot token (it starts xoxb-)');
+                $old = vl_slack_bot_token();
+                vl_slack_bot_set($tok);
+                if ($tok !== '') {
+                    $j = vl_slack_api('auth.test', new stdClass());
+                    if (empty($j['ok'])) { vl_slack_bot_set($old); fail('Slack rejected the token (' . ($j['error'] ?? 'unknown') . '). Check you copied the Bot User OAuth Token.'); }
+                    out(['ok' => true, 'bot' => true, 'team' => $j['team'] ?? '']);
+                }
+            }
+            out(['ok' => true, 'bot' => vl_slack_bot_token() !== '']);
 
         case 'prefs_routes':
             // Per-property Slack channels. add {match,url} / remove {match} / test {match}. Never returns URLs.
@@ -243,7 +259,14 @@ try {
             $others = array_values(array_filter($routes, fn($r) => vl_slack_norm($r['match']) !== $key));
             $mine = array_values(array_filter($routes, fn($r) => vl_slack_norm($r['match']) === $key));
             $op = (string)($in['op'] ?? '');
-            if ($op === 'add') {
+            if ($op === 'add' && trim((string)($in['channel'] ?? '')) !== '') {
+                $chn = trim((string)$in['channel']);
+                if (!preg_match('/^#?[a-z0-9][a-z0-9._-]{0,79}$/i', $chn)) fail('Enter the Slack channel name, e.g. #baronet');
+                if (vl_slack_bot_token() === '') fail('Save the Slack bot token first');
+                if (strlen(ltrim($chn, '#')) < 9 || !preg_match('/^[CG][A-Z0-9]+$/', ltrim($chn, '#'))) $chn = '#' . strtolower(ltrim($chn, '#'));
+                $others[] = ['match' => $match, 'channel' => $chn];
+                vl_slack_routes_save($others);
+            } elseif ($op === 'add') {
                 $url = trim((string)($in['url'] ?? ''));
                 if (!preg_match('#^https://hooks\.slack\.com/(services|workflows|triggers)/[A-Za-z0-9/_\-]{10,200}$#', $url)) fail('That is not a Slack incoming webhook URL (it starts https://hooks.slack.com/services/…)');
                 $others[] = ['match' => $match, 'url' => $url];
@@ -252,10 +275,10 @@ try {
                 vl_slack_routes_save($others);
             } elseif ($op === 'test') {
                 if (!$mine) fail('No channel saved for that property');
-                $r = vl_slack_post('Test from ViVi Stays Leads: guest preferences for *' . vl_slack_esc($mine[0]['match']) . '* will be posted in this channel.', $mine[0]['url']);
-                if ($r !== 'sent') fail('Slack did not accept the message. Check the webhook URL.');
+                $r = vl_slack_post('Test from ViVi Stays Leads: guest preferences for *' . vl_slack_esc($mine[0]['match']) . '* will be posted in this channel.', vl_slack_target($mine[0]));
+                if ($r !== 'sent') fail(!empty($mine[0]['channel']) ? 'Slack did not accept it. Check the channel name, and for a private channel invite the app (/invite @ViVi Guest Prefs).' : 'Slack did not accept the message. Check the webhook URL.');
             } else fail('Unknown request');
-            out(['ok' => true, 'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => substr($r['url'], -4)], vl_slack_routes())]);
+            out(['ok' => true, 'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => vl_slack_label($r)], vl_slack_routes())]);
 
         case 'prefs_settings':
             // Save, clear or test the Slack webhook. Replies only with whether it is set.

@@ -2601,14 +2601,15 @@ function mAllCard(list){
 let shootUrl=null,shootBusy=false;
 async function shootLink(){if(shootUrl||shootBusy)return;shootBusy=true;try{const r=await fetch("api.php?action=shoot_link",{method:"POST",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:"{}"});const j=await r.json();shootUrl=j.url||null}catch(e){}shootBusy=false;render()}
 /* ---------- GUEST PREFS: guests' answers from the pre-arrival form, posted to the cleaners' Slack ---------- */
-let prefs=[],pfMeta=null,pfSel=null,pfBusy="",pfDate="",pfShow="upcoming",pfHook="",pfRm="",pfRu="";
+let prefs=[],pfMeta=null,pfSel=null,pfBusy="",pfDate="",pfShow="upcoming",pfHook="",pfRm="",pfRu="",pfTok="",pfCh="";
 const PF_SLACK={sent:["Sent to Slack","good"],failed:["Slack failed, will retry","hot"],not_configured:["Not sent: no Slack channel for this property","warm"],pending:["Sending…","warm"]};
 async function pfLoadMeta(){if(pfMeta||pfBusy==="meta")return;pfBusy="meta";try{pfMeta=await licApi("prefs_meta")}catch(e){toast("Couldn't load: "+e.message)}pfBusy="";render()}
 const pfNice=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"})};
 const pfWhen=iso=>iso?new Date(iso).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
 function pfLines(p){const a=p.answers||{};return(pfMeta?pfMeta.fields:[]).filter(f=>a[f.k]&&a[f.k]!==f.default).map(f=>[f.short,a[f.k]])}
 async function pfResend(p,extra){try{pfBusy="Sending to Slack…";render();await licApi("prefs_resend",Object.assign({id:p.id},extra||{}));toast("Sent to Slack")}catch(e){toast(e.message)}pfBusy="";render()}
-async function pfRoutes(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_routes",body);pfMeta.routes=r.routes;if(body.op==="add"){pfRm="";pfRu=""}toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
+async function pfRoutes(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_routes",body);pfMeta.routes=r.routes;if(body.op==="add"){pfRm="";pfRu="";pfCh=""}toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
+async function pfBot(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_bot",body);pfMeta.bot=r.bot;pfTok="";toast(okMsg+(r.team?" ("+r.team+")":""))}catch(e){toast(e.message)}pfBusy="";render()}
 async function pfSettings(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_settings",body);pfMeta.slack=r.slack;pfHook="";toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
 function prefsView(){
   const head=h("div",{},h("h1",{text:"Guest prefs"}),h("p",{class:"muted",text:"What guests asked for before arrival: arrival time, guests, cots, beds, dogs and notes. Each answer goes to the cleaners' Slack channel, plus a morning list of tomorrow's arrivals."}));
@@ -2646,15 +2647,21 @@ function pfLinkCard(){
 }
 function pfSlackCard(){
   const s=pfMeta.slack, routes=pfMeta.routes||[];
-  const rows=routes.map(r=>h("div",{class:"row",style:"cursor:default"},h("span",{class:"dot"}),h("span",{class:"nm",text:r.match}),h("span",{class:"when",text:"webhook …"+r.tail}),
+  const rows=routes.map(r=>h("div",{class:"row",style:"cursor:default"},h("span",{class:"dot"}),h("span",{class:"nm",text:r.match}),h("span",{class:"when",text:r.tail}),
     h("span",{class:"sub"},h("button",{class:"btn link small",onclick:()=>pfRoutes({op:"test",match:r.match},"Test sent to "+r.match+"'s channel")},"Send test"),
       h("button",{class:"btn link small",onclick:()=>{if(confirm("Remove the Slack channel for "+r.match+"?"))pfRoutes({op:"remove",match:r.match},"Removed")}},"Remove"))));
+  const bot=!!pfMeta.bot;
   return h("div",{class:"card"},h("h3",{text:"Slack channels"}),
-    h("p",{class:"muted small",text:"Each property posts to its own channel. Add the property name as it appears in Guesty (or one word from it, e.g. Baronet) and that channel's webhook. Any property whose name contains that word goes there."}),
-    rows.length?h("div",{class:"list"},...rows):h("p",{class:"muted small",text:"No property channels yet."}),
+    h("p",{class:"small"},h("span",{class:"pill "+(bot?"good":"warm"),text:bot?"Slack bot connected":"Slack bot not connected"})),
+    h("p",{class:"muted small",text:bot?"Each property posts to its own channel with @channel. Add the property name as it appears in Guesty (or one word from it) and its channel name.":"Paste the Bot User OAuth Token (xoxb-…) from your Slack app's OAuth & Permissions page. Then add each property's channel by name."}),
+    h("div",{class:"field"},h("label",{text:bot?"Replace bot token":"Bot token"}),h("input",{type:"password",autocomplete:"off",placeholder:"xoxb-…",value:pfTok,oninput:e=>pfTok=e.target.value.trim()})),
+    h("div",{class:"btns"},h("button",{class:bot?"btn":"btn primary",onclick:()=>{if(!pfTok){toast("Paste the token first");return}pfBot({token:pfTok},"Slack bot connected")}},"Save token"),
+      bot?h("button",{class:"btn link small",onclick:()=>{if(confirm("Disconnect the Slack bot? Channels set by name will stop posting."))pfBot({token:""},"Disconnected")}},"Disconnect"):null),
+    rows.length?h("div",{class:"list",style:"margin-top:12px"},...rows):h("p",{class:"muted small",text:"No property channels yet."}),
     h("div",{class:"field"},h("label",{text:"Property name or word"}),h("input",{type:"text",placeholder:"e.g. Baronet",value:pfRm,oninput:e=>pfRm=e.target.value})),
-    h("div",{class:"field"},h("label",{text:"That channel's webhook URL"}),h("input",{type:"password",autocomplete:"off",placeholder:"https://hooks.slack.com/services/…",value:pfRu,oninput:e=>pfRu=e.target.value.trim()})),
-    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>{if(!pfRm.trim()||!pfRu){toast("Add the property and the webhook URL");return}pfRoutes({op:"add",match:pfRm.trim(),url:pfRu},"Saved. Send a test to check it.")}},"Add channel")),
+    bot?h("div",{class:"field"},h("label",{text:"Slack channel"}),h("input",{type:"text",placeholder:"#baronet",value:pfCh,oninput:e=>pfCh=e.target.value.trim()})):
+      h("div",{class:"field"},h("label",{text:"That channel's webhook URL"}),h("input",{type:"password",autocomplete:"off",placeholder:"https://hooks.slack.com/services/…",value:pfRu,oninput:e=>pfRu=e.target.value.trim()})),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>{if(!pfRm.trim()||!(bot?pfCh:pfRu)){toast(bot?"Add the property and the channel":"Add the property and the webhook URL");return}pfRoutes(bot?{op:"add",match:pfRm.trim(),channel:pfCh}:{op:"add",match:pfRm.trim(),url:pfRu},"Saved. Send a test to check it.")}},"Add channel")),
     h("h3",{text:"Default channel (optional)",style:"margin-top:18px"}),
     h("p",{class:"small"},h("span",{class:"pill "+(s?"good":"warm"),text:s?"Default is set"+(s==="config"?" (in config.local.php)":""):"No default"})),
     h("p",{class:"muted small",text:"Properties without their own channel go here. With no default they are saved in this list but not posted, so nothing lands in the wrong channel."}),

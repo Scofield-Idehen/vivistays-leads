@@ -98,7 +98,7 @@ function vl_slack_routes_file() { return __DIR__ . '/data/slack-routes.json'; }
 function vl_slack_routes() {
     $f = vl_slack_routes_file();
     $r = is_file($f) ? json_decode((string)@file_get_contents($f), true) : [];
-    return is_array($r) ? array_values(array_filter($r, fn($x) => !empty($x['match']) && !empty($x['url']))) : [];
+    return is_array($r) ? array_values(array_filter($r, fn($x) => !empty($x['match']) && (!empty($x['url']) || !empty($x['channel'])))) : [];
 }
 function vl_slack_routes_save($routes) {
     $dir = __DIR__ . '/data';
@@ -121,11 +121,47 @@ function vl_slack_route_for($property) {
 // Webhook for a property: its own channel, else the default channel, else ''.
 function vl_slack_url_for($property) {
     $r = vl_slack_route_for($property);
-    return $r ? $r['url'] : vl_slack_webhook();
+    return $r ? vl_slack_target($r) : vl_slack_webhook();
+}
+// Where a route posts: a Slack channel (#name or ID, via the bot token) or a webhook URL.
+function vl_slack_target($r) { return !empty($r['channel']) ? $r['channel'] : ($r['url'] ?? ''); }
+// Short label for the app: "#baronet" or "webhook …abcd". Never the full URL.
+function vl_slack_label($r) { return !empty($r['channel']) ? $r['channel'] : 'webhook …' . substr((string)($r['url'] ?? ''), -4); }
+// Bot token (xoxb-…) lets one Slack app post to any channel. Kept in data/slack-bot.txt.
+function vl_slack_bot_file() { return __DIR__ . '/data/slack-bot.txt'; }
+function vl_slack_bot_token() {
+    global $SLACK_BOT_TOKEN;
+    if (!empty($SLACK_BOT_TOKEN)) return trim($SLACK_BOT_TOKEN);
+    $f = vl_slack_bot_file();
+    return is_file($f) ? trim((string)@file_get_contents($f)) : '';
+}
+function vl_slack_bot_set($tok) {
+    $dir = __DIR__ . '/data';
+    if (!is_dir($dir)) mkdir($dir, 0750, true);
+    if ($tok === '') { @unlink(vl_slack_bot_file()); return; }
+    file_put_contents(vl_slack_bot_file(), $tok, LOCK_EX);
+    @chmod(vl_slack_bot_file(), 0600);
+}
+// Calls the Slack Web API with the bot token. Returns the decoded reply (ok=false on any error).
+function vl_slack_api($method, $payload) {
+    $tok = vl_slack_bot_token();
+    if ($tok === '') return ['ok' => false, 'error' => 'no_token'];
+    $ch = curl_init('https://slack.com/api/' . $method);
+    curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 8,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json; charset=utf-8', 'Authorization: Bearer ' . $tok],
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE)]);
+    $res = curl_exec($ch); curl_close($ch);
+    $j = $res !== false ? json_decode($res, true) : null;
+    return is_array($j) ? $j : ['ok' => false, 'error' => 'no_response'];
 }
 // Post a message. Returns 'sent', 'not_configured' or 'failed'. $url defaults to the default channel.
 function vl_slack_post($text, $url = null) {
     if ($url === null) $url = vl_slack_webhook();
+    if ($url !== '' && strpos($url, 'https://') !== 0) {
+        // A channel name or ID: post with the bot token.
+        $j = vl_slack_api('chat.postMessage', ['channel' => ltrim($url, '#'), 'text' => $text]);
+        return !empty($j['ok']) ? 'sent' : ((($j['error'] ?? '') === 'no_token') ? 'not_configured' : 'failed');
+    }
     if ($url === '') return 'not_configured';
     $ch = curl_init($url);
     curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 8,
