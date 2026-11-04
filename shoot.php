@@ -45,6 +45,21 @@ if ($ok && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $in = json_decode(file_get_contents('php://input'), true) ?: [];
     $lid = (string)($in['listing'] ?? '');
     if (!preg_match('/^[A-Za-z0-9]{6,40}$/', $lid)) { http_response_code(400); echo '{"error":"Bad caravan"}'; exit; }
+    if (array_key_exists('clean', $in)) {
+        // Cleaning status for a caravan on a given day: 'clean', 'not' or '' (clear). Set by the team.
+        $st = (string)$in['clean']; $day = (string)($in['date'] ?? '');
+        if (!in_array($st, ['clean', 'not', ''], true) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $day)) { http_response_code(400); echo '{"error":"Bad status"}'; exit; }
+        $db->beginTransaction();
+        $c = $get('clean') ?: [];
+        if ($st === '') unset($c[$lid][$day]); else $c[$lid][$day] = ['s' => $st, 'at' => gmdate('c'), 'by' => substr(preg_replace('/[^\w .\-]/u', '', (string)($in['by'] ?? 'Team')), 0, 30)];
+        if (isset($c[$lid]) && !$c[$lid]) unset($c[$lid]);
+        // keep only the last 30 days
+        foreach ($c as $k2 => $days) foreach ($days as $d2 => $_) if ($d2 < gmdate('Y-m-d', time() - 30 * 86400)) unset($c[$k2][$d2]);
+        $db->prepare("INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES ('shoot', 'clean', ?, ?)")->execute([json_encode($c ?: new stdClass(), JSON_UNESCAPED_UNICODE), gmdate('c')]);
+        $db->commit();
+        echo json_encode(['ok' => true, 'clean' => $c ?: new stdClass()]);
+        exit;
+    }
     $db->beginTransaction();
     $p = $get('progress') ?: [];
     if (!empty($in['done'])) $p[$lid] = ['done' => true, 'at' => gmdate('c'), 'by' => substr(preg_replace('/[^\w .\-]/u', '', (string)($in['by'] ?? 'Yasin')), 0, 30)];
@@ -63,6 +78,7 @@ if (!$ok) {
 }
 $cal = $get('calendar') ?: ['listings' => []];
 $prog = $get('progress') ?: new stdClass();
+$clean = $get('clean') ?: new stdClass();
 $embed = !empty($_GET['embed']);
 ?><!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -108,6 +124,10 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 .row.done{opacity:.6}.row.done .tick{background:var(--all);border-color:var(--all);color:#fff}
 .key{display:grid;gap:6px;font-size:14px;color:var(--muted)}
 .key div{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cl{font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;display:inline-block;margin-top:4px}
+.cl-clean{background:var(--allbg);color:var(--all)}.cl-not{background:var(--warnbg);color:var(--warn)}.cl-unk{background:var(--line);color:var(--muted)}
+.clbtns{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.clbtns button{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 10px;cursor:pointer;min-height:32px}
+.clbtns button[aria-pressed="true"].c1{background:var(--all);border-color:var(--all);color:#fff}.clbtns button[aria-pressed="true"].c0{background:var(--warn);border-color:var(--warn);color:#fff}
 .empty{color:var(--muted);text-align:center;padding:20px}
 .foot{font-size:13px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -124,6 +144,7 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 <div><span class="chip c-all">All day</span>No guests that day.</div>
 <div><span class="chip c-pm">After 12 noon</span>A guest leaves that morning. Wait for the cleaners to finish.</div>
 <div><span class="chip c-am">Before 2pm</span>A new guest arrives at 3pm. Be out by 2pm.</div>
+<div><span class="cl cl-clean">Cleaned</span><span class="cl cl-not">Not cleaned yet</span>The team updates this on the day. Only go into caravans marked Cleaned.</div>
 <div>Tap the box next to a caravan when it's done. The team will see it straight away.</div>
 <div>Ask the team for door or key codes before you go.</div></section>
 <p class="foot">Times come from Guesty and are checked several times a day. If a day says "checked a while ago", message the team before you set off.</p>
@@ -131,6 +152,9 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 <script>
 const CAL=<?= json_encode($cal, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 let PROG=<?= json_encode($prog, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+let CLEAN=<?= json_encode($clean, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+const BY=new URLSearchParams(location.search).get("by")||"Yasin";
+const TEAM=BY.toLowerCase()!=="yasin";
 const KEY=<?= json_encode($k) ?>;
 const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const start=new Date((CAL.start||"2026-10-31")+"T12:00:00");
@@ -176,10 +200,18 @@ function render(){
   if(dn.length)h+=`<div class="park"><h3>Already done</h3>`+dn.map(l=>row(l,null)).join("")+`</div>`;
   document.getElementById("list").innerHTML=h;
 }
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function cleanOf(id){const c=CLEAN&&CLEAN[id]&&CLEAN[id][iso(dateAt(sel))];return c||null}
 function row(l,w){const d=done(l.id);const by=d&&PROG[l.id].at?` <small>Done ${fmt(new Date(PROG[l.id].at))}</small>`:"";
-  return `<div class="row${d?" done":""}"><div class="nm">${esc(l.name)}${by}</div>${w&&!d?`<span class="chip c-${w}">${LAB[w]}</span>`:""}<button class="tick" data-id="${esc(l.id)}" aria-pressed="${d}" aria-label="${d?"Mark "+esc(l.name)+" not done":"Mark "+esc(l.name)+" done"}">${d?"✓":""}</button></div>`}
+  let cl="";if(w&&!d){const c=cleanOf(l.id);
+    cl=c?`<span class="cl cl-${c.s}">${c.s==="clean"?"Cleaned":"Not cleaned yet"}</span>`:`<span class="cl cl-unk">Clean not confirmed</span>`;
+    if(TEAM)cl+=`<div class="clbtns"><button class="c1" data-cl="clean" data-id="${esc(l.id)}" aria-pressed="${!!(c&&c.s==="clean")}">Cleaned</button><button class="c0" data-cl="not" data-id="${esc(l.id)}" aria-pressed="${!!(c&&c.s==="not")}">Not cleaned</button></div>`}
+  return `<div class="row${d?" done":""}"><div class="nm">${esc(l.name)}${by}${cl?"<div>"+cl+"</div>":""}</div>${w&&!d?`<span class="chip c-${w}">${LAB[w]}</span>`:""}<button class="tick" data-id="${esc(l.id)}" aria-pressed="${d}" aria-label="${d?"Mark "+esc(l.name)+" not done":"Mark "+esc(l.name)+" done"}">${d?"✓":""}</button></div>`}
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-i]");if(b){sel=+b.dataset.i;render();if(b.classList.contains("bestday"))document.getElementById("list").scrollIntoView({behavior:"smooth"});return}
+  const cb=e.target.closest("[data-cl]");if(cb){const id=cb.dataset.id,c=cleanOf(id),v=(c&&c.s===cb.dataset.cl)?"":cb.dataset.cl;cb.disabled=true;
+    try{const r=await fetch(location.pathname+"?k="+encodeURIComponent(KEY),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({listing:id,clean:v,date:iso(dateAt(sel)),by:BY})});const j=await r.json();if(j.ok){CLEAN=j.clean;render()}else throw 0}
+    catch(_){cb.disabled=false;alert("Couldn't save. Check your signal and try again.")}return}
   const t=e.target.closest(".tick");if(t){const id=t.dataset.id,nd=!done(id);t.disabled=true;
     try{const r=await fetch(location.pathname+"?k="+encodeURIComponent(KEY),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({listing:id,done:nd,by:new URLSearchParams(location.search).get("by")||"Yasin"})});const j=await r.json();if(j.ok){PROG=j.progress;render()}else throw 0}
     catch(_){t.disabled=false;alert("Couldn't save. Check your signal and try again.")}}
