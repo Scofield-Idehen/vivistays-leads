@@ -45,6 +45,20 @@ if ($ok && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $in = json_decode(file_get_contents('php://input'), true) ?: [];
     $lid = (string)($in['listing'] ?? '');
     if (!preg_match('/^[A-Za-z0-9]{6,40}$/', $lid)) { http_response_code(400); echo '{"error":"Bad caravan"}'; exit; }
+    if (array_key_exists('plan', $in)) {
+        // Day plan set by the team: {date, stops:[{id, at:'HH:MM', note}]}
+        $pl = $in['plan']; $day = (string)($pl['date'] ?? '');
+        if (!is_array($pl) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) || !is_array($pl['stops'] ?? null) || count($pl['stops']) > 40) { http_response_code(400); echo '{"error":"Bad plan"}'; exit; }
+        $stops = [];
+        foreach ($pl['stops'] as $x) {
+            if (!preg_match('/^[A-Za-z0-9]{6,40}$/', (string)($x['id'] ?? '')) || !preg_match('/^\d{2}:\d{2}$/', (string)($x['at'] ?? ''))) continue;
+            $stops[] = ['id' => $x['id'], 'at' => $x['at'], 'mins' => max(10, min(120, (int)($x['mins'] ?? 30))), 'note' => substr((string)($x['note'] ?? ''), 0, 120)];
+        }
+        $plan = ['date' => $day, 'stops' => $stops, 'at' => gmdate('c')];
+        $db->prepare("INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES ('shoot', 'plan', ?, ?)")->execute([json_encode($plan, JSON_UNESCAPED_UNICODE), gmdate('c')]);
+        echo json_encode(['ok' => true, 'plan' => $plan]);
+        exit;
+    }
     if (array_key_exists('clean', $in)) {
         // Cleaning status for a caravan on a given day: 'clean', 'not' or '' (clear). Set by the team.
         $st = (string)$in['clean']; $day = (string)($in['date'] ?? '');
@@ -79,6 +93,7 @@ if (!$ok) {
 $cal = $get('calendar') ?: ['listings' => []];
 $prog = $get('progress') ?: new stdClass();
 $clean = $get('clean') ?: new stdClass();
+$plan = $get('plan') ?: null;
 $embed = !empty($_GET['embed']);
 ?><!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -128,6 +143,13 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 .cl-clean{background:var(--allbg);color:var(--all)}.cl-not{background:var(--warnbg);color:var(--warn)}.cl-unk{background:var(--line);color:var(--muted)}
 .clbtns{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.clbtns button{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 10px;cursor:pointer;min-height:32px}
 .clbtns button[aria-pressed="true"].c1{background:var(--all);border-color:var(--all);color:#fff}.clbtns button[aria-pressed="true"].c0{background:var(--warn);border-color:var(--warn);color:#fff}
+.plan{display:grid;gap:8px}
+.stop{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stop .tm{font:700 18px Georgia,serif;min-width:52px}
+.stop .nm2{font-weight:600}.stop .nm2 small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.stop .tmr{font-size:13px;font-weight:700;white-space:nowrap;text-align:right}
+.stop.now{border-color:var(--gold);background:var(--goldbg)}.stop.past{opacity:.55}.stop.ok .tm{color:var(--all)}
+.late{color:var(--warn)}.soon{color:var(--am)}.nowtx{color:var(--gold)}
 .empty{color:var(--muted);text-align:center;padding:20px}
 .foot{font-size:13px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -136,6 +158,7 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 <header><h1>Yasin's shoot days</h1><p class="sub">ViVi Stays caravans: which ones are empty, and when you can go in.</p></header>
 <?php endif; ?>
 <div id="sync" class="sync"></div>
+<section id="plan" class="card" aria-labelledby="planh" hidden></section>
 <section class="card prog" aria-label="Progress"><div id="progtxt"></div><div class="bar"><i id="progbar" style="width:0"></i></div></section>
 <section class="best" aria-labelledby="bh"><h2 id="bh">Best days to go</h2><div id="best"></div></section>
 <section aria-labelledby="ph"><h2 id="ph" style="margin-bottom:10px">Pick a day</h2><div class="days" id="days" role="group" aria-label="Days"></div></section>
@@ -153,6 +176,7 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 const CAL=<?= json_encode($cal, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 let PROG=<?= json_encode($prog, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 let CLEAN=<?= json_encode($clean, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+const PLAN=<?= json_encode($plan, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 const BY=new URLSearchParams(location.search).get("by")||"Yasin";
 const TEAM=BY.toLowerCase()!=="yasin";
 const KEY=<?= json_encode($k) ?>;
@@ -216,5 +240,27 @@ document.addEventListener("click",async e=>{
     try{const r=await fetch(location.pathname+"?k="+encodeURIComponent(KEY),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({listing:id,done:nd,by:new URLSearchParams(location.search).get("by")||"Yasin"})});const j=await r.json();if(j.ok){PROG=j.progress;render()}else throw 0}
     catch(_){t.disabled=false;alert("Couldn't save. Check your signal and try again.")}}
 });
+function hm(t){const [h,m]=t.split(":").map(Number);const d=new Date();d.setHours(h,m,0,0);return d}
+function dur(ms){const m=Math.round(Math.abs(ms)/6e4);return m>=60?Math.floor(m/60)+"h "+(m%60)+"m":m+" min"}
+function renderPlan(){const el=document.getElementById("plan");if(!PLAN||!PLAN.stops||!PLAN.stops.length){el.hidden=true;return}
+  const now=new Date(),isToday=PLAN.date===iso(now);el.hidden=false;
+  const byId=Object.fromEntries(L.map(l=>[l.id,l]));const pi=idx(new Date(PLAN.date+"T12:00:00"));
+  let curShown=false;
+  const rows=PLAN.stops.map((x,k)=>{const l=byId[x.id];if(!l)return"";const w=win(l,pi);const st=hm(x.at),en=new Date(st.getTime()+x.mins*6e4);
+    const dl=w==="am"?hm("14:00"):null,from=w==="pm"?hm("12:00"):null;const d=done(l.id);
+    let cls="stop",tm="";
+    if(d){cls+=" past ok";tm="Done ✓"}
+    else if(!isToday){tm=x.mins+" min"}
+    else if(now<st){tm=`<span>Starts in ${dur(st-now)}</span>`}
+    else if(now<en){cls+=" now";tm=`<span class="nowtx">Now · ${dur(en-now)} left</span>`}
+    else{cls+=" past";tm=`<span class="late">${dur(now-en)} behind</span>`}
+    if(!d&&isToday&&dl){const left=dl-now;tm+=`<br><span class="${left<36e5?"late":"soon"}">${left>0?"Be out in "+dur(left):"Guest due, don't go in"}</span>`}
+    const c=cleanOf?(CLEAN&&CLEAN[l.id]&&CLEAN[l.id][PLAN.date]):null;
+    const note=[w==="am"?"Be out by 2pm, guest arrives 3pm":w==="pm"?"Not before 12 noon":"Empty all day",c?(c.s==="clean"?"Cleaned":"Not cleaned yet"):"Clean not confirmed",x.note].filter(Boolean).join(" · ");
+    return `<div class="${cls}"><div class="tm">${esc(x.at)}</div><div class="nm2">${k+1}. ${esc(l.name)}<small>${esc(l.area)} · ${esc(note)}</small></div><div class="tmr">${tm}</div></div>`}).join("");
+  const last=PLAN.stops[PLAN.stops.length-1];const fin=last?new Date(hm(last.at).getTime()+last.mins*6e4):null;
+  el.innerHTML=`<h2 id="planh" style="margin-bottom:4px">Today's plan</h2><p class="sub" style="margin:0 0 10px">${fmt(new Date(PLAN.date+"T12:00:00"),true)} · go in this order${fin?` · finish around ${String(fin.getHours()).padStart(2,"0")}:${String(fin.getMinutes()).padStart(2,"0")}`:""}. Ask the team for codes.</p><div class="plan">${rows}</div>`}
+const _render=render;render=function(){_render();renderPlan()};
+setInterval(renderPlan,30000);
 render();
 </script></body></html>
