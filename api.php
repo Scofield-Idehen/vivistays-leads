@@ -183,17 +183,21 @@ try {
 
         case 'licence_meta':
             require_once __DIR__ . '/licence.php';
-            out(['items' => LIC_ITEMS, 'councils' => LIC_COUNCILS, 'questions' => LIC_QUESTIONS]);
+            $items = LIC_ITEMS;
+            foreach ($items as $k => $it) if (count($it['councils']) === 3) $items[$k]['councils'][] = 'other';
+            out(['items' => $items, 'councils' => LIC_COUNCILS, 'questions' => LIC_QUESTIONS]);
 
         case 'licence_new':
             require_once __DIR__ . '/licence.php';
             $council = (string)($in['council'] ?? '');
             if (!isset(LIC_COUNCILS[$council])) fail('Pick the council');
+            $cname = trim(mb_substr((string)($in['councilName'] ?? ''), 0, 80));
+            if ($council === 'other' && $cname === '') fail('Type the council name (e.g. Argyll and Bute Council)');
             $prop = trim(mb_substr((string)($in['property'] ?? ''), 0, 120));
             if ($prop === '') fail('Enter the property');
             $o = $in['owner'] ?? [];
             $id = bin2hex(random_bytes(10));
-            $doc = ['property' => $prop, 'address' => trim(mb_substr((string)($in['address'] ?? ''), 0, 200)), 'council' => $council,
+            $doc = ['property' => $prop, 'address' => trim(mb_substr((string)($in['address'] ?? ''), 0, 200)), 'council' => $council, 'councilName' => $council === 'other' ? $cname : '',
                 'owner' => ['name' => trim(mb_substr((string)($o['name'] ?? ''), 0, 80)), 'email' => trim(mb_substr((string)($o['email'] ?? ''), 0, 120)), 'phone' => trim(mb_substr((string)($o['phone'] ?? ''), 0, 40))],
                 'stage' => 'collecting', 'items' => new stdClass(), 'info' => new stdClass(),
                 'chase' => ['auto' => true, 'every' => max(1, min(14, (int)($in['every'] ?? 3))), 'started' => gmdate('c'), 'count' => 0],

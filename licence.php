@@ -40,7 +40,7 @@ const LIC_ITEMS = [
     'form'          => ['label' => 'Application form completed', 'who' => 'us', 'councils' => ['east-lothian', 'edinburgh', 'borders']],
     'fee'           => ['label' => 'Application fee paid', 'who' => 'us', 'councils' => ['east-lothian', 'edinburgh', 'borders']],
 ];
-const LIC_COUNCILS = ['east-lothian' => 'East Lothian Council', 'edinburgh' => 'City of Edinburgh Council', 'borders' => 'Scottish Borders Council'];
+const LIC_COUNCILS = ['east-lothian' => 'East Lothian Council', 'edinburgh' => 'City of Edinburgh Council', 'borders' => 'Scottish Borders Council', 'other' => 'Another council (standard checklist)'];
 
 // Property questions the owner answers (feed the FRA, LRA and escape plan drafts)
 const LIC_QUESTIONS = [
@@ -69,7 +69,8 @@ const LIC_QUESTIONS = [
 
 function lic_items_for($council) {
     $out = [];
-    foreach (LIC_ITEMS as $k => $it) if (in_array($council, $it['councils'], true)) $out[$k] = $it;
+    // 'other': any council we haven't mapped yet gets the items every council asks for.
+    foreach (LIC_ITEMS as $k => $it) if (in_array($council, $it['councils'], true) || ($council === 'other' && count($it['councils']) === 3)) $out[$k] = $it;
     return $out;
 }
 function lic_key($id) { return substr(hash_hmac('sha256', 'licence:' . $id, nl_secret()), 0, 18); }
@@ -287,7 +288,7 @@ textarea{min-height:90px}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .foot{font-size:14px;color:var(--muted)}
 </style></head><body><div class="wrap">
-<header><h1>Licence checklist</h1><p class="sub"><?= $h($doc['property'] ?? '') ?> · <?= $h(LIC_COUNCILS[$doc['council']] ?? '') ?></p></header>
+<header><h1>Licence checklist</h1><p class="sub"><?= $h($doc['property'] ?? '') ?> · <?= $h(($doc['council'] ?? '') === 'other' ? ($doc['councilName'] ?? '') : (LIC_COUNCILS[$doc['council']] ?? '')) ?></p></header>
 <section class="card"><b><?= $done ?> of <?= $total ?> done</b><div class="bar"><i style="width:<?= round($done / max(1, $total) * 100) ?>%"></i></div>
 <p class="sub">Hi <?= $h(trim(explode(' ', trim($doc['owner']['name'] ?? ''))[0]) ?: 'there') ?>, these are the things we need from you to apply for the short-term let licence. Upload a PDF or a clear photo of each one. You can come back to this page any time.</p></section>
 

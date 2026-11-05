@@ -2711,6 +2711,7 @@ const LIC_STAGES=[["collecting","Collecting documents"],["ready","Ready to submi
 const LIC_ST=[["missing","Still needed"],["received","Received"],["checked","Checked, OK"],["draft","Draft ready"],["na","Not needed"]];
 async function licApi(action,body){const r=await fetch("api.php?action="+action,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:JSON.stringify(body||{})});const j=await r.json().catch(()=>({}));if(!r.ok||j.error)throw new Error(j.error||"Server error");return j}
 async function licLoadMeta(){if(licMeta||licBusy==="meta")return;licBusy="meta";try{licMeta=await licApi("licence_meta")}catch(e){toast("Couldn't load the checklist: "+e.message)}licBusy="";render()}
+const licCouncil=a=>a.council==="other"?(a.councilName||"Other council"):((licMeta&&licMeta.councils[a.council])||"");
 function licItems(a){return Object.entries(licMeta.items).filter(([k,it])=>it.councils.includes(a.council))}
 function licSt(a,k){return(a.items&&a.items[k]&&a.items[k].status)||"missing"}
 function licProgress(a){const its=licItems(a);const done=its.filter(([k])=>licSt(a,k)!=="missing").length+(a.info&&a.info.answered?1:0);return{done,total:its.length+1}}
@@ -2725,7 +2726,12 @@ async function licWhatsApp(a){await licLink(a);const ph=((a.owner&&a.owner.phone
   window.open("https://wa.me/"+ph+"?text="+encodeURIComponent(licWaText(a)),"_blank","noopener");try{await licApi("licence_chase",{id:a.id,channel:"whatsapp"})}catch(e){}}
 async function licEmailNow(a){try{licBusy="Sending reminder email…";render();await licApi("licence_chase",{id:a.id});toast("Reminder email sent to "+a.owner.email)}catch(e){toast(e.message)}licBusy="";render()}
 async function licCreate(){const n=licNew;if(!n.property.trim()||!n.council){toast("Enter the property and pick the council");return}
-  try{licBusy="Creating…";render();const r=await licApi("licence_new",n);licSel=r.id;licNew=null;toast("Application started. Copy the owner link and send it.")}catch(e){toast(e.message)}licBusy="";render()}
+  try{licBusy="Creating…";render();const r=await licApi("licence_new",n);licSel=r.id;try{await db.collection("licence").doc(r.id).update({})}catch(_){} // pulls the new application into the list
+    // keep Onboarding in step: link the card, or add one if this property is new to us
+    const pn=obNorm(n.property);let card=(n.obId&&obCards.find(c=>c.id===n.obId))||obCards.find(c=>obNorm(c.property)===pn);
+    try{if(card){if(!card.licenceId)await obSave(card,{licenceId:r.id,...(["new","call","proposal","contract_sent","signed"].includes(card.stage)?{stage:"awaiting_licence"}:{})},"Licence application started")}
+      else{const now=new Date().toISOString();await db.collection("onboard").add({property:n.property.trim(),address:(n.address||"").trim(),type:"",stage:"awaiting_licence",source:"licence application",check:false,owner:{...n.owner},assignee:window.VL_USER||"",next:{what:"",date:""},furnishing:{status:"",quotes:[]},notes:"",licenceId:r.id,log:[{at:now,by:window.VL_USER||"",what:"Added when the licence application was started"}],created:now,by:window.VL_USER||""})}}catch(_){}
+    licNew=null;toast(card?"Application started. Copy the owner link and send it.":"Application started and the property was added to Onboarding.")}catch(e){toast(e.message)}licBusy="";render()}
 async function licTeamUpload(a,k,file){if(!file)return;if(file.size>10*1024*1024){toast("File is over 10 MB");return}
   const b64=await new Promise((ok,no)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=no;fr.readAsDataURL(file)});
   try{licBusy="Uploading…";render();await licApi("licence_upload",{id:a.id,item:k,data:b64,name:file.name});toast("Uploaded")}catch(e){toast(e.message)}licBusy="";render()}
@@ -2748,20 +2754,21 @@ function licencesView(){
   else{
     const rows=licences.slice().sort((x,y)=>(x.stage==="granted")-(y.stage==="granted")||(x.property||"").localeCompare(y.property||"",undefined,{numeric:true})).map(x=>{const p=licProgress(x);const miss=licOwnerMissing(x).length;
       return h("button",{class:"row",onclick:()=>{licSel=x.id;render();window.scrollTo(0,0)}},h("span",{class:"dot"}),h("span",{class:"nm",text:x.property}),h("span",{class:"when",text:p.done+"/"+p.total}),
-        h("span",{class:"sub",text:(licMeta.councils[x.council]||"")+" · "+(Object.fromEntries(LIC_STAGES)[x.stage]||"")+(miss?" · owner owes "+miss:" · nothing missing from owner")}))});
+        h("span",{class:"sub",text:licCouncil(x)+" · "+(Object.fromEntries(LIC_STAGES)[x.stage]||"")+(miss?" · owner owes "+miss:" · nothing missing from owner")}))});
     out.push(h("div",{class:"card"},h("h3",{text:"Applications"}),h("div",{class:"list"},...rows)));
   }
   return out;
 }
 function licNewForm(){const n=licNew;
   const f=(label,val,set,attrs)=>h("div",{class:"field"},h("label",{text:label}),h("input",{type:"text",value:val,...(attrs||{}),oninput:e=>set(e.target.value)}));
-  const names=[...new Set(manuals.map(m=>m.name))].sort((x,y)=>x.localeCompare(y,undefined,{numeric:true}));
+  const names=[...new Set([...obCards.map(c=>c.property),...manuals.map(m=>m.name)].filter(Boolean))].sort((x,y)=>x.localeCompare(y,undefined,{numeric:true}));
   const dl=h("datalist",{id:"lic-props"},...names.map(nm=>h("option",{value:nm})));
   return h("div",{class:"card"},h("h3",{text:"Start a licence application"}),dl,
     h("div",{class:"form"},
-      f("Property",n.property,v=>n.property=v,{list:"lic-props",placeholder:"e.g. 9 Princes Street, Hawick"}),
+      h("div",{class:"field"},h("label",{text:"Property"}),h("input",{type:"text",value:n.property,list:"lic-props",placeholder:"e.g. 9 Princes Street, Hawick",oninput:e=>n.property=e.target.value}),h("span",{class:"muted small",text:"Brand new and not on the list? Just type it. It's added to Onboarding too, so it shows in the pipeline."})),
       f("Full address with postcode",n.address,v=>n.address=v),
-      h("div",{class:"field"},h("label",{text:"Council"}),h("select",{onchange:e=>n.council=e.target.value},h("option",{value:"",text:"Choose…"}),...Object.entries(licMeta.councils).map(([k,v])=>{const o=h("option",{value:k,text:v});if(n.council===k)o.selected=true;return o}))),
+      h("div",{class:"field"},h("label",{text:"Council"}),h("select",{onchange:e=>{n.council=e.target.value;render()}},h("option",{value:"",text:"Choose…"}),...Object.entries(licMeta.councils).map(([k,v])=>{const o=h("option",{value:k,text:v});if(n.council===k)o.selected=true;return o}))),
+      n.council==="other"?f("Which council?",n.councilName||"",v=>n.councilName=v,{placeholder:"e.g. Argyll and Bute Council"}):null,
       f("Owner's name",n.owner.name,v=>n.owner.name=v),
       f("Owner's email (for automatic reminders)",n.owner.email,v=>n.owner.email=v,{type:"email"}),
       f("Owner's WhatsApp number",n.owner.phone,v=>n.owner.phone=v,{type:"tel",placeholder:"07…"}),
@@ -2776,7 +2783,7 @@ function licDetail(a){
   const stageSel=h("select",{"aria-label":"Stage",onchange:e=>licSave(a,{stage:e.target.value},"Stage: "+Object.fromEntries(LIC_STAGES)[e.target.value])},...LIC_STAGES.map(([k,v])=>{const o=h("option",{value:k,text:v});if(a.stage===k)o.selected=true;return o}));
   const ch=a.chase||{};
   const top=h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:a.property}),h("span",{class:"pill",text:p.done+" of "+p.total+" done"})),
-    h("p",{class:"muted small",text:[licMeta.councils[a.council],a.address].filter(Boolean).join(" · ")}),
+    h("p",{class:"muted small",text:[licCouncil(a),a.address].filter(Boolean).join(" · ")}),
     h("div",{class:"field"},h("label",{text:"Stage"}),stageSel),
     h("p",{class:"small",text:"Owner: "+[a.owner&&a.owner.name,a.owner&&a.owner.email,a.owner&&a.owner.phone].filter(Boolean).join(" · ")}),
     h("div",{class:"btns"},h("button",{class:"btn primary",onclick:copyLink},"Copy owner link"),a._link?h("a",{class:"btn",href:a._link,target:"_blank",rel:"noopener"},"Open owner page"):null,
@@ -2879,7 +2886,7 @@ table{width:100%;border-collapse:collapse;margin:6px 0}td,th{border:1px solid #b
 .sign td{height:34px}@media print{.noprint{display:none}body{margin:0}}
 </style></head><body>
 <p class="noprint"><button onclick="print()">Print or save as PDF</button></p>
-<h1>${title}</h1><p>${esc(a.property)} · ${esc(licMeta.councils[a.council]||"")} · ${today}</p>
+<h1>${title}</h1><p>${esc(a.property)} · ${esc(licCouncil(a))} · ${today}</p>
 <div class="draft">DRAFT prepared by ViVi Stays from information supplied by the owner. Check every item on site before signing and submitting.</div>
 ${body}
 <h2>Sign-off</h2><table class="sign"><tr><td style="width:32%">Assessed by</td><td></td></tr><tr><td>Signature</td><td></td></tr><tr><td>Date checked on site</td><td></td></tr><tr><td>Next review</td><td>${review}</td></tr></table>
@@ -3102,7 +3109,7 @@ function onboardView(){
   const stats=h("div",{class:"obstats"},...[["In the pipeline",pipe.length],["Live",live.length],["Needs furnishing",furn.length],["Follow-ups due",due.length]].map(([t,n])=>h("div",{},h("b",{text:n}),h("span",{class:"muted small",text:t}))));
   const tabs=h("div",{class:"chips",role:"tablist"},...[["pipeline","Pipeline"],["furnishing","Furnishing"],["live","Live ("+live.length+")"],["lost","Lost"]].map(([k,t])=>h("button",{class:"chip","aria-pressed":String(obTab===k),onclick:()=>{obTab=k;render()}},t)));
   const people=[...new Set(obCards.map(x=>x.assignee).filter(Boolean))].sort();
-  const whoSel=people.length?h("select",{"aria-label":"Whose cards",style:"width:auto",onchange:e=>{obWho=e.target.value;render()}},h("option",{value:"",text:"Everyone"}),...people.map(p=>{const o=h("option",{value:p,text:p});if(p===who)o.selected=true;return o})):null;
+  const whoSel=people.length?h("span",{class:"tk-ctl"},h("select",{"aria-label":"Whose cards",style:"width:auto",onchange:e=>{obWho=e.target.value;render()}},h("option",{value:"",text:"Everyone"}),...people.map(p=>{const o=h("option",{value:p,text:p});if(p===who)o.selected=true;return o}))):null;
   const search=h("input",{class:"search",type:"search",placeholder:"Search property, owner or person",value:obQ,style:"max-width:340px",
     oninput:e=>{obQ=e.target.value;const pos=e.target.selectionStart;render();const s=$("#main .search");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}}});
   const bar=h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>{obNew={property:"",address:"",type:"",stage:"new",owner:{name:"",email:"",phone:""},nextWhat:"",nextDate:today()};render()}},"Add property"),search,whoSel);
@@ -3179,7 +3186,7 @@ function obDetail(c){
     lic?h("div",{class:"btns",style:"align-items:center"},h("span",{class:"small",style:"flex:1",text:(lic.property)+" · "+((Object.fromEntries(LIC_STAGES))[lic.stage]||"")+(licMeta&&licMeta.items?" · "+licProgress(lic).done+" of "+licProgress(lic).total+" done · owner owes "+licOwnerMissing(lic).length:"")}),
       h("button",{class:"btn small",onclick:()=>{licSel=lic.id;go("licences")}},"Open in Licences")):
     h("div",{class:"btns",style:"align-items:center"},h("span",{class:"muted small",style:"flex:1",text:"No licence application for this property yet."}),
-      h("button",{class:"btn small",onclick:()=>{licNew={property:c.property,address:c.address||"",council:"",owner:{name:own.name||"",email:own.email||"",phone:own.phone||""},every:3};licSel=null;go("licences")}},"Start licence application")));
+      h("button",{class:"btn small",onclick:()=>{licNew={obId:c.id,property:c.property,address:c.address||"",council:"",owner:{name:own.name||"",email:own.email||"",phone:own.phone||""},every:3};licSel=null;go("licences")}},"Start licence application")));
   const form=c.form&&c.form.answers&&c.form.answers.length?h("details",{class:"card",open:c.stage==="new"?true:null},h("summary",{},"Onboarding form answers"),
     h("dl",{class:"facts"},...c.form.answers.flatMap(a=>[h("dt",{text:a.q}),h("dd",{text:a.a})]))):null;
   const notes=h("div",{class:"card"},h("h3",{text:"Notes"}),h("textarea",{rows:"3","aria-label":"Notes",onchange:e=>obSave(c,{notes:e.target.value},null)},c.notes||""));
