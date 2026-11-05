@@ -2991,6 +2991,8 @@ function manualsView(){
   const head=[h("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"},h("h1",{text:"Guest manuals"}),h("span",{class:"muted small",text:"Change a lock code, link or WiFi and the manual updates itself"}))];
   if(!db)return[...head,h("div",{class:"card"},h("p",{text:"Loading…"}))];
   if(mBusy)head.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+mBusy})));
+  if(mCreate)return[...head,...mNewForm()];
+  if(manuals.length)head.push(h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>mNewStart()},"New manual"),h("span",{class:"muted small",text:"For a property that doesn't have one yet. It's built from a similar property's manual."})));
   if(!manuals.length)return[...head,h("div",{class:"card"},h("h3",{text:"Load the manuals"}),
     h("p",{class:"muted small",text:"Import the file \"manuals-data.json\" once. It holds every property's House Manual page (codes and links). It's kept private in this app."}),
     h("div",{class:"btns"},h("button",{class:"btn primary",onclick:mImport},"Import manuals-data.json"),h("label",{class:"btn",style:"position:relative;overflow:hidden;cursor:pointer"},"Upload manual PDFs",h("input",{type:"file",id:"m-bulk",multiple:true,accept:".pdf,.json,application/pdf,application/json",style:"position:absolute;inset:0;opacity:0;cursor:pointer",onchange:e=>{const fs=[...e.target.files];e.target.value="";e.target.blur();mBulk(fs)}}))),mAllCard([]))];
@@ -3005,6 +3007,7 @@ function manualsView(){
     h("div",{class:"btns"},h("label",{class:"btn",style:"position:relative;overflow:hidden;cursor:pointer"},"Upload manual PDFs",h("input",{type:"file",id:"m-bulk",multiple:true,accept:".pdf,.json,application/pdf,application/json",style:"position:absolute;inset:0;opacity:0;cursor:pointer",onchange:e=>{const fs=[...e.target.files];e.target.value="";e.target.blur();mBulk(fs)}})),h("button",{class:"btn link small",onclick:mImport},"Import a data file")),
     h("p",{class:"muted small",text:"Upload PDFs: pick one or many manual files (named like \"21 Troon - Guest Manual ViVi Stays.pdf\"). Each replaces that property's current PDF."}))];
   const m0=manuals.find(x=>x.id===mSel);if(!m0){out.push(mAllCard(list));return out}
+  const rep=mReportCard();if(rep)out.push(rep);
   const m=mDirty&&mDirty.id===m0.id?mDirty:JSON.parse(JSON.stringify(m0));
   const touch=()=>{mDirty=m};
   const {codes,links}=mFields(m);
@@ -3029,6 +3032,179 @@ function manualsView(){
     (m.log&&m.log.length)?h("details",{},h("summary",{class:"small",text:"History"}),h("ul",{class:"small muted"},...m.log.slice().reverse().map(x=>h("li",{text:new Date(x.at).toLocaleString("en-GB")+" · "+(x.by||"")+" · "+x.what})))):null));
   return out;
 }
+
+/* ---------- NEW MANUAL: copy a similar property's manual, swap in this property's details ----------
+   Pages are copied from the template PDF. Text on every page is searched with pdf.js and each
+   "change this → to this" pair is painted over in place (the rest of the page stays as it was).
+   The House Manual page and the Wi-Fi page are rebuilt from the details typed here.
+   Map buttons (Google / Apple / Waze) are pointed at the new address. */
+let mCreate=null,mReport=null;
+const mEsc=s=>String(s).replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\s+/g,"\\s+");
+function mNewStart(pre){mReport=null;mCreate={name:"",address:"",tpl:"",reps:[],codes:{},wifi:{network:"",password:""},sections:null,scanning:false,...(pre||{})};mSel=null;go("manuals")}
+async function mTplPdf(t){const r=await fetch("manual-pdf.php?id="+encodeURIComponent(t.id),{credentials:"same-origin",cache:"no-store"});if(!r.ok)throw new Error("Couldn't fetch the "+t.name+" PDF");return new Uint8Array(await r.arrayBuffer())}
+async function mPdfLines(pdf,pn){
+  const pg=await pdf.getPage(pn);const tc=await pg.getTextContent();const rows=[];
+  for(const it of tc.items){if(!it.str)continue;const fs=Math.hypot(it.transform[2],it.transform[3])||Math.abs(it.transform[3])||10;const y=it.transform[5];
+    let r=rows.find(r=>Math.abs(r.y-y)<fs*0.35&&Math.abs(r.fs-fs)<fs*0.3);if(!r){r={y,fs,items:[]};rows.push(r)}r.items.push(it)}
+  for(const r of rows){r.items.sort((a,b)=>a.transform[4]-b.transform[4]);let t="",last=null;
+    for(const it of r.items){if(last!==null&&it.transform[4]-last>r.fs*0.22&&!/\s$/.test(t)&&!/^\s/.test(it.str))t+=" ";t+=it.str;last=it.transform[4]+it.width}
+    r.text=t.replace(/\s+/g," ");const ink=r.items.filter(i=>i.str.trim());r.x0=(ink[0]||r.items[0]).transform[4];r.x1=Math.max(...r.items.map(i=>i.transform[4]+i.width));r.font=r.items.find(i=>i.str.trim())?.fontName||r.items[0].fontName}
+  return{pg,rows};
+}
+async function mTplPick(id){
+  const c=mCreate;c.tpl=id;const t=manuals.find(x=>x.id===id);if(!t)return;
+  c.sections=JSON.parse(JSON.stringify(t.sections||[]));
+  c.codes={};mFields({sections:c.sections}).codes.forEach((k,i)=>c.codes[i]="");
+  c.wifi=t.wifi&&!t.wifi.note?{network:t.wifi.network||"",password:t.wifi.password||""}:{network:"",password:""};
+  c.reps=[{from:t.name,to:c.name,auto:"name"}];c.scanning=true;render();
+  try{await mLibs();const pdf=await window.pdfjsLib.getDocument({data:await mTplPdf(t)}).promise;
+    const pc=/\b[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b/;
+    outer:for(let pn=1;pn<=Math.min(3,pdf.numPages);pn++){if(pn===(t.page||3))continue;const {rows}=await mPdfLines(pdf,pn);
+      for(const r of rows)if(pc.test(r.text)&&r.text.length<140){c.reps.push({from:r.text.trim(),to:c.address,auto:"address"});break outer}}
+  }catch(e){toast(e.message)}
+  c.scanning=false;render();
+}
+function mNewForm(){
+  const c=mCreate;
+  const withPdf=manuals.filter(m=>m.pdfAt).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+  const f=(label,val,set,attrs)=>h("div",{class:"field"},h("label",{text:label}),h("input",{type:"text",value:val||"",...(attrs||{}),oninput:e=>set(e.target.value)}));
+  const syncAuto=()=>{for(const r of c.reps){if(r.auto==="name")r.to=c.name;if(r.auto==="address")r.to=c.address}};
+  const out=[h("button",{class:"btn link",onclick:()=>{mCreate=null;render()}},"← All manuals"),
+    h("div",{class:"card"},h("h3",{text:"New guest manual"}),
+      h("p",{class:"muted small",text:"Start from the manual of a similar property (same park, or same kind of home). Its pages are copied, then this property's name, address, codes and WiFi are put in."}),
+      h("div",{class:"form"},
+        f("Property name (as it should appear)",c.name,v=>{c.name=v;syncAuto()},{placeholder:"e.g. 9 Royal Musselburgh Court"}),
+        f("Full address with postcode",c.address,v=>{c.address=v;syncAuto()},{placeholder:"e.g. 9 Royal Musselburgh Court, Seton Sands Holiday Village, Port Seton EH32 0QF"}),
+        h("div",{class:"field wide"},h("label",{text:"Start from this manual"}),comboInput(c.tpl?(manuals.find(m=>m.id===c.tpl)||{}).name:"",withPdf.map(m=>m.name),v=>{const t=withPdf.find(m=>m.name===v);if(t&&t.id!==c.tpl)mTplPick(t.id)},"Type to search, e.g. 21 Troon"),
+          h("span",{class:"muted small",text:"Seton Sands caravans: 21 Troon is the best template. Pick one in the same area so the local shops, bars and photos pages are close."}))))];
+  if(!c.tpl||!c.sections)return out;
+  if(c.scanning)out.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" Reading the template…"})));
+  // words to swap
+  const repRow=(r,i)=>h("div",{class:"obq"},h("input",{type:"text",value:r.from,placeholder:"In the template",oninput:e=>{r.from=e.target.value;r.auto=null}}),h("span",{class:"muted",text:"→"}),
+    h("input",{type:"text",value:r.to,placeholder:"Change to",oninput:e=>{r.to=e.target.value;r.auto=null}}),h("button",{class:"btn small link",onclick:()=>{c.reps.splice(i,1);render()}},"Remove"));
+  out.push(h("div",{class:"card"},h("h3",{text:"Words to change on every page"}),
+    h("p",{class:"muted small",text:"Anywhere the left words appear in the template, they're replaced with the right. The name and address are filled in for you. Add others, e.g. \"Troon 21\" → \"Royal Musselburgh Court 9\"."}),
+    ...c.reps.map(repRow),h("div",{class:"btns"},h("button",{class:"btn small",onclick:()=>{c.reps.push({from:"",to:""});render()}},"Add a change"))));
+  // codes + wifi
+  const {codes}=mFields({sections:c.sections});
+  out.push(h("div",{class:"card"},h("h3",{text:"Lock codes"}),
+    codes.length?h("div",{class:"form"},...codes.map((k,i)=>f(k.title+" (template had a code here)",c.codes[i],v=>c.codes[i]=v.trim(),{placeholder:"This property's code, or leave empty to remove the line"}))):h("p",{class:"muted small",text:"The template's House Manual page has no code. Add one under Edit wording if needed."}),
+    h("p",{class:"muted small",text:"The template's own codes are never copied."}),
+    (()=>{const {links}=mFields({sections:c.sections});return links.length?h("div",{style:"display:grid;gap:10px"},h("h3",{text:"Links (copied from the template, check each one)"}),
+      h("p",{class:"muted small",text:"Videos for the same model of caravan can stay. Anything with the template's name or pitch in it (e.g. guest registration) needs changing."}),
+      ...links.map(l=>h("div",{class:"field wide"},h("label",{text:l.title+" · \""+l.text+"\""}),h("input",{type:"url",value:l.value,oninput:e=>mSet({sections:c.sections},"link",l.si,l.ei,e.target.value.trim())})))):null})(),
+    h("h3",{text:"WiFi"}),h("div",{class:"form"},f("WiFi name",c.wifi.network,v=>c.wifi.network=v,{autocomplete:"off",spellcheck:"false"}),f("Password",c.wifi.password,v=>c.wifi.password=v,{autocomplete:"off",spellcheck:"false",placeholder:"Leave empty if no password"})),
+    h("p",{class:"muted small",text:c.wifi.network?"Copied from the template. Change it if this property has its own router.":"Leave both empty to keep the template's WiFi page as it is (e.g. the same park WiFi)."}),
+    h("details",{},h("summary",{class:"small",text:"Edit the House Manual wording (check-in, heating, bins…)"}),mWording({sections:c.sections},()=>{})),
+    h("div",{class:"btns"},h("button",{class:"btn primary",disabled:!!mBusy||c.scanning,onclick:()=>mCreateManual(c)},"Create the manual"),h("button",{class:"btn",onclick:()=>{mCreate=null;render()}},"Cancel"))));
+  return out;
+}
+async function mPatchPdf(bytes,reps,skip,address){
+  await mLibs();
+  const pdf=await window.pdfjsLib.getDocument({data:bytes.slice(),fontExtraProperties:true}).promise;
+  const {PDFDocument,PDFName,PDFString}=window.PDFLib;const doc=await PDFDocument.load(bytes,{ignoreEncryption:true});
+  await Promise.all(["400 12pt VOpen","700 12pt VOpen","italic 400 12pt VOpen"].map(f=>document.fonts.load(f)));
+  const S=200/72,hits={},rx=reps.slice().sort((a,b)=>b.from.trim().length-a.from.trim().length).map(r=>({...r,re:new RegExp(mEsc(r.from.trim()),"gi")}));
+  for(let pn=1;pn<=pdf.numPages;pn++){
+    if(skip.includes(pn))continue;
+    const {pg,rows}=await mPdfLines(pdf,pn);
+    const todo=[];for(const r of rows){let t=r.text,ch=false;for(const p of rx){p.re.lastIndex=0;if(p.re.test(t)){p.re.lastIndex=0;t=t.replace(p.re,p.to.trim());ch=true;(hits[p.from]=hits[p.from]||new Set()).add(pn)}}if(ch)todo.push({r,t})}
+    if(!todo.length)continue;
+    const vp=pg.getViewport({scale:S});const cv=document.createElement("canvas");cv.width=Math.ceil(vp.width);cv.height=Math.ceil(vp.height);
+    const ctx=cv.getContext("2d",{willReadFrequently:true});await pg.render({canvasContext:ctx,viewport:vp}).promise;
+    const W=cv.width,Wpt=vp.width/S,minX=Math.min(...rows.map(r=>r.x0));
+    const page=doc.getPage(pn-1);
+    for(const {r,t} of todo){
+      let fname="";try{const fo=pg.commonObjs.get(r.font);fname=(fo&&(fo.name||fo.loadedName))||""}catch(e){}
+      const weight=/bold|black|heavy|semibold/i.test(fname)?700:400,italic=/italic|oblique/i.test(fname);
+      const [ax,ay]=vp.convertToViewportPoint(r.x0,r.y+r.fs*0.98),[bx,by]=vp.convertToViewportPoint(r.x1,r.y-r.fs*0.3);
+      let X0=Math.max(0,Math.floor(Math.min(ax,bx))-3),X1=Math.min(W-1,Math.ceil(Math.max(ax,bx))+3);const Y0=Math.max(0,Math.floor(Math.min(ay,by))),Y1=Math.ceil(Math.max(ay,by));
+      const centered=Math.abs((r.x0+r.x1)/2-Wpt/2)<Wpt*0.03;
+      // font size in px, shrunk so the new line stays inside the page margins
+      let fpx=r.fs*S;const setF=()=>ctx.font=`${italic?"italic ":""}${weight} ${fpx}px VOpen, Arial, sans-serif`;setF();
+      const maxW=(Wpt-2*Math.max(minX,18))*S;while(ctx.measureText(t).width>maxW&&fpx>r.fs*S*0.6){fpx-=0.5;setF()}
+      const tw=ctx.measureText(t).width;
+      if(centered){const cx=(X0+X1)/2;X0=Math.max(0,Math.min(X0,Math.floor(cx-tw/2)-4));X1=Math.min(W-1,Math.max(X1,Math.ceil(cx+tw/2)+4))}
+      else X1=Math.min(W-1,Math.max(X1,Math.ceil(X0+3+tw)+4));
+      // erase: each row filled from its left edge colour to its right edge colour (handles gradients)
+      const img=ctx.getImageData(X0,Y0,X1-X0+1,Y1-Y0+1),d=img.data,iw=img.width;
+      const L=Math.max(0,X0-2),R=Math.min(W-1,X1+2);const edge=ctx.getImageData(0,Y0,W,Y1-Y0+1).data;
+      let ink=null,best=-1;
+      for(let y=0;y<img.height;y++){const li=(y*W+L)*4,ri=(y*W+R)*4;
+        for(let x=0;x<iw;x++){const k=x/(iw-1||1),i=(y*iw+x)*4;
+          const bg=[0,1,2].map(c=>edge[li+c]*(1-k)+edge[ri+c]*k);const dist=Math.abs(d[i]-bg[0])+Math.abs(d[i+1]-bg[1])+Math.abs(d[i+2]-bg[2]);
+          if(dist>best){best=dist;ink=[d[i],d[i+1],d[i+2]]}d[i]=bg[0];d[i+1]=bg[1];d[i+2]=bg[2];d[i+3]=255}}
+      ctx.putImageData(img,X0,Y0);
+      ctx.fillStyle=ink&&best>60?`rgb(${ink.join(",")})`:"#fff";ctx.textBaseline="alphabetic";
+      const [,baseY]=vp.convertToViewportPoint(r.x0,r.y);
+      if(centered){ctx.textAlign="center";ctx.fillText(t,(X0+X1)/2,baseY)}else{ctx.textAlign="left";ctx.fillText(t,Math.min(ax,bx),baseY)}
+      // put just this strip into the PDF page
+      const strip=document.createElement("canvas");strip.width=X1-X0+1;strip.height=Y1-Y0+1;strip.getContext("2d").drawImage(cv,X0,Y0,strip.width,strip.height,0,0,strip.width,strip.height);
+      const png=await doc.embedPng(new Uint8Array(await (await new Promise(res=>strip.toBlob(res,"image/png"))).arrayBuffer()));
+      const [px0,py0]=vp.convertToPdfPoint(X0,Y1+1),[px1,py1]=vp.convertToPdfPoint(X1+1,Y0);
+      page.drawImage(png,{x:Math.min(px0,px1),y:Math.min(py0,py1),width:Math.abs(px1-px0),height:Math.abs(py1-py0)});
+    }
+  }
+  // map buttons → the new address
+  let maps=0;
+  if(address&&address.trim()){const q=encodeURIComponent(address.trim());
+    const url={g:"https://www.google.com/maps/search/?api=1&query="+q,a:"https://maps.apple.com/?q="+q,w:"https://waze.com/ul?q="+q+"&navigate=yes"};
+    for(const page of doc.getPages()){const ann=page.node.Annots();if(!ann)continue;
+      for(let i=0;i<ann.size();i++){const a=doc.context.lookup(ann.get(i));const A=a&&a.lookup&&a.lookup(PDFName.of("A"));const U=A&&A.lookup&&A.lookup(PDFName.of("URI"));if(!U)continue;
+        const u=U.decodeText?U.decodeText():String(U);const k=/google\.[^/]+\/maps|maps\.google|goo\.gl\/maps|maps\.app\.goo\.gl/i.test(u)?"g":/maps\.apple\.com/i.test(u)?"a":/waze\.com/i.test(u)?"w":null;
+        if(k){A.set(PDFName.of("URI"),PDFString.of(url[k]));maps++}}}}
+  return{out:await doc.save({useObjectStreams:true}),hits,maps};
+}
+async function mCreateManual(c){
+  const name=c.name.trim(),t=manuals.find(m=>m.id===c.tpl);
+  if(!name){toast("Enter the property name");return}if(!c.address.trim()){toast("Enter the full address with postcode");return}if(!t){toast("Pick a manual to start from");return}
+  const id=mSlug(name);if(!id){toast("Enter the property name");return}
+  if(manuals.some(m=>m.id===id)){toast("There's already a manual called "+name+". Open it from the list instead.");return}
+  if(mBusy)return;
+  try{
+    mBusy="Copying the "+t.name+" manual…";render();
+    const reps=c.reps.filter(r=>r.from.trim()&&r.to.trim()&&r.from.trim()!==r.to.trim());
+    // House Manual page: template wording with the swaps applied and this property's codes
+    const m={id,name,page:t.page||3,sections:JSON.parse(JSON.stringify(c.sections)),address:c.address.trim(),from:t.id,file:name+" - Guest Manual ViVi Stays.pdf",
+      wifi:c.wifi.network.trim()?{network:c.wifi.network.trim(),password:c.wifi.password.trim()}:null};
+    for(const s of m.sections)for(const r of reps){const re=new RegExp(mEsc(r.from.trim()),"gi");s.html=s.html.replace(re,r.to.trim());s.title=s.title.replace(re,r.to.trim())}
+    mFields(m).codes.forEach((k,i)=>mSet(m,"code",k.si,k.ei,c.codes[i]||""));mPrune(m);
+    const tplBytes=await mTplPdf(t);
+    const pdf0=await window.pdfjsLib.getDocument({data:tplBytes.slice()}).promise;const wifiPn=await mWifiPageNo(pdf0);
+    mBusy="Putting "+name+"'s details on every page…";render();
+    const skip=[m.page];if(m.wifi&&wifiPn)skip.push(wifiPn);
+    const p=await mPatchPdf(tplBytes,reps,skip,m.address);
+    mBusy="Building the House Manual and Wi-Fi pages…";render();
+    let out=(await mBuildPdf(m,new File([p.out],"t.pdf",{type:"application/pdf"}))).out;let wifiDone=false;
+    if(m.wifi){const w=await mWifiPdf(m,out);if(w.done){out=w.out;wifiDone=true}}
+    const now=new Date().toISOString();
+    const docData={name,page:m.page,sections:m.sections,address:m.address,from:t.id,file:m.file,created:now,updated:now,
+      log:[{at:now,by:window.VL_USER||"",what:"Created from the "+t.name+" manual"}],...(m.wifi?{wifi:m.wifi}:{})};
+    await db.collection("manuals").doc(id).set(docData);
+    mBusy="Saving the "+name+" manual…";render();
+    await mUploadPdf(id,new Blob([out],{type:"application/pdf"}),m.file,name);
+    await mCachePut(id,{name:m.file,bytes:out,saved:now});
+    try{await db.collection("manuals").doc(id).update({})}catch(_){}
+    mReport={id,name,tpl:t.name,hits:reps.map(r=>({from:r.from,to:r.to,pages:[...(p.hits[r.from]||[])].sort((a,b)=>a-b)})),maps:p.maps,wifi:wifiDone};
+    mCreate=null;mSel=id;toast(name+" manual created");
+  }catch(e){console.error(e);toast((e&&e.message)||"Couldn't create the manual")}
+  mBusy="";render();
+}
+function mReportCard(){
+  const r=mReport;if(!r||r.id!==mSel)return null;
+  const miss=r.hits.filter(x=>!x.pages.length);
+  return h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:"New manual created"}),h("button",{class:"btn link small",onclick:()=>{mReport=null;render()}},"Close")),
+    h("ul",{class:"small",style:"margin:0;padding-left:18px;line-height:1.7"},
+      ...r.hits.filter(x=>x.pages.length).map(x=>h("li",{text:"\""+x.from+"\" → \""+x.to+"\" on page "+x.pages.join(", ")})),
+      h("li",{text:"House Manual page rebuilt with this property's codes and wording"}),
+      h("li",{text:r.wifi?"Wi-Fi page redrawn with the new network":"Wi-Fi page kept from "+r.tpl}),
+      h("li",{text:r.maps?r.maps+" map buttons now go to the new address":"No map buttons found to update"})),
+    miss.length?h("div",{class:"banner small",text:"Not found as text (it may be part of a picture, or covered by a longer change): "+miss.map(x=>"\""+x.from+"\"").join(", ")+"."}):null,
+    h("p",{class:"muted small",text:"Photos, the map picture and the local shops/bars pages are still "+r.tpl+"'s. Check them before sending."}),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>{const m=manuals.find(x=>x.id===r.id);if(m)mDownload(m);else window.open("manual-pdf.php?id="+encodeURIComponent(r.id),"_blank")}},"Download to check"),
+      h("a",{class:"btn",href:"manual-pdf.php?view=1&id="+encodeURIComponent(r.id),target:"_blank",rel:"noopener"},"Open in a new tab")));
+}
+
 let mNew={si:0,text:"Tap here",url:""};
 function mAddLink(m,touch){
   return h("details",{},h("summary",{class:"small",text:"+ Add a new link"}),h("div",{class:"form"},
@@ -3215,12 +3391,16 @@ function obDetail(c){
       h("button",{class:"btn small",onclick:()=>{licSel=lic.id;go("licences")}},"Open in Licences")):
     h("div",{class:"btns",style:"align-items:center"},h("span",{class:"muted small",style:"flex:1",text:"No licence application for this property yet."}),
       h("button",{class:"btn small",onclick:()=>{licNew={obId:c.id,property:c.property,address:c.address||"",council:"",owner:{name:own.name||"",email:own.email||"",phone:own.phone||""},every:3};licSel=null;go("licences")}},"Start licence application")));
+  const man=manuals.find(m=>obNorm(m.name)===obNorm(c.property))||manuals.find(m=>{const a=obNorm(m.name),b=obNorm(c.property);return a&&b&&(a.startsWith(b)||b.startsWith(a))});
+  const manCard=h("div",{class:"card"},h("h3",{text:"Guest manual"}),h("div",{class:"btns",style:"align-items:center"},
+    man?h("span",{class:"small",style:"flex:1",text:man.name+(man.pdfAt?" · PDF saved "+new Date(man.pdfAt).toLocaleDateString("en-GB"):" · no PDF yet")}):h("span",{class:"muted small",style:"flex:1",text:"No guest manual for this property yet."}),
+    man?h("button",{class:"btn small",onclick:()=>{mSel=man.id;mCreate=null;go("manuals")}},"Open manual"):h("button",{class:"btn small",onclick:()=>mNewStart({name:c.property,address:c.address||""})},"Create guest manual")));
   const form=c.form&&c.form.answers&&c.form.answers.length?h("details",{class:"card",open:c.stage==="new"?true:null},h("summary",{},"Onboarding form answers"),
     h("dl",{class:"facts"},...c.form.answers.flatMap(a=>[h("dt",{text:a.q}),h("dd",{text:a.a})]))):null;
   const notes=h("div",{class:"card"},h("h3",{text:"Notes"}),h("textarea",{rows:"3","aria-label":"Notes",onchange:e=>obSave(c,{notes:e.target.value},null)},c.notes||""));
   const delB=h("button",{class:"btn danger small"},"Delete this card");delB.addEventListener("click",async()=>{if(!delB.dataset.armed){delB.dataset.armed="1";delB.textContent="Tap again to delete";return}try{await db.collection("onboard").doc(c.id).delete();obSel=null;render()}catch(e){toast("Couldn't delete")}});
   const log=h("div",{class:"card"},h("h3",{text:"History"}),...(c.log||[]).slice().reverse().slice(0,30).map(l=>h("p",{class:"small"},h("span",{class:"muted",text:new Date(l.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" · "+(l.by||"")+" · "}),l.what)),h("div",{class:"btns"},delB));
-  return[back,top,furn,licCard,form,details,notes,log];
+  return[back,top,furn,licCard,manCard,form,details,notes,log];
 }
 
 $("#addtop").addEventListener("click",()=>go("add"));
