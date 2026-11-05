@@ -9,7 +9,7 @@ if (is_file(__DIR__ . '/config.local.php')) {
     exit('Setup needed: in cPanel File Manager, copy config.example.php to config.local.php and set your passwords.');
 }
 
-const VL_COLLECTIONS = ['leads', 'posts', 'groups', 'contacts', 'projects', 'social', 'photos', 'nl_campaigns', 'manuals', 'shoot', 'licence', 'prefs'];
+const VL_COLLECTIONS = ['leads', 'posts', 'groups', 'contacts', 'projects', 'social', 'photos', 'nl_campaigns', 'manuals', 'shoot', 'licence', 'prefs', 'onboard'];
 
 function vl_start_session() {
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['SERVER_PORT'] ?? '') == 443);
@@ -169,4 +169,12 @@ function vl_slack_post($text, $url = null) {
         CURLOPT_POSTFIELDS => json_encode(['text' => $text], JSON_UNESCAPED_UNICODE)]);
     $res = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
     return ($res !== false && $code >= 200 && $code < 300) ? 'sent' : 'failed';
+}
+
+// ---------- Onboarding (owner/property pipeline) ----------
+// Secret key in the Jotform webhook URL, so only our form can add cards.
+function vl_ob_key() {
+    $f = __DIR__ . '/data/ob-secret.txt';
+    if (!is_file($f)) @file_put_contents($f, bin2hex(random_bytes(12)));
+    return trim((string)@file_get_contents($f));
 }

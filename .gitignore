@@ -8,3 +8,4 @@ data/prefs-rate/
 data/prefs-digest.txt
 data/slack-routes.json
 data/slack-bot.txt
+data/ob-secret.txt

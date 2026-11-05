@@ -177,6 +177,21 @@ pre.msg{margin:0;font-family:inherit}
 .chips{display:inline-flex;gap:2px;flex-wrap:wrap;background:var(--well);padding:3px;border-radius:12px;align-self:flex-start;max-width:100%}
 .chip{border:0;background:none;border-radius:9px;padding:6px 14px;font-size:14px;font-weight:500;cursor:pointer;color:var(--ink2)}
 .chip[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.obstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.obstats>div{background:var(--card);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.obstats b{font-size:26px;font-variant-numeric:tabular-nums}
+.obboard{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:12px;overflow-x:auto;padding-bottom:10px;margin-inline:-4px;padding-inline:4px;scroll-snap-type:x proximity}
+.obcol{background:transparent;box-shadow:inset 0 0 0 1px var(--line2);border-radius:var(--r-sm);padding:10px;display:flex;flex-direction:column;gap:8px;min-height:120px;scroll-snap-align:start}
+.obcolhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:2px 4px 4px;font-size:14px}
+.obcard{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--card);border:0;border-radius:12px;padding:12px;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);font:inherit}
+.obcard:hover{box-shadow:0 0 0 2px var(--ink)}
+.obcard b{font-size:15px}
+.obtags{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.obtag{font-size:12px;font-weight:500;border-radius:99px;padding:2px 8px;box-shadow:inset 0 0 0 1px var(--line2)}
+.obtag.due{background:var(--ink);color:var(--inv);box-shadow:none}
+.obtag.warn{color:#b45309;box-shadow:inset 0 0 0 1px #e5b981}
+.obq{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.obq input{flex:1;min-width:120px}.obq select{width:auto}
+@media (max-width:820px){.obstats{grid-template-columns:repeat(2,minmax(0,1fr))}.obboard{grid-auto-columns:82%}}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;border-radius:99px;padding:3px 11px;background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2);white-space:nowrap}
 .pill.hot{background:var(--ink);color:var(--inv);box-shadow:none}
 .pill.warm{background:var(--well);box-shadow:none}
@@ -520,7 +535,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","shoot","licences","prefs","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","shoot","onboard","licences","prefs","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -532,6 +547,7 @@ function go(v,sel){view=v;selected=sel||null;query="";try{localStorage.setItem("
 
 /* ---------- navigation ---------- */
 const ICON={
+  onboard:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>',
   licences:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6Z"/><path d="M15 3v4h4"/><path d="m9 14 2 2 4-4"/></svg>',
   prefs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"/><path d="M5 18v-3a7 7 0 0 1 14 0v3"/><path d="M12 8V6"/><path d="M10 6h4"/></svg>',
   shoot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
@@ -549,14 +565,15 @@ const ICON={
   codes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.5 11.5 9-9"/><path d="m17 6 3 3"/><path d="m14.5 8.5 2 2"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>'
 };
-const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["shoot","Shoot days"],["licences","Licences"],["prefs","Guest prefs"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
-const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",shoot:"Shoot",licences:"Licences",prefs:"Prefs",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
+const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["shoot","Shoot days"],["onboard","Onboarding"],["licences","Licences"],["prefs","Guest prefs"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
+const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",shoot:"Shoot",onboard:"Onboard",licences:"Licences",prefs:"Prefs",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
     stayful:leads.filter(l=>l.source==="stayful"&&!CLOSED.has(l.status)).length,
     outreach:contacts.filter(c=>!O_CLOSED.has(c.status)).length,
-    projects:PROJECTS.length};
+    projects:PROJECTS.length,
+    onboard:obCards.filter(obDue).length};
 }
 function renderTabs(){
   const c=navCounts();
@@ -602,7 +619,7 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="shoot"?shootView():view==="licences"?licencesView():view==="prefs"?prefsView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="shoot"?shootView():view==="onboard"?onboardView():view==="licences"?licencesView():view==="prefs"?prefsView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
   const hc=selected&&window.innerWidth<=820?null:helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
@@ -889,6 +906,7 @@ function detail(){
         sel("Where they are",  "status",g?GUEST_STATUSES:OWNER_STATUSES,l.status||"new",v=>setStatus(l,v)),
         sel("How likely","score",[["hot","Hot"],["warm","Warm"],["cold","Cold"]],l.score||"warm",v=>{save(l,{score:v});render()}),
         h("div",{class:"field"},h("label",{for:"d-nf",text:"Next follow-up"}),h("input",{type:"date",id:"d-nf",value:l.nextFollowUp||"",onchange:e=>save(l,{nextFollowUp:e.target.value||null})}))),
+      g?null:h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>obFromLead(l)},"Move to onboarding"),h("span",{class:"muted small",text:"Once the owner is interested, track contract, furnishing, listing and licence there."})),
       h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>{save(l,{kind:g?"owner":"guest",status:"new",nextFollowUp:today()});render()}},g?"This is actually an owner":"This is actually a guest"),archiveBtn(l,false),deleteBtn(l))),
     h("p",{class:"muted small",text:"Added "+(l.created?niceDate(l.created.slice(0,10)):"")+(l.group?" from "+l.group:"")}));
 }
@@ -3027,6 +3045,149 @@ function mPreview(m){
 }
 
 /* ---------- boot ---------- */
+
+/* ---------- ONBOARDING (owner → contract → furnishing → listing → licence → live) ---------- */
+let obCards=[],obSel=null,obTab="pipeline",obQ="",obMeta=null,obNew=null,obWho="";
+const OB_STAGES=[["new","New / form received"],["call","Call booked"],["proposal","Proposal sent"],["contract_sent","Contract sent"],["signed","Contract signed"],["awaiting_licence","Awaiting licence"],["listing","Listing created"],["pending_licence","Listed, pending licence"],["live","Live"],["hold","On hold / temp disconnected"],["lost","Lost"]];
+const OB_STAGE=Object.fromEntries(OB_STAGES);
+const OB_BOARD=["new","call","proposal","contract_sent","signed","awaiting_licence","listing","pending_licence","hold"];
+const OB_FURN=[["","Not checked yet"],["no","Not needed"],["needs","Needs furnishing"],["quote_req","Quote requested"],["quote_sent","Quote sent to owner"],["quote_chase","Quote to chase up"],["quote_ok","Quote accepted"],["ordered","Order placed"],["install","Installation date booked"],["done","Furnished"]];
+const OB_FURNL=Object.fromEntries(OB_FURN);
+const OB_FURN_OPEN=["needs","quote_req","quote_sent","quote_chase","quote_ok","ordered","install"];
+const OB_QST=[["requested","Requested"],["received","Received"],["sent","Sent to owner"],["chase","To chase up"],["accepted","Accepted"],["declined","Declined"]];
+const OB_TYPES=["House","Flat","Caravan / lodge","Other"];
+const obNorm=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+function obLicence(c){const p=obNorm(c.property);if(!p)return null;const first=p.split(" ").slice(0,3).join(" ");
+  return licences.find(a=>c.licenceId&&a.id===c.licenceId)||licences.find(a=>{const q=obNorm(a.property);return q&&(q===p||q.startsWith(first)||p.startsWith(q.split(" ").slice(0,3).join(" ")))})||null}
+const obDue=c=>!["live","lost"].includes(c.stage)&&c.next&&c.next.date&&c.next.date<=today();
+const obFurn=c=>(c.furnishing&&c.furnishing.status)||"";
+async function obSave(c,patch,what){const log=(c.log||[]).slice(-79);if(what)log.push({at:new Date().toISOString(),by:window.VL_USER||"",what});
+  try{await db.collection("onboard").doc(c.id).update({...patch,log,updated:new Date().toISOString()});Object.assign(c,patch,{log});render()}catch(e){toast("Couldn't save: "+(e.message||e))}}
+function obStage(c,v){const patch={stage:v,check:false};if(v==="live"&&!c.liveAt)patch.liveAt=today();obSave(c,patch,"Stage: "+OB_STAGE[v])}
+async function obCreate(n){if(!String(n.property||"").trim()){toast("Enter the property");return}
+  const now=new Date().toISOString();
+  const doc={property:n.property.trim(),address:(n.address||"").trim(),type:n.type||"",stage:n.stage||"new",source:n.source||"added in app",check:false,
+    owner:{name:(n.owner&&n.owner.name||"").trim(),email:(n.owner&&n.owner.email||"").trim(),phone:(n.owner&&n.owner.phone||"").trim()},
+    assignee:n.assignee||window.VL_USER||"",next:{what:n.nextWhat||"",date:n.nextDate||""},furnishing:{status:"",quotes:[]},notes:n.notes||"",leadId:n.leadId||"",
+    log:[{at:now,by:window.VL_USER||"",what:"Added"+(n.leadId?" from the lead tracker":"")}],created:now,by:window.VL_USER||""};
+  try{const r=await db.collection("onboard").add(doc);obSel=(r&&r.id)||null;obNew=null;toast("Added to onboarding");if(view!=="onboard")go("onboard");else render()}catch(e){toast("Couldn't add: "+(e.message||e))}}
+function obFromLead(l){const map={signed:"signed",quoted:"proposal",call:"call"};
+  obNew={property:l.properties||l.location||((l.name||"Owner")+"'s property"),address:"",type:"",stage:map[l.status]||"new",owner:{name:l.name||"",email:l.email||"",phone:l.phone||""},nextWhat:"",nextDate:today(),notes:l.notes||"",leadId:l.id,source:"lead tracker"};
+  go("onboard")}
+
+function obCardEl(c){const lic=obLicence(c);const f=obFurn(c);const due=obDue(c);
+  const tags=[c.check?h("span",{class:"obtag warn",text:"Check stage"}):null,due?h("span",{class:"obtag due",text:(c.next.date<today()?"Overdue":"Due today")}):null,
+    OB_FURN_OPEN.includes(f)?h("span",{class:"obtag",text:OB_FURNL[f]}):null,
+    lic?h("span",{class:"obtag",text:"Licence: "+((Object.fromEntries(LIC_STAGES)[lic.stage])||"started")}):null,
+    c.source==="onboarding form"&&c.stage==="new"?h("span",{class:"obtag",text:"Form"}):null].filter(Boolean);
+  return h("button",{class:"obcard",onclick:()=>{obSel=c.id;render();window.scrollTo(0,0)}},
+    h("b",{text:c.property}),
+    (c.owner&&c.owner.name)||c.assignee?h("span",{class:"muted small",text:[c.owner&&c.owner.name,c.assignee?"· "+c.assignee:""].filter(Boolean).join(" ")}):null,
+    c.next&&c.next.what?h("span",{class:"small",text:"Next: "+c.next.what+(c.next.date?" ("+niceDate(c.next.date)+")":"")}):null,
+    tags.length?h("span",{class:"obtags"},...tags):null)}
+
+function onboardView(){
+  if(!obMeta){obMeta={};licApi("onboard_meta").then(r=>{obMeta=r;render()}).catch(()=>{})}
+  if(!licMeta)licLoadMeta();
+  const head=h("div",{},h("h1",{text:"Onboarding"}),h("p",{class:"muted",text:"Every property from first contact to live: contract, furnishing and quotes, listing and licence. Onboarding forms arrive here by themselves."}));
+  const c=obSel&&obCards.find(x=>x.id===obSel);
+  if(c)return[head,...obDetail(c)];
+  if(obNew)return[head,obNewForm()];
+  const pipe=obCards.filter(x=>!["live","lost"].includes(x.stage));
+  const live=obCards.filter(x=>x.stage==="live");
+  const furn=obCards.filter(x=>OB_FURN_OPEN.includes(obFurn(x)));
+  const due=pipe.filter(obDue);
+  const q=obNorm(obQ);const match=x=>!q||obNorm([x.property,x.address,x.owner&&x.owner.name,x.assignee,x.guestyTitle].join(" ")).includes(q);
+  const who=obWho;const mine=x=>!who||x.assignee===who;
+  const stats=h("div",{class:"obstats"},...[["In the pipeline",pipe.length],["Live",live.length],["Needs furnishing",furn.length],["Follow-ups due",due.length]].map(([t,n])=>h("div",{},h("b",{text:n}),h("span",{class:"muted small",text:t}))));
+  const tabs=h("div",{class:"chips",role:"tablist"},...[["pipeline","Pipeline"],["furnishing","Furnishing"],["live","Live ("+live.length+")"],["lost","Lost"]].map(([k,t])=>h("button",{class:"chip","aria-pressed":String(obTab===k),onclick:()=>{obTab=k;render()}},t)));
+  const people=[...new Set(obCards.map(x=>x.assignee).filter(Boolean))].sort();
+  const whoSel=people.length?h("select",{"aria-label":"Whose cards",style:"width:auto",onchange:e=>{obWho=e.target.value;render()}},h("option",{value:"",text:"Everyone"}),...people.map(p=>{const o=h("option",{value:p,text:p});if(p===who)o.selected=true;return o})):null;
+  const search=h("input",{class:"search",type:"search",placeholder:"Search property, owner or person",value:obQ,style:"max-width:340px",
+    oninput:e=>{obQ=e.target.value;const pos=e.target.selectionStart;render();const s=$("#main .search");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}}});
+  const bar=h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>{obNew={property:"",address:"",type:"",stage:"new",owner:{name:"",email:"",phone:""},nextWhat:"",nextDate:today()};render()}},"Add property"),search,whoSel);
+  const out=[head,stats,h("div",{class:"btns",style:"justify-content:space-between"},tabs),bar];
+  if(!obCards.length)out.push(h("div",{class:"card"},h("p",{class:"muted",text:"Loading… (if this stays empty, the unit sheet import hasn't run yet)"})));
+  if(obTab==="pipeline"){
+    const cols=OB_BOARD.map(st=>{const list=pipe.filter(x=>x.stage===st&&match(x)&&mine(x)).sort((a,b)=>(obDue(b)-obDue(a))||String(a.property).localeCompare(String(b.property),undefined,{numeric:true}));
+      return h("section",{class:"obcol"},h("div",{class:"obcolhead"},h("b",{text:OB_STAGE[st]}),h("span",{class:"muted small",text:list.length})),...list.map(obCardEl))});
+    out.push(h("div",{class:"obboard"},...cols));
+  }else if(obTab==="furnishing"){
+    const cols=OB_FURN_OPEN.map(st=>{const list=obCards.filter(x=>obFurn(x)===st&&match(x)&&mine(x));
+      return h("section",{class:"obcol"},h("div",{class:"obcolhead"},h("b",{text:OB_FURNL[st]}),h("span",{class:"muted small",text:list.length})),...list.map(obCardEl))});
+    out.push(h("p",{class:"muted small",text:"Properties that need furnishing, by where the quote or order is. Set this on each property's card."}),h("div",{class:"obboard"},...cols));
+  }else{
+    const list=obCards.filter(x=>x.stage===obTab&&match(x)&&mine(x)).sort((a,b)=>String(a.property).localeCompare(String(b.property),undefined,{numeric:true}));
+    out.push(list.length?h("div",{class:"list"},...list.map(x=>h("button",{class:"row",onclick:()=>{obSel=x.id;render();window.scrollTo(0,0)}},h("span",{class:"dot"}),h("span",{class:"nm",text:x.property}),h("span",{class:"when",text:x.liveAt?niceDate(x.liveAt):""}),
+      h("span",{class:"sub",text:[x.type,x.owner&&x.owner.name,x.guestyTitle].filter(Boolean).join(" · ")||" "})))):h("div",{class:"card"},h("p",{class:"muted",text:"Nothing here."})));
+  }
+  out.push(h("details",{class:"card"},h("summary",{},"Connect the Jotform onboarding form"),
+    h("p",{class:"small",text:"Every form submission becomes a card in “New / form received”, with all the owner's answers on it. Set it up once:"}),
+    h("ol",{class:"small",style:"margin:0;padding-left:20px;line-height:1.7"},h("li",{text:"Open the form in Jotform → Settings → Integrations → search “WebHooks”."}),h("li",{text:"Paste the address below and press Complete Integration."}),h("li",{text:"Send a test submission. It shows up here within a minute."})),
+    obMeta&&obMeta.hook?h("div",{class:"btns"},h("code",{class:"small",style:"word-break:break-all;background:var(--well);padding:8px 10px;border-radius:10px;flex:1",text:obMeta.hook}),h("button",{class:"btn",onclick:()=>copy(obMeta.hook)},"Copy")):h("p",{class:"muted small",text:"Loading the address…"}),
+    h("p",{class:"muted small",text:"Keep this address private: anyone with it can add cards."})));
+  return out;
+}
+
+function obNewForm(){const n=obNew;
+  const f=(label,val,set,attrs)=>h("div",{class:"field"},h("label",{text:label}),h("input",{type:"text",value:val||"",...(attrs||{}),oninput:e=>set(e.target.value)}));
+  const sel=(label,opts,val,set)=>h("div",{class:"field"},h("label",{text:label}),h("select",{onchange:e=>set(e.target.value)},...opts.map(([k,v])=>{const o=h("option",{value:k,text:v});if(val===k)o.selected=true;return o})));
+  return h("div",{class:"card"},h("h3",{text:n.leadId?"Move this owner into onboarding":"Add a property"}),
+    h("div",{class:"form"},f("Property",n.property,v=>n.property=v,{placeholder:"e.g. 12 Mallard Walk"}),f("Full address with postcode",n.address,v=>n.address=v),
+      sel("Type",[["","Choose…"],...OB_TYPES.map(t=>[t,t])],n.type,v=>n.type=v),sel("Stage",OB_STAGES,n.stage,v=>n.stage=v),
+      f("Owner's name",n.owner.name,v=>n.owner.name=v),f("Owner's email",n.owner.email,v=>n.owner.email=v,{type:"email"}),f("Owner's phone / WhatsApp",n.owner.phone,v=>n.owner.phone=v,{type:"tel"}),
+      f("Next step",n.nextWhat,v=>n.nextWhat=v,{placeholder:"e.g. Send the contract"}),f("Next step date",n.nextDate,v=>n.nextDate=v,{type:"date"})),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>obCreate(n)},"Add"),h("button",{class:"btn",onclick:()=>{obNew=null;render()}},"Cancel")));
+}
+
+function obDetail(c){
+  const back=h("button",{class:"btn link",onclick:()=>{obSel=null;render()}},"← All properties");
+  const fld=(label,val,on,attrs)=>h("div",{class:"field"},h("label",{text:label}),h("input",{type:"text",value:val||"",...(attrs||{}),onchange:e=>on(e.target.value.trim())}));
+  const own=c.owner||{};const nx=c.next||{};const fu=c.furnishing||{status:"",quotes:[]};
+  const stSel=h("select",{"aria-label":"Stage",onchange:e=>obStage(c,e.target.value)},...OB_STAGES.map(([k,v])=>{const o=h("option",{value:k,text:v});if(c.stage===k)o.selected=true;return o}));
+  const people=[...new Set([...tkWorkers(),...obCards.map(x=>x.assignee)].filter(Boolean))].sort();
+  const top=h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:c.property}),h("span",{class:"pill",text:OB_STAGE[c.stage]||c.stage})),
+    c.check?h("div",{class:"banner small",text:"Imported from the unit sheet. Pick the real stage below to clear this."}):null,
+    h("div",{class:"form"},h("div",{class:"field"},h("label",{text:"Stage"}),stSel),
+      h("div",{class:"field"},h("label",{text:"Who's handling it"}),h("input",{type:"text",list:"ob-people",value:c.assignee||"",onchange:e=>obSave(c,{assignee:e.target.value.trim()},"Handled by "+(e.target.value.trim()||"nobody"))}),h("datalist",{id:"ob-people"},...people.map(p=>h("option",{value:p})))),
+      fld("Next step",nx.what,v=>obSave(c,{next:{...nx,what:v}},v?"Next step: "+v:null),{placeholder:"e.g. Chase the furniture quote"}),
+      fld("Next step date",nx.date,v=>obSave(c,{next:{...nx,date:v}},null),{type:"date"})),
+    h("div",{class:"btns"},h("button",{class:"btn small",onclick:()=>{const d=new Date();d.setDate(d.getDate()+3);obSave(c,{next:{...nx,date:iso(d)}},"Follow-up moved to "+iso(d))}},"Snooze 3 days"),
+      own.phone?h("a",{class:"btn small",href:"https://wa.me/"+own.phone.replace(/[^\d+]/g,"").replace(/^\+/,"").replace(/^0/,"44"),target:"_blank",rel:"noopener"},"WhatsApp owner"):null,
+      own.email?h("a",{class:"btn small",href:"mailto:"+own.email},"Email owner"):null));
+  const details=h("details",{class:"card",open:!own.name&&!c.address?true:null},h("summary",{},"Property and owner details"),
+    h("div",{class:"form"},fld("Property",c.property,v=>v&&obSave(c,{property:v},"Renamed to "+v)),fld("Address with postcode",c.address,v=>obSave(c,{address:v},null)),
+      h("div",{class:"field"},h("label",{text:"Type"}),h("select",{onchange:e=>obSave(c,{type:e.target.value},null)},...[["","Choose…"],...OB_TYPES.map(t=>[t,t])].map(([k,v])=>{const o=h("option",{value:k,text:v});if((c.type||"")===k)o.selected=true;return o}))),
+      fld("Owner's name",own.name,v=>obSave(c,{owner:{...own,name:v}},null)),fld("Owner's email",own.email,v=>obSave(c,{owner:{...own,email:v}},null),{type:"email"}),fld("Owner's phone / WhatsApp",own.phone,v=>obSave(c,{owner:{...own,phone:v}},null),{type:"tel"})),
+    c.guestyTitle?h("p",{class:"muted small",text:"Guesty title: "+c.guestyTitle}):null);
+  // furnishing and quotes
+  const qs=fu.quotes||[];
+  const setFu=(patch,what)=>obSave(c,{furnishing:{...fu,...patch}},what);
+  const qRow=(qq,i)=>h("div",{class:"obq"},
+    h("input",{type:"text",value:qq.supplier||"",placeholder:"Supplier",onchange:e=>{const a=qs.slice();a[i]={...qq,supplier:e.target.value.trim()};setFu({quotes:a},null)}}),
+    h("input",{type:"text",value:qq.amount||"",placeholder:"£ amount",style:"max-width:120px",onchange:e=>{const a=qs.slice();a[i]={...qq,amount:e.target.value.trim()};setFu({quotes:a},null)}}),
+    h("select",{onchange:e=>{const a=qs.slice();a[i]={...qq,status:e.target.value,at:today()};const map={sent:"quote_sent",chase:"quote_chase",accepted:"quote_ok"};setFu({quotes:a,...(map[e.target.value]?{status:map[e.target.value]}:{})},"Quote "+(qq.supplier||"")+": "+Object.fromEntries(OB_QST)[e.target.value])}},...OB_QST.map(([k,v])=>{const o=h("option",{value:k,text:v});if(qq.status===k)o.selected=true;return o})),
+    h("button",{class:"btn small link",onclick:()=>{const a=qs.slice();a.splice(i,1);setFu({quotes:a},"Quote removed")}},"Remove"));
+  const furn=h("div",{class:"card"},h("h3",{text:"Furnishing"}),
+    h("div",{class:"form"},h("div",{class:"field"},h("label",{text:"Where it's at"}),h("select",{onchange:e=>setFu({status:e.target.value},"Furnishing: "+OB_FURNL[e.target.value])},...OB_FURN.map(([k,v])=>{const o=h("option",{value:k,text:v});if((fu.status||"")===k)o.selected=true;return o}))),
+      ["ordered","install","done"].includes(fu.status)?h("div",{class:"field"},h("label",{text:"Installation date"}),h("input",{type:"date",value:fu.install||"",onchange:e=>setFu({install:e.target.value,...(e.target.value&&fu.status==="ordered"?{status:"install"}:{})},e.target.value?"Installation booked for "+e.target.value:null)})):null),
+    fu.status&&fu.status!=="no"?h("div",{style:"display:grid;gap:8px"},h("b",{class:"small",text:"Quotes"}),...qs.map(qRow),
+      h("div",{class:"btns"},h("button",{class:"btn small",onclick:()=>setFu({quotes:[...qs,{supplier:"",amount:"",status:"requested",at:today()}],...(!fu.status||fu.status==="needs"?{status:"quote_req"}:{})},"Quote requested")},"Add a quote"))):null);
+  // licence
+  const lic=obLicence(c);
+  const licCard=h("div",{class:"card"},h("h3",{text:"Licence"}),
+    lic?h("div",{class:"btns",style:"align-items:center"},h("span",{class:"small",style:"flex:1",text:(lic.property)+" · "+((Object.fromEntries(LIC_STAGES))[lic.stage]||"")+(licMeta&&licMeta.items?" · "+licProgress(lic).done+" of "+licProgress(lic).total+" done · owner owes "+licOwnerMissing(lic).length:"")}),
+      h("button",{class:"btn small",onclick:()=>{licSel=lic.id;go("licences")}},"Open in Licences")):
+    h("div",{class:"btns",style:"align-items:center"},h("span",{class:"muted small",style:"flex:1",text:"No licence application for this property yet."}),
+      h("button",{class:"btn small",onclick:()=>{licNew={property:c.property,address:c.address||"",council:"",owner:{name:own.name||"",email:own.email||"",phone:own.phone||""},every:3};licSel=null;go("licences")}},"Start licence application")));
+  const form=c.form&&c.form.answers&&c.form.answers.length?h("details",{class:"card",open:c.stage==="new"?true:null},h("summary",{},"Onboarding form answers"),
+    h("dl",{class:"facts"},...c.form.answers.flatMap(a=>[h("dt",{text:a.q}),h("dd",{text:a.a})]))):null;
+  const notes=h("div",{class:"card"},h("h3",{text:"Notes"}),h("textarea",{rows:"3","aria-label":"Notes",onchange:e=>obSave(c,{notes:e.target.value},null)},c.notes||""));
+  const delB=h("button",{class:"btn danger small"},"Delete this card");delB.addEventListener("click",async()=>{if(!delB.dataset.armed){delB.dataset.armed="1";delB.textContent="Tap again to delete";return}try{await db.collection("onboard").doc(c.id).delete();obSel=null;render()}catch(e){toast("Couldn't delete")}});
+  const log=h("div",{class:"card"},h("h3",{text:"History"}),...(c.log||[]).slice().reverse().slice(0,30).map(l=>h("p",{class:"small"},h("span",{class:"muted",text:new Date(l.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" · "+(l.by||"")+" · "}),l.what)),h("div",{class:"btns"},delB));
+  return[back,top,furn,licCard,form,details,notes,log];
+}
+
 $("#addtop").addEventListener("click",()=>go("add"));
 render();
 (async function(){
@@ -3043,6 +3204,7 @@ render();
   db.collection("photos").onSnapshot(snap=>{photosUp=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   db.collection("nl_campaigns").onSnapshot(snap=>{nlCamps=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="newsletter"&&!busy())render()},()=>{});
   db.collection("licence").onSnapshot(snap=>{const old=Object.fromEntries(licences.map(x=>[x.id,x._link]));licences=snap.docs.map(x=>({id:x.id,...x.data(),_link:old[x.id]}));if(view==="licences"&&!busy())render()},()=>{});
+  db.collection("onboard").onSnapshot(snap=>{obCards=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="onboard"&&!busy())render();else renderTabs()},()=>{});
   db.collection("prefs").onSnapshot(snap=>{prefs=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="prefs"&&!busy())render()},()=>{});
   db.collection("manuals").onSnapshot(snap=>{manuals=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="manuals"&&!busy()&&!mBusy)render()},()=>{});
   db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});

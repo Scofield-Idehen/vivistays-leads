@@ -176,6 +176,11 @@ try {
             $db->prepare('INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?)')->execute(['manuals', $id, json_encode($doc, JSON_UNESCAPED_UNICODE), gmdate('c')]);
             out(['ok' => true, 'size' => strlen($pdf)]);
 
+        case 'onboard_meta':
+            // The Jotform webhook URL (with its secret key) for the Onboarding tab.
+            $base = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? '');
+            out(['hook' => $base . '/onboard-hook.php?k=' . vl_ob_key()]);
+
         case 'licence_meta':
             require_once __DIR__ . '/licence.php';
             out(['items' => LIC_ITEMS, 'councils' => LIC_COUNCILS, 'questions' => LIC_QUESTIONS]);

@@ -1,600 +1,3620 @@
 {
- "contacts": {
-  "egl1-community": {
-   "kind": "project",
-   "channel": "email",
-   "name": "",
-   "company": "Eastern Green Link 1 – community relations",
-   "role": "Project community team",
-   "email": "contact@easterngreenlink1.co.uk",
-   "phone": "0808 196 8405",
-   "url": "https://www.easterngreenlink1.co.uk/works-in-your-area",
-   "projectId": "egl1",
-   "notes": "Official project contact for the Torness works (2025–2028). Ask who arranges accommodation for site crews, or for the main contractor's local contact.",
-   "status": "new",
-   "nextFollowUp": "2026-10-10",
-   "created": "2026-10-10T15:00:00.000Z",
-   "updated": "2026-10-10T15:00:00.000Z"
-  },
-  "r1021-fiona-mccall": {
-   "kind": "project",
-   "channel": "email",
-   "name": "Fiona McCall",
-   "role": "Contact on Torness outage press release",
-   "company": "EDF (Torness Power Station)",
-   "email": "fiona.mccall@edf-energy.com",
-   "phone": "",
-   "url": "https://www.edfenergy.com/node/100579",
-   "notes": "Torness outages, station life extended to 2030. A Reactor 1 outage brought ~800 extra contractor workers for 10 weeks, staying in local hotels, B&Bs and caravan parks. Ask about the next outage.\nSource: https://www.edfenergy.com/node/100579",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-sp-energy-networks-major-projects": {
-   "kind": "project",
-   "channel": "email",
-   "name": "",
-   "role": "Major projects community relations",
-   "company": "SP Energy Networks (Major Projects)",
-   "email": "majorprojects@spenergynetworks.com",
-   "phone": "07516461129",
-   "url": "https://www.spenergynetworks.co.uk/news/pages/community_event_signals_start_of_enabling_work_for_new_east_lothian_substation.aspx",
-   "notes": "New Branxton 400kV substation near Dunbar/Torness: enabling works (A1 slip road, welfare compound, haul road). Multi-year grid build.\nSource: https://www.spenergynetworks.co.uk/news/pages/community_event_signals_start_of_enabling_work_for_new_east_lothian_substation.aspx",
-   "projectId": "berwickbank",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-hub-south-east-scotland": {
-   "kind": "project",
-   "channel": "email",
-   "name": "",
-   "role": "General enquiries",
-   "company": "Hub South East Scotland",
-   "email": "mail@hubsoutheast.co.uk",
-   "phone": "",
-   "url": "https://www.hubsoutheastscotland.co.uk/news/good-progress-and-social-impact-at-former-cockenzie-power-station-site/",
-   "notes": "Development partner on council builds across East Lothian, Midlothian, Borders and Fife (e.g. new Hawick High School with Morrison). Ask them to pass our offer to site teams.\nSource: https://www.hubsoutheastscotland.co.uk/news/good-progress-and-social-impact-at-former-cockenzie-power-station-site/",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-lorraine-watson": {
-   "kind": "project",
-   "channel": "email",
-   "name": "Lorraine Watson",
-   "role": "Listed contact, Morrison Construction Services",
-   "company": "Morrison Construction",
-   "email": "lorraine.watson@morrisonconstruction.co.uk",
-   "phone": "01324 496000",
-   "url": "https://www.scotborders.gov.uk/roads-pavements/approved-contractors/2",
-   "notes": "Main contractor on the £56m new Hawick High School (superstructure from June 2026). Base is Grangemouth, over an hour away. Her listing is on the Borders roads-contractor list, so ask her to forward to the Hawick site team.\nSource: https://www.scotborders.gov.uk/roads-pavements/approved-contractors/2",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-paul-hogarth": {
-   "kind": "project",
-   "channel": "email",
-   "name": "Paul Hogarth",
-   "role": "Community Liaison Officer",
-   "company": "Center Parcs (Scottish Borders village)",
-   "email": "paul.hogarth@centerparcs.co.uk",
-   "phone": "",
-   "url": "https://midlothianview.com/news/a7-road-closures-and-traffic-lights-announced-for-center-parcs-borders-works",
-   "notes": "£450m Center Parcs Borders build near Hawick, spring 2026 to summer 2029, 750-800 construction jobs; contractors appointed in phases. Also: enquiries.scotland@centerparcs.co.uk\nSource: https://midlothianview.com/news/a7-road-closures-and-traffic-lights-announced-for-center-parcs-borders-works",
-   "projectId": "centerparcs",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-sandra-overend": {
-   "kind": "project",
-   "channel": "email",
-   "name": "Sandra Overend",
-   "role": "Listed contact (business directory)",
-   "company": "Henry Brothers Ltd",
-   "email": "sandra.overend@henrybrothers.co.uk",
-   "phone": "028 7963 1631",
-   "url": "https://www.midulstercouncil.org/business/business-directory/business-directory-listings/other/henry-brothers-limited",
-   "notes": "Northern Ireland contractor building the Aberlady Primary School extension (Jul 2026 to Aug 2027), right next to Port Seton; also an Army Reserve Centre job in Dunfermline. Crews travel in.\nSource: https://www.midulstercouncil.org/business/business-directory/business-directory-listings/other/henry-brothers-limited",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-clark-contracts-ltd": {
-   "kind": "project",
-   "channel": "email",
-   "name": "",
-   "role": "General enquiries",
-   "company": "Clark Contracts Ltd",
-   "email": "info@clarkcontracts.com",
-   "phone": "+44 1418478787",
-   "url": "https://www.find-tender.service.gov.uk/Notice/000270-2025",
-   "notes": "Paisley contractor: 97 council homes at Lumphinnans near Dunfermline (to summer 2027) and Upper Langlee homes in Galashiels. Long way from base.\nSource: https://www.find-tender.service.gov.uk/Notice/000270-2025",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-i-h-brown": {
-   "kind": "project",
-   "channel": "email",
-   "name": "",
-   "role": "General enquiries (Perth)",
-   "company": "I&H Brown",
-   "email": "enquiries@ihbrown.com",
-   "phone": "+44 (0) 1738 637171",
-   "url": "https://ihbrown.com/on-to-the-next-phase-at-civils-substation/",
-   "notes": "Civils at SPEN Eccles substation near Coldstream, Borders (platform, then compensator works). Also info@ihbrown.com.\nSource: https://ihbrown.com/on-to-the-next-phase-at-civils-substation/",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-kirby-group-engineering": {
-   "kind": "project",
-   "channel": "email",
-   "name": "",
-   "role": "General enquiries (Bellshill)",
-   "company": "Kirby Group Engineering",
-   "email": "info@kirbygroup.com",
-   "phone": "+44 (0)1698 841 228",
-   "url": "https://www.kirbygroup.com/contact-us/",
-   "notes": "HV electrical works at SPEN Dunbar 132/33kV substation. Irish-HQ contractor sending crews. Tenders: tendering@kirbygroup.com\nSource: https://www.kirbygroup.com/contact-us/",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-zenobe": {
-   "kind": "project",
-   "channel": "email",
-   "name": "",
-   "role": "Eccles project team",
-   "company": "Zenobe",
-   "email": "contact.eccles@zenobe.com",
-   "phone": "",
-   "url": "https://www.zenobe.com/?p=16447",
-   "notes": "Eccles battery site commissioning now; Zenobe also bought the Branxton battery site near Innerwick (12-18 month build), close to Thurston Manor. UK projects: ukprojects@zenobe.com\nSource: https://www.zenobe.com/?p=16447",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-amey-south-east-trunk-roads-unit": {
-   "kind": "project",
-   "channel": "email",
-   "name": "",
-   "role": "Operational control room (SE trunk roads)",
-   "company": "Amey (South East Trunk Roads Unit)",
-   "email": "OCCR.SEscotland@amey.co.uk",
-   "phone": "0800 042 0188",
-   "url": "https://www.westlothian.gov.uk/media/5519/South-East-Trunk-Roads-Network---Amey/pdf/SouthEastTrunkRoadsNetwork-Amey.pdf",
-   "notes": "Ongoing A1, A7, A68, A702, A720 schemes, often overnight. Control-room inbox: ask them to forward to the schemes/works team.\nSource: https://www.westlothian.gov.uk/media/5519/South-East-Trunk-Roads-Network---Amey/pdf/SouthEastTrunkRoadsNetwork-Amey.pdf",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-east-lothian-council-musselburgh-flood-p": {
-   "kind": "project",
-   "channel": "email",
-   "name": "",
-   "role": "Project team",
-   "company": "East Lothian Council – Musselburgh Flood Protection Scheme",
-   "email": "musselburghfps@eastlothian.gov.uk",
-   "phone": "",
-   "url": "https://www.eastlothian.gov.uk/sites/default/files/2026-04/ELC20260428%2005%20MFPS%20Delivery%20Strategy%20and%20Next%20Steps.pdf",
-   "notes": "Long civils programme 10 min from Port Seton (seawall works ~60 months); contractor procurement to follow. Ask them to flag us to the contractor once appointed.\nSource: https://www.eastlothian.gov.uk/sites/default/files/2026-04/ELC20260428%2005%20MFPS%20Delivery%20Strategy%20and%20Next%20Steps.pdf",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-gary-donlin": {
-   "kind": "project",
-   "channel": "email",
-   "name": "Gary Donlin",
-   "role": "Lead Stakeholder Engagement Manager Scotland",
-   "company": "SSE Renewables",
-   "email": "Gary.Donlin@sse.com",
-   "phone": "",
-   "url": "https://uk.linkedin.com/in/gary-donlin-90b7206b",
-   "notes": "Berwick Bank onshore works (cables, substation, link to Branxton). Named contact for the onshore cabling application. We already emailed berwickbank@sse.com – this is a named person.\nSource: https://uk.linkedin.com/in/gary-donlin-90b7206b",
-   "projectId": "berwickbank",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-beth-landon": {
-   "kind": "project",
-   "channel": "email",
-   "name": "Beth Landon",
-   "role": "Energy Projects Partnership Manager",
-   "company": "Energy Projects Partnership, East Lammermuir",
-   "email": "beth@elep.scot",
-   "phone": "",
-   "url": "https://eastlammermuirdevelopments.co.uk/wp-content/uploads/2025/11/Energy-Projects-Partnerships-Newsletter.pdf",
-   "notes": "Coordinates EGL1, Branxton, Berwick Bank and Crystal Rig with the community; developers discussed temporary accommodation for construction workers. Not a booker but a route into all the developers. (Source Nov 2025.)\nSource: https://eastlammermuirdevelopments.co.uk/wp-content/uploads/2025/11/Energy-Projects-Partnerships-Newsletter.pdf",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-jim-gannon": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Jim Gannon",
-   "role": "Site Manager",
-   "company": "GE Vernova – Metlen Energy & Metals Consortium",
-   "email": "",
-   "phone": "",
-   "url": "https://eastlammermuirdevelopments.co.uk/wp-content/uploads/2025/05/SPEN-EGL1-Energy_May_25.pdf",
-   "notes": "EGL1 converter station at Torness. Named in May 2025 public meeting slides. LinkedIn profile not found – search his name + GE Vernova.\nSource: https://eastlammermuirdevelopments.co.uk/wp-content/uploads/2025/05/SPEN-EGL1-Energy_May_25.pdf",
-   "projectId": "egl1",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-duncan-bennett": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Duncan Bennett",
-   "role": "Community Liaison Manager",
-   "company": "GE Vernova – Metlen Energy & Metals Consortium",
-   "email": "",
-   "phone": "",
-   "url": "https://eastlammermuirdevelopments.co.uk/wp-content/uploads/2025/05/SPEN-EGL1-Energy_May_25.pdf",
-   "notes": "EGL1 converter station, Torness. Named in 2025 slides. LinkedIn profile not found – search his name.\nSource: https://eastlammermuirdevelopments.co.uk/wp-content/uploads/2025/05/SPEN-EGL1-Energy_May_25.pdf",
-   "projectId": "egl1",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-kevin-burns": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Kevin Burns",
-   "role": "Project Manager (main contact during construction)",
-   "company": "Fred. Olsen Renewables",
-   "email": "",
-   "phone": "",
-   "url": "https://www.linkedin.com/in/kevin-burns-2018/",
-   "notes": "Crystal Rig wind farms, Woodhall/Innerwick near Dunbar. General email communities@fredolsen.com.\nSource: https://www.linkedin.com/in/kevin-burns-2018/",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-julie-aitken": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Julie Aitken",
-   "role": "Senior Project Manager",
-   "company": "Fred. Olsen Renewables",
-   "email": "",
-   "phone": "",
-   "url": "https://elcc.scot/files/2025/05/ELCC-Meeting-Spott-3-March-2025.pdf",
-   "notes": "Crystal Rig 1 repowering, Lammermuirs near Dunbar. Named in Mar 2025 minutes. LinkedIn profile not found – search her name.\nSource: https://elcc.scot/files/2025/05/ELCC-Meeting-Spott-3-March-2025.pdf",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-emily-galloway": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Emily Galloway",
-   "role": "Senior Project Manager",
-   "company": "Fred. Olsen Renewables",
-   "email": "",
-   "phone": "",
-   "url": "https://www.linkedin.com/in/emily-galloway-4b8b7389/",
-   "notes": "Crystal Rig IV (opened Sept 2026), may now be on the next phase.\nSource: https://www.linkedin.com/in/emily-galloway-4b8b7389/",
-   "projectId": "",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-sandie-lengden": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Sandie Lengden",
-   "role": "Project Director, Berwick Bank",
-   "company": "SSE Renewables",
-   "email": "",
-   "phone": "",
-   "url": "https://www.berwickbank.com/news/new-project-director-appointed-to-berwick-bank",
-   "notes": "Leads Berwick Bank to delivery (CfD Jan 2026, Seaway7 contract Oct 2026). Senior – good for an intro to logistics. LinkedIn profile not found – search her name.\nSource: https://www.berwickbank.com/news/new-project-director-appointed-to-berwick-bank",
-   "projectId": "berwickbank",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-alberto-pirovano": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Alberto Pirovano",
-   "role": "Project Director, EGL1",
-   "company": "Prysmian Powerlink",
-   "email": "",
-   "phone": "",
-   "url": "https://www.linkedin.com/in/alberto-pirovano-4557645/",
-   "notes": "EGL1 HVDC cable, on site at both ends including Torness.\nSource: https://www.linkedin.com/in/alberto-pirovano-4557645/",
-   "projectId": "egl1",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-nana-nagargoje": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Nana Nagargoje",
-   "role": "Engineering Lead – EGL1",
-   "company": "Metlen Energy & Metals",
-   "email": "",
-   "phone": "",
-   "url": "https://www.linkedin.com/in/nana-nagargoje-191088133/",
-   "notes": "EGL1 converter station, Torness.\nSource: https://www.linkedin.com/in/nana-nagargoje-191088133/",
-   "projectId": "egl1",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-kevin-mackenzie": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Kevin Mackenzie",
-   "role": "Managing Director",
-   "company": "GDL (Ground Developments)",
-   "email": "",
-   "phone": "",
-   "url": "https://projectscot.com/2025/12/gdl-begins-construction-phase-at-torness-for-egl1-initiative/",
-   "notes": "EGL1 earthworks at Torness for METLEN. We already phoned GDL – he's the MD. LinkedIn profile not found – search his name + GDL.\nSource: https://projectscot.com/2025/12/gdl-begins-construction-phase-at-torness-for-egl1-initiative/",
-   "projectId": "egl1",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-cathal-mcmanus": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Cathal McManus",
-   "role": "Project Manager",
-   "company": "Careys (Carey Group plc)",
-   "email": "",
-   "phone": "",
-   "url": "https://www.linkedin.com/in/cathal-mcmanus-627788b3/",
-   "notes": "Inch Cape onshore substation civils at Cockenzie, next to Port Seton. Package may be near finishing – ask about their next Scottish job.\nSource: https://www.linkedin.com/in/cathal-mcmanus-627788b3/",
-   "projectId": "cockenzie",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-graham-law": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "Graham Law",
-   "role": "Lead Project Manager, Converter Station",
-   "company": "Eastern Green Link 1 (SPEN / National Grid)",
-   "email": "",
-   "phone": "",
-   "url": "https://www.easterngreenlink1.co.uk/userfiles/file/EGL1_CLG_Minutes_19_November_2024.pdf",
-   "notes": "EGL1 converter stations. Named in Nov 2024 minutes (English end) – Torness role not confirmed. LinkedIn profile not found.\nSource: https://www.easterngreenlink1.co.uk/userfiles/file/EGL1_CLG_Minutes_19_November_2024.pdf",
-   "projectId": "egl1",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  },
-  "r1021-david-maddocks": {
-   "kind": "project",
-   "channel": "linkedin",
-   "name": "David Maddocks",
-   "role": "Managing Director, Overhead Lines",
-   "company": "M Group",
-   "email": "",
-   "phone": "",
-   "url": "https://bmmagazine.co.uk/in-business/scottishpower-110m-overhead-line-contract-m-group/",
-   "notes": "£110m Strathaven–Smeaton 400kV line, ending near Dalkeith. Senior – ask who handles crew accommodation. LinkedIn profile not found.\nSource: https://bmmagazine.co.uk/in-business/scottishpower-110m-overhead-line-contract-m-group/",
-   "projectId": "smeaton",
-   "eventName": "",
-   "eventDate": "",
-   "eventTown": "",
-   "area": "",
-   "status": "new",
-   "nextFollowUp": "2026-10-21",
-   "created": "2026-10-21T14:49:49Z",
-   "updated": "2026-10-21T14:49:49Z",
-   "createdBy": "Research 2026-10-21"
-  }
- },
- "__update__": {
-  "contacts": {
-   "netherton": {
-    "name": "Gillian Doig",
-    "role": "Community Liaison Manager",
-    "email": "nethertonengagement@sse.com",
-    "phone": "07879 288666",
-    "url": "https://www.ssen-transmission.co.uk/netherton-hub",
-    "notes": "Correct address from SSEN's Netherton Hub page (no dot). The earlier address with a dot bounced."
-   }
-  }
- },
- "social": {
-  "slot-124478": {
-   "area": "thurston",
-   "audience": "contractors",
-   "bullets": [
-    "3-bedroom caravans, sleeps 6–8",
-    "Weekly and monthly rates",
-    "Invoiced to your company"
+ "onboard": {
+  "u-1-baronet": {
+   "property": "1 Baronet",
+   "guestyTitle": "3BR Home Nr Edinburgh, Hot Tub, Parking, Sleeps 8",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
    ],
-   "by": null,
-   "caption": "🦺 6am start at Torness? Your crew could be on site in around 10 minutes.\n\nNo long drive in. No hotel breakfast queue. Just a proper home base at Thurston Manor, near Dunbar.\n\n🏡 3-bedroom caravans sleeping 6 to 8, so the whole crew stays together\n🍳 Your own kitchen and living space\n🚐 Free parking for the vans\n📶 Fast Wi-Fi and self check-in\n💷 Weekly and monthly rates, invoiced to your company\n\nGot a quote elsewhere? Send it over and we'll beat any like-for-like quote.\n\n📲 WhatsApp +44 7578 255663 with your dates and team size\n🌐 vivistays.com\n\nHow many in your crew this winter? 👇\n\n#Torness #ContractorAccommodation #EastLothian #Dunbar #ViViStays",
-   "created": "2026-10-20T08:40:00.000Z",
-   "cta": "Get a quote",
-   "headline": "Your crew, sorted near Torness",
-   "kicker": "THURSTON MANOR · DUNBAR",
-   "photo": "thurston-03",
-   "slot": 124478,
-   "source": "claude",
-   "status": "draft",
-   "updated": "2026-10-20T08:40:00.000Z"
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-1-gullane": {
+   "property": "1 Gullane",
+   "guestyTitle": "Family Friendly|Pool |Seton Sand |Parking| Sleep 7",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-103-ainslie-street": {
+   "property": "103 Ainslie Street",
+   "guestyTitle": "Nr BAE Systems - Contractor Stay -Close to Tram",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-11-kingsbarns": {
+   "property": "11 Kingsbarns",
+   "guestyTitle": "Family Holiday Home - 3BR Walk to Beach - Wi-Fi",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-11-moray-place": {
+   "property": "11 Moray Place",
+   "guestyTitle": "Seton Sands 3BR Family Caravan Near Edinburgh",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-11-the-turnberry": {
+   "property": "11 The Turnberry",
+   "guestyTitle": "The Turnberry 3BR Luxury Caravan - Near Edinburgh",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-110-wardlaw-way": {
+   "property": "110 Wardlaw way",
+   "guestyTitle": "Spacious 3BR Home, Sleeps 6, Free Parking, Garden",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-114-aberlady": {
+   "property": "114 aberlady",
+   "guestyTitle": "Near Pool |3BR Family -Friendly | Sea Views| Ramp | Wi-Fi | Pet OK",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-115-barclay-way": {
+   "property": "115 Barclay Way",
+   "guestyTitle": "Family & Contractor Stay - Parking - Nr Edinburgh",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-115-pitt-street-edin": {
+   "property": "115 Pitt Street Edin",
+   "guestyTitle": "Edinburgh Leith 1BR, Free Parking, Workspace",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-136-bankhead-road": {
+   "property": "136 Bankhead Road",
+   "guestyTitle": "Free Parking | Nr Airport & TECA | Spacious Home",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-14-falconer-place": {
+   "property": "14 Falconer Place",
+   "guestyTitle": "Spacious Inverurie Stay -Nr Train Station -Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-142-mcdonald-road": {
+   "property": "142 McDonald Road",
+   "guestyTitle": "Private Patio & BBQ Walk to Tram Heart of Edinburgh City Centre",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-147-red-bank-road": {
+   "property": "147 Red Bank Road",
+   "guestyTitle": "Spacious 4BR Near Beach, Free Parking, Sleeps 9",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-16-roxburgh": {
+   "property": "16 Roxburgh",
+   "guestyTitle": "2BR Deluxe - Starlink -Pool -Seton Sands -Sleeps 6",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-16a-1-hall-place": {
+   "property": "16A 1 Hall Place",
+   "guestyTitle": "Central Galashiels Stay - 5-Bed - Wi-Fi - Near Town",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-16a-2-hall-place": {
+   "property": "16A 2 Hall Place",
+   "guestyTitle": "Nr Gala Water walks & countryside trails -WiFi-5BR",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-17-archerfield": {
+   "property": "17 Archerfield",
+   "guestyTitle": "Archerfield Lodge-Spacious 3BR-Golf & Beach Access",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-17-oswald-ave": {
+   "property": "17 Oswald Ave",
+   "guestyTitle": "Nr Falkirk & Edinburgh 2BR Cottage Parking Wi-Fi",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-17-walter-st-brunswick-village": {
+   "property": "17 Walter St Brunswick Village",
+   "guestyTitle": "Contractors Stays,Nr City Access & Airport,Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-18-archerfield": {
+   "property": "18 Archerfield",
+   "guestyTitle": "Free Parking - Seton Sands Luxury - Sleeps6 -Wi-Fi",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-19-calender-place": {
+   "property": "19 Calender Place",
+   "guestyTitle": "Aberdeen Spacious House- 3 BR-Free Parking & Wi-Fi",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-19-stewart-terrace": {
+   "property": "19 Stewart Terrace",
+   "guestyTitle": "Stylish Ground Floor Apt - City Centre & Murrayfield",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-19-wentworth": {
+   "property": "19 Wentworth",
+   "guestyTitle": "Seton Sands wentworth luxury lodge - 2 Beds Sleeps 6 with starlink",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-19-2-stead-s-place": {
+   "property": "19/2 Stead's Place",
+   "guestyTitle": "Spacious Apt Stay - Near City Centre & Tram -Walk to Leith",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-191-cameron-crescent": {
+   "property": "191 Cameron Crescent",
+   "guestyTitle": "Easy Edinburgh Access, Parking,Near Rosslyn Chapel",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-191-garthtwentyfour": {
+   "property": "191 GarthTwentyFour",
+   "guestyTitle": "Spacious 6-Bed Home for 9, Free Parking, Nr Centre",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-19b-oliver-crescent-hawick": {
+   "property": "19B Oliver Crescent, Hawick",
+   "guestyTitle": "Contractor, Business-Friendly 2BR in Hawick, Free Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-2-east-shore": {
+   "property": "2 East Shore",
+   "guestyTitle": "Beachfront 2BR, Pease Bay, Sea View, Pets, Parking",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-2-gullane": {
+   "property": "2 Gullane",
+   "guestyTitle": "Seton Sands Gullane Luxe Lodge 3BR Sleeps 8 | WiFi",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-2-kingsbarns": {
+   "property": "2 Kingsbarns",
+   "guestyTitle": "Luxury at Seton Sands | Beach Access | Starlink",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-2-muirfield": {
+   "property": "2 Muirfield",
+   "guestyTitle": "Seton Sands 3BR Premium Caravan - Near Edinburgh",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-20-belfry": {
+   "property": "20 Belfry",
+   "guestyTitle": "25 mins to Edinburgh Nr Beach & Pool Free Parking",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-21-ann-st-stonehaven": {
+   "property": "21 Ann St Stonehaven",
+   "guestyTitle": "Premium 2Beds Sleeps4, very short walk to the Beach with Free Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-21-preston-crescent": {
+   "property": "21 Preston Crescent",
+   "guestyTitle": "Coastal 2BR, Free Parking, Edinburgh 25 Min",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-21-troon": {
+   "property": "21 Troon",
+   "guestyTitle": "2BR Coastal Holiday Home, Sleeps 6, Seton Sands, Parking",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-22-aberlady": {
+   "property": "22 Aberlady",
+   "guestyTitle": "3BR Premium Caravan | Near Edinburgh |Parking|WiFi",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-22-mayfield-gardens": {
+   "property": "22 Mayfield Gardens",
+   "guestyTitle": "Spacious Aberdeen Home- Dedicated Workspace-Wi-Fi",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-22-new-street": {
+   "property": "22 New Street",
+   "guestyTitle": "Near Train & City- Paisley-8 mins Glasgow Airport",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-23-kingsbarn": {
+   "property": "23 Kingsbarn",
+   "guestyTitle": "2BR Luxury Caravan - Seton Sands Kingsbarns Retreat - Sleeps 6",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-26-forth-view": {
+   "property": "26 Forth View",
+   "guestyTitle": "Seaside Caravan Nr Edinburgh Seton Sands Family Fun",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-26-victoria-park-peebles": {
+   "property": "26 Victoria Park,Peebles",
+   "guestyTitle": "3BR Peebles, Glentress, Free Parking, Walk to Town",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-292-hardgate": {
+   "property": "292 Hardgate",
+   "guestyTitle": "Stylish 2BR -Free Parking -Near Shops and Cafes",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-3-carnoustie-drive": {
+   "property": "3 Carnoustie Drive",
+   "guestyTitle": "Carnoustie Shores - 3Beds Luxury Coastal Lodge Sleeps 8",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-30-aberlady": {
+   "property": "30 Aberlady",
+   "guestyTitle": "Near Edinburgh - Seton Sands 3BR Spacious Caravan",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-31-engine-rd": {
+   "property": "31 Engine Rd",
+   "guestyTitle": "Ground Floor 2BR for 4, Parking, Edinburgh 25 Min",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-32-silver-birch-mews-thurston-manor": {
+   "property": "32 Silver Birch Mews Thurston Manor",
+   "guestyTitle": "Spacious Thurston Manor Caravan | Sleeps 8 | Nr Beach & Power Station",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-33-aberlady": {
+   "property": "33 Aberlady",
+   "guestyTitle": "25min to Edinburgh - Parking - Wi-Fi - Seton Sands",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-33-forth-view-tranent": {
+   "property": "33 Forth View Tranent",
+   "guestyTitle": "Hot Tub,Parking,Nr Edinburgh,Contractor Stay,4BED",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-36-auld-coal-road": {
+   "property": "36 Auld coal road",
+   "guestyTitle": "3BR Parking Nr Dalhousie Castle &Edinburgh Airport",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-36-bankhead-crescent": {
+   "property": "36 Bankhead Crescent",
+   "guestyTitle": "Parking - Wi-Fi -Near Falkirk & Stirling -Sleeps 6",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-398-st-vincent-street": {
+   "property": "398 St Vincent Street",
+   "guestyTitle": "Glasgow City Centre, Nr Central Station, Private Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-4-buchan-braes": {
+   "property": "4 Buchan Braes",
+   "guestyTitle": "Spacious 2BR Ground Floor Sleeps 5 Near Peterhead Harbour FREE Parking Fast WiFi",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-42-park-ave-coxhoe": {
+   "property": "42 Park Ave, Coxhoe",
+   "guestyTitle": "Nr Durham - Free Parking- 2BR Home- Wi-Fi-Sleeps 5",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-43-main-st": {
+   "property": "43 Main St",
+   "guestyTitle": "Spacious 2BR- Parking- Nr Fife Coast & Leven Beach",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-44b-stevenson-drive": {
+   "property": "44B Stevenson Drive",
+   "guestyTitle": "7 Min to City, Free Parking -Nr Airport- Sleeps 10",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-45c-hawick": {
+   "property": "45C Hawick",
+   "guestyTitle": "Central Hawick Flat, Sleeps 13, Families & Work",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-49-curror-street-selkirk": {
+   "property": "49 Curror Street Selkirk",
+   "guestyTitle": "1BR Selkirk Town Centre Flat, Parking, Sleeps 4",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-4d-commissioner-st": {
+   "property": "4D Commissioner St",
+   "guestyTitle": "3BR Free Parking Near Hopetoun & Edinburgh Airport",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-5-drummond-street": {
+   "property": "5 Drummond Street",
+   "guestyTitle": "Central Edinburgh Apt, Old Town, 3 Min Royal Mile",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-51-macadam-street": {
+   "property": "51 Macadam Street",
+   "guestyTitle": "3BR Gateshead Stay-Parking-Nr Newcastle &Quayside",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-55-aberlady": {
+   "property": "55 Aberlady",
+   "guestyTitle": "Starlink Wi-Fi - Near Pool & Beach - 3BR Seton Sands",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-56-syme-place": {
+   "property": "56 Syme Place",
+   "guestyTitle": "Fife Coast Stay with Parking & Garden in Rosyth - WiFi",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-58-anchor-bay-peasebay": {
+   "property": "58 Anchor Bay - PeaseBay",
+   "guestyTitle": "Beachfront Family Escape, Pease Bay 3BR, Sleeps 7",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-63-trondheim": {
+   "property": "63 Trondheim",
+   "guestyTitle": "Nr Edinburgh/Rosyth Dockyard Stylish Home Sleeps 6",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-64-ponymeadows": {
+   "property": "64 Ponymeadows",
+   "guestyTitle": "Thurston Manor Caravan - Sleeps 6 - Nr Power Station",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-66-henderson-cres-b": {
+   "property": "66 Henderson Cres, B",
+   "guestyTitle": "NR Edinburgh Airport & City Modern Home-Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-67-strawberrybank": {
+   "property": "67 strawberrybank",
+   "guestyTitle": "Stylish 2BR-Near Union Square &Train Station-Wi-Fi - Central Location",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-67-surrey-crescent-consett": {
+   "property": "67 Surrey Crescent, Consett",
+   "guestyTitle": "Pet Friendly Home for 6, Parking, Contractors",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-69-grampian-road": {
+   "property": "69 Grampian Road",
+   "guestyTitle": "Aberdeen Home w/ Parking Near Centre, Harbour & Airport - Fast WiFi",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-69-st-andrews": {
+   "property": "69 St Andrews",
+   "guestyTitle": "Nr Beach-30 Mins to Edinburgh-3BR Coastal Caravan",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-7-roxburgh-court": {
+   "property": "7 Roxburgh Court",
+   "guestyTitle": "Super Prime Holiday Home- AirCon - Parking - Near Edinburgh",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-72-balcarres-street": {
+   "property": "72 Balcarres Street",
+   "guestyTitle": "Morningside 2BR, Direct Bus to Old Town Edinburgh",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-72-sea-road": {
+   "property": "72 Sea Road",
+   "guestyTitle": "Walk to Seaburn Beach - Sleeps 6 - Coastal Stay",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-74-kidd-street": {
+   "property": "74 Kidd Street",
+   "guestyTitle": "Near Beach 2BR Ground Floor Flat-Free Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-79-broad-street": {
+   "property": "79 Broad Street",
+   "guestyTitle": "Parking Aberdeenshire Retreat Central Peterhead",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-8-breadalbane-terrac": {
+   "property": "8 Breadalbane Terrac",
+   "guestyTitle": "Central Edinburgh Near Haymarket Parking,Wi-Fi",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-8-stonebank": {
+   "property": "8 Stonebank",
+   "guestyTitle": "Contractor & Family Friendly House - Sleeps 8 - FREE Parking and Fast Wi-Fi",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-86-cockenzie": {
+   "property": "86 Cockenzie",
+   "guestyTitle": "Stylish Apt Near Golf, Beach, Wi-Fi & Free Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-89-greengate-street": {
+   "property": "89 Greengate Street",
+   "guestyTitle": "10 Mins BAE Systems -Contractor Stay -Free Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-89c-urquhart": {
+   "property": "89C Urquhart",
+   "guestyTitle": "Offshore Contractor 1BR University Area with Fast Wi-Fi and free parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-8e-grove-park": {
+   "property": "8E Grove Park",
+   "guestyTitle": "Glasgow West End 2BR, Free Parking, Subway 8 Min",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-9-gullane": {
+   "property": "9 Gullane",
+   "guestyTitle": "Luxury Beachside Stay Near Edinburgh with FREE Parking & Wi-Fi",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-9-kingsbarns": {
+   "property": "9 Kingsbarns",
+   "guestyTitle": "3BR Luxe Coastal Holiday Home - Sleeps 8- Seabreeze",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-9-murano-place": {
+   "property": "9 Murano Place",
+   "guestyTitle": "Edinburgh Stay | Near City Centre | Free Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-9-princes-street": {
+   "property": "9 Princes Street",
+   "guestyTitle": "2BR in Central Hawick, Work Trips, Borders Getaways",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-93-10-liberton-gardens": {
+   "property": "93/10 Liberton Gardens",
+   "guestyTitle": "Liberton 2BR for 5, Parking, Easy Edinburgh Access",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-98-st-andrews": {
+   "property": "98 St Andrews",
+   "guestyTitle": "Seton Sands 3Beds Caravan with fast WiFi and Free Parking",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-flat-1-drumlanrig-square-hawick": {
+   "property": "Flat 1 - Drumlanrig Square Hawick",
+   "guestyTitle": "Spacious 3BR Hawick Apartment, Sleeps 6, Parking",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-flat-3-brougham-place-hawick": {
+   "property": "Flat 3 Brougham Place, Hawick",
+   "guestyTitle": "Contractor Friendly Hawick Apt, Parking, Sleeps 5",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-lodge-cottage-craigesk": {
+   "property": "Lodge Cottage @ Craigesk",
+   "guestyTitle": "Luxe 2BR Cottage Near Edinburgh with Hot Tub - Sleeps 6 - Free Parking - Wi-Fi",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-1-fircroft-dunoon": {
+   "property": "1 Fircroft - Dunoon",
+   "guestyTitle": "UPCOMING - Spacious Lodge w/ Sea Views - Hunters Quay - Garden",
+   "type": "Caravan / lodge",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-1-school-street": {
+   "property": "1 School Street",
+   "guestyTitle": "UPCOMING",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-1-walled-garden-thurston": {
+   "property": "1 Walled Garden Thurston",
+   "guestyTitle": "UPCOMING - Thurston Manor Caravan - Sleeps 6 - Nr Power Station",
+   "type": "Caravan / lodge",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-11-eaglecroft-dunoon": {
+   "property": "11 Eaglecroft -Dunoon",
+   "guestyTitle": "UPCOMING - Free Parking - Hunters Quay 3 Bed Lodge - Coastal",
+   "type": "Caravan / lodge",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-12-mallard-walk": {
+   "property": "12 Mallard Walk",
+   "guestyTitle": "",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-14-heathercroft-dunoon": {
+   "property": "14 Heathercroft-Dunoon",
+   "guestyTitle": "UPCOMING - Hot Tub - Hunters Quay 3BR Lodge -Free Parking",
+   "type": "Caravan / lodge",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-15f-fraser-place-aberdeen": {
+   "property": "15F Fraser Place, Aberdeen",
+   "guestyTitle": "UPCOMING -",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-2-moray-court": {
+   "property": "2 Moray Court",
+   "guestyTitle": "2 Bed 2 Bath Coastal Holiday Lodge Nr Edinburgh - Parking",
+   "type": "Caravan / lodge",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-20-dumbiedykes-road": {
+   "property": "20 DUMBIEDYKES ROAD",
+   "guestyTitle": "UPCOMING -",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-33a-commercial-street-dundee-dd1-3dg": {
+   "property": "33a Commercial Street, Dundee, DD1 3DG",
+   "guestyTitle": "",
+   "type": "",
+   "stage": "signed",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "Added to the unit sheet by hand, not in Guesty yet. Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-35-maxwell-street-girvan-ka26-9ej": {
+   "property": "35 Maxwell Street, Girvan, KA26 9EJ",
+   "guestyTitle": "",
+   "type": "",
+   "stage": "signed",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "Added to the unit sheet by hand, not in Guesty yet. Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-6-st-andrews-walk": {
+   "property": "6 St Andrews walk",
+   "guestyTitle": "UPCOMING",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-6c-cairns-rd": {
+   "property": "6C Cairns Rd",
+   "guestyTitle": "UPCOMING - Akif",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-89-clark-st": {
+   "property": "89 Clark St",
+   "guestyTitle": "UPCOMING -",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-9-caledonian-place": {
+   "property": "9 Caledonian Place",
+   "guestyTitle": "",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-9-royal-musselburgh-court": {
+   "property": "9 Royal Musselburgh Court",
+   "guestyTitle": "",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-flat-5-5-ayr-street": {
+   "property": "Flat 5, 5 Ayr Street",
+   "guestyTitle": "UPCOMING - TROON",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-hampden-way": {
+   "property": "Hampden Way",
+   "guestyTitle": "UPCOMING - Akif",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-the-grange-7-heriot-house-heriot-eh38-5yb": {
+   "property": "The Grange, 7 Heriot House, Heriot, EH38 5YB",
+   "guestyTitle": "",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-49-fowlers-court": {
+   "property": "49 Fowlers Court",
+   "guestyTitle": "Coastal Comfort-3 Bed-Dedicated Free Parking -WiFi",
+   "type": "",
+   "stage": "live",
+   "source": "unit sheet",
+   "check": false,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "no",
+    "quotes": []
+   },
+   "notes": "",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as Live"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-14-shiel-hall-loan-rosewell": {
+   "property": "14 shiel hall loan, Rosewell",
+   "guestyTitle": "UPCOMING",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
+  },
+  "u-8-cairncatto-road-ab42-1nw": {
+   "property": "8 Cairncatto Road AB42 1NW",
+   "guestyTitle": "UPCOMING -",
+   "type": "",
+   "stage": "listing",
+   "source": "unit sheet",
+   "check": true,
+   "owner": {
+    "name": "",
+    "email": "",
+    "phone": ""
+   },
+   "assignee": "",
+   "next": {
+    "what": "",
+    "date": ""
+   },
+   "furnishing": {
+    "status": "",
+    "quotes": []
+   },
+   "notes": "UPCOMING listing in Guesty (unit sheet, 28 Oct). Check the stage.",
+   "log": [
+    {
+     "at": "2026-11-05T21:30:00Z",
+     "by": "Claude",
+     "what": "Imported from the unit count sheet as pipeline"
+    }
+   ],
+   "created": "2026-11-05T21:30:00Z",
+   "by": "Claude"
   }
  }
 }
