@@ -240,26 +240,29 @@ document.addEventListener("click",async e=>{
     try{const r=await fetch(location.pathname+"?k="+encodeURIComponent(KEY),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({listing:id,done:nd,by:new URLSearchParams(location.search).get("by")||"Yasin"})});const j=await r.json();if(j.ok){PROG=j.progress;render()}else throw 0}
     catch(_){t.disabled=false;alert("Couldn't save. Check your signal and try again.")}}
 });
-function hm(t){const [h,m]=t.split(":").map(Number);const d=new Date();d.setHours(h,m,0,0);return d}
+// All plan times are UK time, whatever the phone's clock is set to.
+function ukNow(){const p=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).formatToParts(new Date()).map(x=>[x.type,x.value]));return {date:p.year+"-"+p.month+"-"+p.day,mins:(+p.hour%24)*60+(+p.minute)+(+p.second)/60}}
+function hm(t){const [h,m]=t.split(":").map(Number);return h*60+m}
+function durm(m){m=Math.round(Math.abs(m));return m>=60?Math.floor(m/60)+"h "+(m%60)+"m":m+" min"}
 function dur(ms){const m=Math.round(Math.abs(ms)/6e4);return m>=60?Math.floor(m/60)+"h "+(m%60)+"m":m+" min"}
 function renderPlan(){const el=document.getElementById("plan");if(!PLAN||!PLAN.stops||!PLAN.stops.length){el.hidden=true;return}
-  const now=new Date(),isToday=PLAN.date===iso(now);el.hidden=false;
+  const U=ukNow(),now=U.mins,isToday=PLAN.date===U.date;el.hidden=false;
   const byId=Object.fromEntries(L.map(l=>[l.id,l]));const pi=idx(new Date(PLAN.date+"T12:00:00"));
   let curShown=false;
-  const rows=PLAN.stops.map((x,k)=>{const l=byId[x.id];if(!l)return"";const w=win(l,pi);const st=hm(x.at),en=new Date(st.getTime()+x.mins*6e4);
-    const dl=w==="am"?hm("14:00"):null,from=w==="pm"?hm("12:00"):null;const d=done(l.id);
+  const rows=PLAN.stops.map((x,k)=>{const l=byId[x.id];if(!l)return"";const w=win(l,pi);const st=hm(x.at),en=st+x.mins;
+    const dl=w==="am"?hm("14:00"):null;const d=done(l.id);
     let cls="stop",tm="";
     if(d){cls+=" past ok";tm="Done ✓"}
     else if(!isToday){tm=x.mins+" min"}
-    else if(now<st){tm=`<span>Starts in ${dur(st-now)}</span>`}
-    else if(now<en){cls+=" now";tm=`<span class="nowtx">Now · ${dur(en-now)} left</span>`}
-    else{cls+=" past";tm=`<span class="late">${dur(now-en)} behind</span>`}
-    if(!d&&isToday&&dl){const left=dl-now;tm+=`<br><span class="${left<36e5?"late":"soon"}">${left>0?"Be out in "+dur(left):"Guest due, don't go in"}</span>`}
+    else if(now<st){tm=`<span>Starts in ${durm(st-now)}</span>`}
+    else if(now<en){cls+=" now";tm=`<span class="nowtx">Now · ${durm(en-now)} left</span>`}
+    else{cls+=" past";tm=`<span class="late">${durm(now-en)} behind</span>`}
+    if(!d&&isToday&&dl){const left=dl-now;tm+=`<br><span class="${left<60?"late":"soon"}">${left>0?"Be out in "+durm(left):"Guest due, don't go in"}</span>`}
     const c=cleanOf?(CLEAN&&CLEAN[l.id]&&CLEAN[l.id][PLAN.date]):null;
     const note=[w==="am"?"Be out by 2pm, guest arrives 3pm":w==="pm"?"Not before 12 noon":"Empty all day",c?(c.s==="clean"?"Cleaned":"Not cleaned yet"):"Clean not confirmed",x.note].filter(Boolean).join(" · ");
     return `<div class="${cls}"><div class="tm">${esc(x.at)}</div><div class="nm2">${k+1}. ${esc(l.name)}<small>${esc(l.area)} · ${esc(note)}</small></div><div class="tmr">${tm}</div></div>`}).join("");
-  const last=PLAN.stops[PLAN.stops.length-1];const fin=last?new Date(hm(last.at).getTime()+last.mins*6e4):null;
-  el.innerHTML=`<h2 id="planh" style="margin-bottom:4px">Today's plan</h2><p class="sub" style="margin:0 0 10px">${fmt(new Date(PLAN.date+"T12:00:00"),true)} · go in this order${fin?` · finish around ${String(fin.getHours()).padStart(2,"0")}:${String(fin.getMinutes()).padStart(2,"0")}`:""}. Ask the team for codes.</p><div class="plan">${rows}</div>`}
+  const last=PLAN.stops[PLAN.stops.length-1];const fm=last?hm(last.at)+last.mins:null;
+  el.innerHTML=`<h2 id="planh" style="margin-bottom:4px">Today's plan</h2><p class="sub" style="margin:0 0 10px">${fmt(new Date(PLAN.date+"T12:00:00"),true)} · go in this order${fm!==null?` · finish around ${String(Math.floor(fm/60)).padStart(2,"0")}:${String(fm%60).padStart(2,"0")}`:""}. Times are UK time. Ask the team for codes.</p><div class="plan">${rows}</div>`}
 const _render=render;render=function(){_render();renderPlan()};
 setInterval(renderPlan,30000);
 render();
