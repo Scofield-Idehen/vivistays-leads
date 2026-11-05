@@ -52,7 +52,7 @@ if ($ok && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $stops = [];
         foreach ($pl['stops'] as $x) {
             if (!preg_match('/^[A-Za-z0-9]{6,40}$/', (string)($x['id'] ?? '')) || !preg_match('/^\d{2}:\d{2}$/', (string)($x['at'] ?? ''))) continue;
-            $stops[] = ['id' => $x['id'], 'at' => $x['at'], 'mins' => max(10, min(120, (int)($x['mins'] ?? 30))), 'note' => substr((string)($x['note'] ?? ''), 0, 120)];
+            $stops[] = ['id' => $x['id'], 'at' => $x['at'], 'mins' => max(10, min(120, (int)($x['mins'] ?? 30))), 'note' => substr((string)($x['note'] ?? ''), 0, 120), 'code' => substr((string)($x['code'] ?? ''), 0, 80)];
         }
         $plan = ['date' => $day, 'stops' => $stops, 'at' => gmdate('c')];
         $db->prepare("INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES ('shoot', 'plan', ?, ?)")->execute([json_encode($plan, JSON_UNESCAPED_UNICODE), gmdate('c')]);
@@ -149,6 +149,7 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 .stop .nm2{font-weight:600}.stop .nm2 small{display:block;font-weight:400;color:var(--muted);font-size:13px}
 .stop .tmr{font-size:13px;font-weight:700;white-space:nowrap;text-align:right}
 .stop.now{border-color:var(--gold);background:var(--goldbg)}.stop.past{opacity:.55}.stop.ok .tm{color:var(--all)}
+.code2{display:inline-block;margin-top:4px;font-weight:700;color:var(--ink);background:var(--goldbg);border-radius:8px;padding:3px 8px;font-size:14px}
 .late{color:var(--warn)}.soon{color:var(--am)}.nowtx{color:var(--gold)}
 .empty{color:var(--muted);text-align:center;padding:20px}
 .foot{font-size:13px;color:var(--muted)}
@@ -260,9 +261,9 @@ function renderPlan(){const el=document.getElementById("plan");if(!PLAN||!PLAN.s
     if(!d&&isToday&&dl){const left=dl-now;tm+=`<br><span class="${left<60?"late":"soon"}">${left>0?"Be out in "+durm(left):"Guest due, don't go in"}</span>`}
     const c=cleanOf?(CLEAN&&CLEAN[l.id]&&CLEAN[l.id][PLAN.date]):null;
     const note=[w==="am"?"Be out by 2pm, guest arrives 3pm":w==="pm"?"Not before 12 noon":"Empty all day",c?(c.s==="clean"?"Cleaned":"Not cleaned yet"):"Clean not confirmed",x.note].filter(Boolean).join(" · ");
-    return `<div class="${cls}"><div class="tm">${esc(x.at)}</div><div class="nm2">${k+1}. ${esc(l.name)}<small>${esc(l.area)} · ${esc(note)}</small></div><div class="tmr">${tm}</div></div>`}).join("");
+    return `<div class="${cls}"><div class="tm">${esc(x.at)}</div><div class="nm2">${k+1}. ${esc(l.name)}<small>${esc(l.area)} · ${esc(note)}</small>${x.code&&isToday&&!d?`<span class="code2">Code: ${esc(x.code)}</span>`:""}</div><div class="tmr">${tm}</div></div>`}).join("");
   const last=PLAN.stops[PLAN.stops.length-1];const fm=last?hm(last.at)+last.mins:null;
-  el.innerHTML=`<h2 id="planh" style="margin-bottom:4px">Today's plan</h2><p class="sub" style="margin:0 0 10px">${fmt(new Date(PLAN.date+"T12:00:00"),true)} · go in this order${fm!==null?` · finish around ${String(Math.floor(fm/60)).padStart(2,"0")}:${String(fm%60).padStart(2,"0")}`:""}. Times are UK time. Ask the team for codes.</p><div class="plan">${rows}</div>`}
+  el.innerHTML=`<h2 id="planh" style="margin-bottom:4px">Today's plan</h2><p class="sub" style="margin:0 0 10px">${fmt(new Date(PLAN.date+"T12:00:00"),true)} · go in this order${fm!==null?` · finish around ${String(Math.floor(fm/60)).padStart(2,"0")}:${String(fm%60).padStart(2,"0")}`:""}. Times are UK time. Codes only show on the day. Please don't share them.</p><div class="plan">${rows}</div>`}
 const _render=render;render=function(){_render();renderPlan()};
 setInterval(renderPlan,30000);
 render();
