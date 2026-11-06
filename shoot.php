@@ -79,8 +79,13 @@ if ($ok && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($in['done'])) $p[$lid] = ['done' => true, 'at' => gmdate('c'), 'by' => substr(preg_replace('/[^\w .\-]/u', '', (string)($in['by'] ?? 'Yasin')), 0, 30)];
     else unset($p[$lid]);
     $db->prepare("INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES ('shoot', 'progress', ?, ?)")->execute([json_encode($p ?: new stdClass(), JSON_UNESCAPED_UNICODE), gmdate('c')]);
+    // History of every tick and untick, so the team can see what was done when.
+    $lg = $get('log') ?: [];
+    $lg[] = ['id' => $lid, 'done' => !empty($in['done']), 'at' => gmdate('c'), 'by' => substr(preg_replace('/[^\w .\-]/u', '', (string)($in['by'] ?? 'Yasin')), 0, 30)];
+    $lg = array_slice($lg, -500);
+    $db->prepare("INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES ('shoot', 'log', ?, ?)")->execute([json_encode($lg, JSON_UNESCAPED_UNICODE), gmdate('c')]);
     $db->commit();
-    echo json_encode(['ok' => true, 'progress' => $p ?: new stdClass()]);
+    echo json_encode(['ok' => true, 'progress' => $p ?: new stdClass(), 'log' => $lg]);
     exit;
 }
 
@@ -93,6 +98,7 @@ if (!$ok) {
 $cal = $get('calendar') ?: ['listings' => []];
 $prog = $get('progress') ?: new stdClass();
 $clean = $get('clean') ?: new stdClass();
+$slog = $get('log') ?: [];
 $plan = $get('plan') ?: null;
 $embed = !empty($_GET['embed']);
 ?><!doctype html>
@@ -151,6 +157,17 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 .stop.now{border-color:var(--gold);background:var(--goldbg)}.stop.past{opacity:.55}.stop.ok .tm{color:var(--all)}
 .code2{display:inline-block;margin-top:4px;font-weight:700;color:var(--ink);background:var(--goldbg);border-radius:8px;padding:3px 8px;font-size:14px}
 .late{color:var(--warn)}.soon{color:var(--am)}.nowtx{color:var(--gold)}
+.rep{display:grid;gap:14px;margin-top:6px}
+.rep details{border-top:1px solid var(--line);padding-top:10px}
+.rep summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.rep summary::-webkit-details-marker{display:none}.rep summary::after{content:"Show";font-weight:600;color:var(--gold);font-size:14px}.rep details[open] summary::after{content:"Hide"}
+.rep h4{margin:12px 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.rep ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.rep li{display:flex;gap:10px;font-size:15px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.rep li:last-child{border-bottom:0}
+.rep li .t{min-width:48px;font-variant-numeric:tabular-nums;font-weight:700}
+.rep li .w{margin-left:auto;color:var(--muted);font-size:13px;text-align:right}
+.rep .undo{color:var(--warn)}
 .empty{color:var(--muted);text-align:center;padding:20px}
 .foot{font-size:13px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -160,7 +177,7 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 <?php endif; ?>
 <div id="sync" class="sync"></div>
 <section id="plan" class="card" aria-labelledby="planh" hidden></section>
-<section class="card prog" aria-label="Progress"><div id="progtxt"></div><div class="bar"><i id="progbar" style="width:0"></i></div></section>
+<section class="card prog" aria-label="Progress"><div id="progtxt"></div><div class="bar"><i id="progbar" style="width:0"></i></div><div id="report"></div></section>
 <section class="best" aria-labelledby="bh"><h2 id="bh">Best days to go</h2><div id="best"></div></section>
 <section aria-labelledby="ph"><h2 id="ph" style="margin-bottom:10px">Pick a day</h2><div class="days" id="days" role="group" aria-label="Days"></div></section>
 <section id="list" aria-live="polite"></section>
@@ -176,6 +193,7 @@ h2{font:700 19px/1.2 Georgia,serif;margin:0}
 <script>
 const CAL=<?= json_encode($cal, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 let PROG=<?= json_encode($prog, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+let LOG=<?= json_encode($slog, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 let CLEAN=<?= json_encode($clean, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 const PLAN=<?= json_encode($plan, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 const BY=new URLSearchParams(location.search).get("by")||"Yasin";
@@ -202,6 +220,7 @@ function render(){
   const nd=L.length-todo.length;
   document.getElementById("progtxt").innerHTML=`<b>${nd} of ${L.length} caravans done</b>`+(todo.length?` · ${todo.length} still to shoot`:` · all done`);
   document.getElementById("progbar").style.width=(L.length?nd/L.length*100:0)+"%";
+  renderReport(todo);
   // sync note
   const s=document.getElementById("sync");
   if(CAL.syncedAt){const mins=Math.round((Date.now()-new Date(CAL.syncedAt))/6e4);const t=mins<60?mins+" min ago":mins<1440?Math.round(mins/60)+" hours ago":Math.round(mins/1440)+" days ago";
@@ -225,6 +244,27 @@ function render(){
   if(dn.length)h+=`<div class="park"><h3>Already done</h3>`+dn.map(l=>row(l,null)).join("")+`</div>`;
   document.getElementById("list").innerHTML=h;
 }
+// What's been done (by day, with UK times) and what's left (with each caravan's next free window).
+function ukParts(at){const p=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date(at)).map(x=>[x.type,x.value]));return {day:p.year+"-"+p.month+"-"+p.day,tm:(p.hour%24).toString().padStart(2,"0")+":"+p.minute}}
+function dayName(ymd){const d=new Date(ymd+"T12:00:00");const t=ukNow().date;return ymd===t?"Today":(new Date(t+"T12:00:00")-d===864e5?"Yesterday":fmt(d,true))}
+function renderReport(todo){
+  const nm=Object.fromEntries(L.map(l=>[l.id,l.name]));
+  const dn=L.filter(l=>done(l.id)).map(l=>({l,at:PROG[l.id].at,by:PROG[l.id].by})).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  const groups={};for(const x of dn){const k=x.at?ukParts(x.at).day:"Earlier";(groups[k]=groups[k]||[]).push(x)}
+  const doneHtml=dn.length?Object.keys(groups).sort().reverse().map(k=>`<h4>${k==="Earlier"?"Earlier":dayName(k)} · ${groups[k].length}</h4><ul>`+groups[k].slice().reverse().map(x=>`<li><span class="t">${x.at?ukParts(x.at).tm:""}</span><span>${esc(x.l.name)}</span><span class="w">${esc(x.l.area||"")}${x.by&&x.by!=="Yasin"?" · ticked by "+esc(x.by):""}</span></li>`).join("")+`</ul>`).join(""):'<p class="empty" style="padding:8px">Nothing ticked off yet.</p>';
+  const ti=idx(today);
+  const nextFree=l=>{for(let i=Math.max(0,ti);i<(l.n||"").length;i++){const w=win(l,i);if(w)return {i,w}}return null};
+  const left=todo.map(l=>({l,nf:nextFree(l)})).sort((a,b)=>(a.nf?a.nf.i:1e9)-(b.nf?b.nf.i:1e9)||a.l.name.localeCompare(b.l.name,undefined,{numeric:true}));
+  const leftHtml=left.length?`<ul>`+left.map(x=>`<li><span>${esc(x.l.name)}</span><span class="w">${esc(x.l.area||"")} · ${x.nf?"next free "+(x.nf.i===ti?"today":fmt(dateAt(x.nf.i)))+" ("+LAB[x.nf.w].toLowerCase()+")":"not free in the next few weeks"}</span></li>`).join("")+`</ul>`:'<p class="empty" style="padding:8px">All done.</p>';
+  const recent=(LOG||[]).slice(-15).reverse();
+  const logHtml=recent.length?`<ul>`+recent.map(e=>{const p=ukParts(e.at);return `<li class="${e.done?"":"undo"}"><span class="t">${p.tm}</span><span>${e.done?"Done":"Unticked"}: ${esc(nm[e.id]||"a caravan")}</span><span class="w">${dayName(p.day)} · ${esc(e.by||"")}</span></li>`}).join("")+`</ul>`:"";
+  // today's plan progress
+  let planLine="";if(PLAN&&PLAN.stops&&PLAN.stops.length&&PLAN.date===ukNow().date){const pd=PLAN.stops.filter(s=>done(s.id)).length;planLine=`<div>Today's plan: <b>${pd} of ${PLAN.stops.length}</b> done</div>`}
+  document.getElementById("report").innerHTML=`<div class="rep">${planLine}
+    <details${TEAM?" open":""}><summary>Done (${dn.length})</summary>${doneHtml}</details>
+    <details${TEAM?" open":""}><summary>Still to shoot (${left.length})</summary>${leftHtml}</details>
+    ${logHtml?`<details><summary>Recent activity</summary>${logHtml}</details>`:""}</div>`;
+}
 function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function cleanOf(id){const c=CLEAN&&CLEAN[id]&&CLEAN[id][iso(dateAt(sel))];return c||null}
 function row(l,w){const d=done(l.id);const by=d&&PROG[l.id].at?` <small>Done ${fmt(new Date(PROG[l.id].at))}</small>`:"";
@@ -238,7 +278,7 @@ document.addEventListener("click",async e=>{
     try{const r=await fetch(location.pathname+"?k="+encodeURIComponent(KEY),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({listing:id,clean:v,date:iso(dateAt(sel)),by:BY})});const j=await r.json();if(j.ok){CLEAN=j.clean;render()}else throw 0}
     catch(_){cb.disabled=false;alert("Couldn't save. Check your signal and try again.")}return}
   const t=e.target.closest(".tick");if(t){const id=t.dataset.id,nd=!done(id);t.disabled=true;
-    try{const r=await fetch(location.pathname+"?k="+encodeURIComponent(KEY),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({listing:id,done:nd,by:new URLSearchParams(location.search).get("by")||"Yasin"})});const j=await r.json();if(j.ok){PROG=j.progress;render()}else throw 0}
+    try{const r=await fetch(location.pathname+"?k="+encodeURIComponent(KEY),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({listing:id,done:nd,by:new URLSearchParams(location.search).get("by")||"Yasin"})});const j=await r.json();if(j.ok){PROG=j.progress;if(j.log)LOG=j.log;render()}else throw 0}
     catch(_){t.disabled=false;alert("Couldn't save. Check your signal and try again.")}}
 });
 // All plan times are UK time, whatever the phone's clock is set to.
