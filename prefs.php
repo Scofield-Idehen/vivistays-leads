@@ -231,6 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Guests are already booked: we never ask them for booking details. If the link came without a code, keep the answers under a generated id.
         if (!pref_code_ok($val['c'])) $val['c'] = 'NOCODE-' . strtoupper(bin2hex(random_bytes(3)));
         if (mb_strlen((string)($_POST['notes'] ?? '')) > 500) $errors[] = 'Please keep the note to 500 characters.';
+        if ($val['g'] === '') $errors[] = 'Please add your name so the team knows whose stay this is.';
         if (!$errors) {
             $id = strtoupper($val['c']);
             $old = pref_get($id);
@@ -312,7 +313,15 @@ ul.sum{margin:8px 0 0;padding-left:20px}
 <form method="post" class="wrap" style="padding:0" novalidate>
 <?php if ($errors): ?><div class="err" role="alert"><?php foreach ($errors as $e): ?><p><?= $h($e) ?></p><?php endforeach; ?></div><?php endif; ?>
 
-<?php foreach (['c', 'p', 'in', 'g'] as $k): if ($val[$k] !== ''): ?><input type="hidden" name="<?= $h($k) ?>" value="<?= $h($val[$k]) ?>"><?php endif; endforeach; ?>
+<?php foreach (['c', 'p', 'in', 'g'] as $k): if ($fromLink[$k] !== ''): ?><input type="hidden" name="<?= $h($k) ?>" value="<?= $h($val[$k]) ?>"><?php endif; endforeach; ?>
+
+<?php if ($fromLink['g'] === '' || $fromLink['in'] === '' || $fromLink['p'] === ''): ?>
+<section class="card" aria-labelledby="ah"><h2 id="ah">About your stay</h2>
+<?php if ($fromLink['g'] === ''): ?><label class="q" for="f-g"><span>Your name</span><input id="f-g" type="text" name="g" value="<?= $h($val['g']) ?>" autocomplete="name" maxlength="60" required></label><?php endif; ?>
+<?php if ($fromLink['p'] === ''): ?><label class="q" for="f-p"><span>Where you're staying</span><input id="f-p" type="text" name="p" value="<?= $h($val['p']) ?>" maxlength="120" placeholder="e.g. 20 Belfry, Seton Sands"></label><?php endif; ?>
+<?php if ($fromLink['in'] === ''): ?><label class="q" for="f-in"><span>Check-in date</span><input id="f-in" type="date" name="in" value="<?= $h(pref_date($val['in']) ?: '') ?>"></label><?php endif; ?>
+</section>
+<?php endif; ?>
 
 <section class="card" aria-labelledby="ph"><h2 id="ph">Your preferences</h2>
 <?php foreach ($fields as $k => $f): $v = $answers[$k] ?? ($f['default'] ?? ''); $id = 'f-' . $k; ?>
