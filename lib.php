@@ -118,6 +118,43 @@ function vl_slack_route_for($property) {
     }
     return $best;
 }
+// No route set up for a property: with the bot token, find the Slack channel named after it
+// (e.g. "1-baronet" for Baronet, "16-roxburgh-court" for 16 Roxburgh Court). Channel list cached for an hour.
+function vl_slack_channels($fresh = false) {
+    $f = __DIR__ . '/data/slack-channels.json';
+    $c = is_file($f) ? json_decode((string)@file_get_contents($f), true) : null;
+    if (!$fresh && is_array($c) && time() - (int)($c['at'] ?? 0) < 3600) return $c['list'] ?? [];
+    $list = []; $cursor = '';
+    for ($i = 0; $i < 10; $i++) {
+        $j = vl_slack_api('conversations.list', ['types' => 'public_channel,private_channel', 'exclude_archived' => true, 'limit' => 1000] + ($cursor ? ['cursor' => $cursor] : []));
+        if (empty($j['ok'])) { if (!$list && is_array($c)) return $c['list'] ?? []; break; }
+        foreach ($j['channels'] ?? [] as $ch) $list[] = ['id' => $ch['id'], 'name' => $ch['name'], 'member' => !empty($ch['is_member']), 'private' => !empty($ch['is_private'])];
+        $cursor = $j['response_metadata']['next_cursor'] ?? '';
+        if ($cursor === '') break;
+    }
+    if ($list) @file_put_contents($f, json_encode(['at' => time(), 'list' => $list]));
+    return $list;
+}
+function vl_slack_guess_channel($property) {
+    if (vl_slack_bot_token() === '' || trim((string)$property) === '') return null;
+    $split = function ($s) { $w = array_filter(explode(' ', vl_slack_norm(str_replace(['-', '_'], ' ', $s))), 'strlen'); $n = array_values(array_filter($w, 'ctype_digit')); return [array_values(array_diff($w, $n, ['the', 'flat', 'house', 'caravan', 'lodge', 'new'])), $n]; };
+    [$pw, $pn] = $split($property);
+    if (!$pw) return null;
+    $best = null; $bestScore = 0; $tie = false;
+    foreach (vl_slack_channels() as $ch) {
+        [$cw, $cn] = $split($ch['name']);
+        if (!$cw) continue;
+        $shared = count(array_intersect($pw, $cw));
+        // every word of the channel name must be in the property name, or the other way round
+        if (!$shared || ($shared < count($cw) && $shared < count($pw))) continue;
+        $nums = count(array_intersect($pn, $cn));
+        if ($pn && $cn && !$nums && count($cn) && count($pw) <= 2) continue; // "16 Roxburgh" must not land in "7-roxburgh"
+        $score = $shared * 3 + $nums * 2 - abs(count($cw) - count($pw));
+        if ($score > $bestScore) { $bestScore = $score; $best = $ch; $tie = false; }
+        elseif ($score === $bestScore) $tie = true; // two equally good channels: don't guess
+    }
+    return empty($tie) ? $best : null;
+}
 // Webhook for a property: its own channel, else the default channel, else ''.
 function vl_slack_url_for($property) {
     $r = vl_slack_route_for($property);
