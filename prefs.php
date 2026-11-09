@@ -17,20 +17,13 @@ if (!defined('VL_APP')) {
 // type: select | number | yesno | textarea.  default: the "nothing special" answer; answers equal to it
 // are left out of the Slack message.  always: always shown in Slack when answered.  short: Slack label.
 const PREF_FIELDS = [
-    'arrival'  => ['label' => 'Expected arrival time', 'short' => 'Arrival', 'type' => 'select', 'always' => true,
-                   'options' => ['15:00–16:00', '16:00–18:00', '18:00–20:00', 'After 20:00', 'Not sure yet']],
-    'guests'   => ['label' => 'Number of guests', 'short' => 'Guests', 'type' => 'number', 'always' => true, 'min' => 1, 'max' => 20],
     'bed'      => ['label' => 'Bed setup', 'short' => 'Beds', 'type' => 'select', 'default' => 'As listed',
-                   'options' => ['As listed', 'Twin beds instead of a double, if possible', 'Sofa bed made up'],
-                   'note' => 'Only where the property has these options.'],
+                   'options' => ['As listed', 'Super king bed', 'King bed', 'Single beds', 'Super king split into 2 single beds', 'Sofa bed made up'],
+                   'note' => 'Only where the property has these options. We can split a super king into 2 singles; double beds can\'t be split.'],
     'cot'      => ['label' => 'Cot needed', 'short' => 'Cot', 'type' => 'yesno', 'default' => 'No'],
     'highchair'=> ['label' => 'Highchair needed', 'short' => 'Highchair', 'type' => 'yesno', 'default' => 'No'],
-    'linen'    => ['label' => 'Extra towels / linen', 'short' => 'Extra towels/linen', 'type' => 'yesno', 'default' => 'No'],
     'dog'      => ['label' => 'Travelling with a dog', 'short' => 'Dog', 'type' => 'yesno', 'default' => 'No',
                    'note' => 'Only where the property is pet-friendly.'],
-    'earlylate'=> ['label' => 'Early check-in or late check-out', 'short' => 'Early/late', 'type' => 'select', 'default' => 'No',
-                   'options' => ['No', 'Early check-in', 'Late check-out', 'Both'],
-                   'note' => "Subject to availability, we'll confirm."],
     'notes'    => ['label' => 'Anything else the team should know?', 'short' => 'Note', 'type' => 'textarea', 'max' => 500,
                    'placeholder' => 'e.g. celebrating a birthday, arriving by train, allergies'],
 ];
@@ -97,7 +90,7 @@ function pref_answers($src, $fields) {
     }
     return $a;
 }
-// The answers worth telling the cleaners: arrival and guest count, plus anything not the default.
+// The answers worth telling the cleaners: anything not the default.
 function pref_lines($doc) {
     $out = [];
     foreach (pref_fields($doc['property'] ?? '') as $k => $f) {
@@ -109,7 +102,7 @@ function pref_lines($doc) {
 }
 function pref_slack_block($doc) {
     $t = 'Check-in: ' . vl_slack_esc(pref_nice_date($doc['checkin'] ?? '', $doc['checkinRaw'] ?? '') ?: 'not given')
-       . ' · Guest: ' . vl_slack_esc(($doc['guest'] ?? '') ?: 'not given') . ' · Code: ' . vl_slack_esc($doc['code'] ?? '');
+       . ' · Code: ' . vl_slack_esc($doc['code'] ?? '');
     $lines = pref_lines($doc);
     foreach ($lines as [$l, $v]) $t .= "\n• " . vl_slack_esc($l) . ': ' . vl_slack_esc(str_replace("\n", ' / ', $v));
     if (!$lines) $t .= "\n• No special requests";
@@ -179,7 +172,7 @@ function pref_digest($force = false) {
 }
 // The link to paste into Guesty. Placeholders are examples: use Guesty's own variable names.
 function pref_template($base) {
-    return rtrim($base, '/') . '/s?c={{confirmation_code}}&p={{listing_nickname}}&d={{check_in_date}}&g={{guest_first_name}}';
+    return rtrim($base, '/') . '/s?c={{confirmation_code}}&p={{listing_nickname}}&d={{check_in_date}}';
 }
 // Simple per-IP limit, kept in files under data/prefs-rate/ (IP is hashed, files older than a day removed).
 function pref_rate_ok() {
@@ -232,7 +225,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Guests are already booked: we never ask them for booking details. If the link came without a code, keep the answers under a generated id.
         if (!pref_code_ok($val['c'])) $val['c'] = 'NOCODE-' . strtoupper(bin2hex(random_bytes(3)));
         if (mb_strlen((string)($_POST['notes'] ?? '')) > 500) $errors[] = 'Please keep the note to 500 characters.';
-        if ($val['g'] === '') $errors[] = 'Please add your name so the team knows whose stay this is.';
         if (!$errors) {
             $id = strtoupper($val['c']);
             $old = pref_get($id);
@@ -308,7 +300,7 @@ ul.sum{margin:8px 0 0;padding-left:20px}
 <?php $lines = pref_lines(['property' => $val['p'], 'answers' => $answers]); if ($lines): ?>
 <ul class="sum"><?php foreach ($lines as [$l, $v]): ?><li><?= $h($l) ?>: <b><?= $h($v) ?></b></li><?php endforeach; ?></ul>
 <?php endif; ?>
-<p class="sub">Need to change something? <a href="<?= $h('s?' . http_build_query(array_filter($val, fn($v) => $v !== ''))) ?>">Send the form again</a> and we'll use your latest answers. Early check-in and late check-out are subject to availability; we'll confirm with you.</p>
+<p class="sub">Need to change something? <a href="<?= $h('s?' . http_build_query(array_filter($val, fn($v) => $v !== ''))) ?>">Send the form again</a> and we'll use your latest answers.</p>
 </section>
 <?php else: ?>
 <form method="post" class="wrap" style="padding:0" novalidate>
@@ -316,9 +308,8 @@ ul.sum{margin:8px 0 0;padding-left:20px}
 
 <?php foreach (['c', 'p', 'in', 'g'] as $k): if ($fromLink[$k] !== ''): ?><input type="hidden" name="<?= $h($k) ?>" value="<?= $h($val[$k]) ?>"><?php endif; endforeach; ?>
 
-<?php if ($fromLink['g'] === '' || $fromLink['in'] === '' || $fromLink['p'] === ''): ?>
+<?php if ($fromLink['in'] === '' || $fromLink['p'] === ''): ?>
 <section class="card" aria-labelledby="ah"><h2 id="ah">About your stay</h2>
-<?php if ($fromLink['g'] === ''): ?><label class="q" for="f-g"><span>Your name</span><input id="f-g" type="text" name="g" value="<?= $h($val['g']) ?>" autocomplete="name" maxlength="60" required></label><?php endif; ?>
 <?php if ($fromLink['p'] === ''): ?><label class="q" for="f-p"><span>Where you're staying</span><input id="f-p" type="text" name="p" value="<?= $h($val['p']) ?>" maxlength="120" placeholder="e.g. 20 Belfry, Seton Sands"></label><?php endif; ?>
 <?php if ($fromLink['in'] === ''): ?><label class="q" for="f-in"><span>Check-in date</span><input id="f-in" type="date" name="in" value="<?= $h(pref_date($val['in']) ?: '') ?>"></label><?php endif; ?>
 </section>

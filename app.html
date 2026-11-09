@@ -2664,7 +2664,7 @@ async function pfRoutes(body,okMsg){try{pfBusy="Saving…";render();const r=awai
 async function pfBot(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_bot",body);pfMeta.bot=r.bot;pfMeta.missing=r.missing||[];pfTok="";toast(okMsg+(r.team?" ("+r.team+")":"")+(r.missing&&r.missing.length?". Missing permissions: "+r.missing.join(", "):""))}catch(e){toast(e.message)}pfBusy="";render()}
 async function pfSettings(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_settings",body);pfMeta.slack=r.slack;pfHook="";toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
 function prefsView(){
-  const head=h("div",{},h("h1",{text:"Guest prefs"}),h("p",{class:"muted",text:"What guests asked for before arrival: arrival time, guests, cots, beds, dogs and notes. Each answer goes to the cleaners' Slack channel, plus a morning list of tomorrow's arrivals."}));
+  const head=h("div",{},h("h1",{text:"Guest prefs"}),h("p",{class:"muted",text:"What guests asked for before arrival: bed setup, cots, highchairs, dogs and notes. Each answer goes to the cleaners' Slack channel, plus a morning list of tomorrow's arrivals."}));
   if(!pfMeta){pfLoadMeta();return[head,h("div",{class:"card"},h("p",{text:"Loading…"}))]}
   const out=[head];
   if(pfBusy&&pfBusy!=="meta")out.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+pfBusy})));
@@ -2694,7 +2694,7 @@ function pfLinkCard(){
     h("p",{class:"muted small",text:"Paste this link into a Guesty automated pre-arrival message (for example 3 days before check-in). Guesty fills in each guest's details."}),
     h("div",{class:"msg",style:"font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px",text:t}),
     h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>copy(t)},"Copy link template"),
-      h("button",{class:"btn",onclick:()=>copy("Hi {{guest_first_name}}, we're getting {{listing_nickname}} ready for you. Let us know your arrival time and anything you need (cot, extra towels, bed setup) here: "+t)},"Copy with a message")),
+      h("button",{class:"btn",onclick:()=>copy("Hi {{guest_first_name}}, we're getting {{listing_nickname}} ready for you. Let us know anything you need (bed setup, cot, highchair, dog) here: "+t)},"Copy with a message")),
     h("div",{class:"tipbox small"},h("b",{text:"Before you save it in Guesty: "}),"replace each {{…}} with Guesty's own variable names for confirmation code, listing nickname and check-in date (pick them from Guesty's variable list in the message editor). Then send yourself a test message and open the link: the property and date should show in the line under the heading."));
 }
 function pfSlackCard(){
