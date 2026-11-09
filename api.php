@@ -243,6 +243,23 @@ try {
                  'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => vl_slack_label($r)], vl_slack_routes()), 'bot' => vl_slack_bot_token() !== '',
                  'scopes' => VL_SLACK_SCOPES, 'missing' => vl_slack_bot_token() !== '' ? vl_slack_missing(vl_slack_scopes_known()) : []]);
 
+        case 'prefs_invite_all':
+            // One-time: with the person's User OAuth Token, add the bot to every channel they're in, then link properties.
+            require_once __DIR__ . '/prefs.php';
+            if (vl_slack_bot_token() === '') fail('Save the Slack bot token first');
+            $ut = trim((string)($in['user_token'] ?? ''));
+            if (!preg_match('/^xoxp-[A-Za-z0-9-]{20,250}$/', $ut)) fail('That is not a User OAuth Token (it starts xoxp-)');
+            $r = vl_slack_invite_bot_everywhere($ut);
+            if (isset($r['error'])) {
+                $e = $r['error'];
+                if ($e === 'other_workspace') fail('That user token is for a different Slack workspace.');
+                if (strpos($e, 'missing_scope') !== false) fail('The user token needs these User Token Scopes: groups:read and groups:write.invites. Add them, reinstall the app, then copy the new User OAuth Token.');
+                fail('Slack said: ' . $e);
+            }
+            $m = vl_slack_automatch(true);
+            out($r + ['linked' => $m['saved'], 'rows' => $m['rows'], 'channels' => $m['channels'],
+                 'routes' => array_map(fn($x) => ['match' => $x['match'], 'tail' => vl_slack_label($x)], vl_slack_routes())]);
+
         case 'prefs_automatch':
             // Match every property (guest manuals) to its Slack channel by name; save:true links the ones found.
             require_once __DIR__ . '/prefs.php';

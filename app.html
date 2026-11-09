@@ -2624,7 +2624,7 @@ function mAllCard(list){
 let shootUrl=null,shootBusy=false;
 async function shootLink(){if(shootUrl||shootBusy)return;shootBusy=true;try{const r=await fetch("api.php?action=shoot_link",{method:"POST",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:"{}"});const j=await r.json();shootUrl=j.url||null}catch(e){}shootBusy=false;render()}
 /* ---------- GUEST PREFS: guests' answers from the pre-arrival form, posted to the cleaners' Slack ---------- */
-let prefs=[],pfMeta=null,pfSel=null,pfBusy="",pfDate="",pfShow="upcoming",pfHook="",pfRm="",pfRu="",pfTok="",pfCh="",pfChans=null,pfPick={},pfChQ="";
+let prefs=[],pfMeta=null,pfSel=null,pfBusy="",pfDate="",pfShow="upcoming",pfHook="",pfRm="",pfRu="",pfTok="",pfCh="",pfChans=null,pfPick={},pfChQ="",pfUt="";
 // Slack app setup: paste this at api.slack.com/apps > Create New App > From an app manifest. Bot scopes let it post in every channel.
 const PF_MANIFEST=`display_information:
   name: ViVi Guest Prefs
@@ -2641,6 +2641,9 @@ oauth_config:
       - channels:read
       - groups:read
       - channels:join
+    user:
+      - groups:read
+      - groups:write.invites
 settings:
   org_deploy_enabled: false
   socket_mode_enabled: false
@@ -2650,6 +2653,10 @@ const PF_SCOPE_WHY={"chat:write":"post messages","chat:write.public":"post in pu
 async function pfAutoMatch(save){try{pfBusy=save?"Linking properties to Slack…":"Matching properties to Slack channels…";render();const r=await licApi("prefs_automatch",{save:!!save});
   pfChans=r;pfMeta.missing=r.missing;pfMeta.routes=r.routes;pfPick={};r.rows.forEach(x=>{pfPick[x.property]=x.channel&&x.channel.id||""});
   const found=r.rows.filter(x=>x.channel).length;toast(save&&r.saved?"Linked "+r.saved+" properties to their channels":found+" of "+r.rows.length+" properties matched")}catch(e){toast(e.message)}pfBusy="";render()}
+async function pfInviteAll(){if(!/^xoxp-/.test(pfUt)){toast("Paste the User OAuth Token (xoxp-…)");return}
+  try{pfBusy="Adding the bot to your Slack channels… this can take a minute";render();const r=await licApi("prefs_invite_all",{user_token:pfUt});pfUt="";
+    pfChans=r;pfMeta.routes=r.routes;pfPick={};r.rows.forEach(x=>{pfPick[x.property]=x.channel&&x.channel.id||""});
+    toast("Bot added to "+r.added+" channels ("+r.already+" already). Linked "+r.linked+" properties."+(r.failed?" "+r.failed+" failed: "+r.errors.join(", "):""))}catch(e){pfUt="";toast(e.message)}pfBusy="";render()}
 async function pfLinkMany(){const byId={};(pfChans.channels||[]).forEach(c=>byId[c.id]=c);
   const links=pfChans.rows.filter(x=>pfPick[x.property]&&!(x.linked&&x.channel&&x.channel.id===pfPick[x.property])).map(x=>({match:x.property,channel:pfPick[x.property],name:byId[pfPick[x.property]].name}));
   if(!links.length){toast("Nothing new to save");return}
@@ -2731,12 +2738,15 @@ function pfSetupBox(bot){
       h("li",{},"Go to api.slack.com/apps > Create New App > From an app manifest, pick the ViVi Stays workspace."),
       h("li",{},"Paste the manifest (button below), then Create and Install to Workspace (a Slack admin must approve)."),
       h("li",{},"Open OAuth & Permissions, copy the Bot User OAuth Token (xoxb-…) and paste it above."),
-      h("li",{},"Public channels work straight away. For each private property channel, type /invite @ViVi Guest Prefs in it."),
+      h("li",{},"Public channels work straight away. Private property channels: use Add bot to all my channels (needs the User OAuth Token), or type /invite @ViVi Guest Prefs in each one."),
       h("li",{},"Saving the token links every property to the channel named after it. Check the list and pick a channel for any it couldn't find.")),
     h("p",{class:"muted",text:"Scopes: "+Object.entries(PF_SCOPE_WHY).map(([k,v])=>k+" ("+v+")").join(", ")+". If you add a scope later, reinstall the app and paste the new token."}),
     h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>copy(PF_MANIFEST)},"Copy app manifest")));
   const warn=bot&&miss.length?h("div",{class:"tipbox small"},h("b",{text:"Slack app is missing permissions: "}),miss.join(", ")+". Add them under OAuth & Permissions > Bot Token Scopes, click Reinstall to Workspace, then paste the new token."):null;
-  return h("div",{},warn,guide,bot?h("div",{class:"btns"},h("button",{class:"btn link small",onclick:()=>pfBot({check:true},"Permissions checked")},"Check permissions")):null);
+  const inv=bot?h("div",{class:"tipbox small"},h("b",{text:"Property channels private? "}),"Add the bot to all the private channels you're in, in one go: on the app's OAuth & Permissions page copy the User OAuth Token (xoxp-…) and paste it here. It's used once and not saved.",
+    h("div",{class:"field",style:"margin-top:8px"},h("input",{type:"password",autocomplete:"off",placeholder:"xoxp-…",value:pfUt,oninput:e=>pfUt=e.target.value.trim()})),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:pfInviteAll},"Add bot to all my channels"))):null;
+  return h("div",{},warn,guide,inv,bot?h("div",{class:"btns"},h("button",{class:"btn link small",onclick:()=>pfBot({check:true},"Permissions checked")},"Check permissions")):null);
 }
 function pfChanPicker(){
   if(!pfChans)return h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>pfAutoMatch(true)},"Match all properties to Slack channels"));

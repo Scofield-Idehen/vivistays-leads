@@ -156,6 +156,31 @@ function vl_slack_guess_channel($property) {
     }
     return empty($tie) ? $best : null;
 }
+// One-time: add the bot to every private channel the person is in (private property channels can't be seen otherwise).
+// Uses their User OAuth Token (xoxp-…) once; it is never saved. Returns ['added','already','failed','errors'].
+function vl_slack_invite_bot_everywhere($userTok) {
+    @set_time_limit(180);
+    $me = vl_slack_api('auth.test', new stdClass());
+    if (empty($me['ok']) || empty($me['user_id'])) return ['error' => 'bot_token'];
+    $botId = $me['user_id'];
+    $who = vl_slack_api('auth.test', new stdClass(), $userTok);
+    if (empty($who['ok'])) return ['error' => 'user_token:' . ($who['error'] ?? 'unknown')];
+    if (($who['team_id'] ?? '') !== ($me['team_id'] ?? '')) return ['error' => 'other_workspace'];
+    $added = 0; $already = 0; $failed = 0; $errs = []; $cursor = '';
+    for ($i = 0; $i < 15; $i++) {
+        $j = vl_slack_api('users.conversations', ['types' => 'private_channel', 'exclude_archived' => true, 'limit' => 200] + ($cursor ? ['cursor' => $cursor] : []), $userTok);
+        if (empty($j['ok'])) return ['error' => 'list:' . ($j['error'] ?? 'unknown')];
+        foreach ($j['channels'] ?? [] as $c) {
+            $r = vl_slack_api('conversations.invite', ['channel' => $c['id'], 'users' => $botId], $userTok);
+            if (!empty($r['ok'])) $added++;
+            elseif (($r['error'] ?? '') === 'already_in_channel') $already++;
+            else { $failed++; $errs[$r['error'] ?? 'unknown'] = true; }
+        }
+        $cursor = (string)($j['response_metadata']['next_cursor'] ?? '');
+        if ($cursor === '') break;
+    }
+    return ['added' => $added, 'already' => $already, 'failed' => $failed, 'errors' => array_keys($errs)];
+}
 // Every property name we know: the guest manuals, plus any property a guest has sent preferences for.
 function vl_property_names() {
     $names = [];
@@ -236,8 +261,8 @@ function vl_slack_bot_set($tok) {
     @chmod(vl_slack_bot_file(), 0600);
 }
 // Calls the Slack Web API with the bot token. Returns the decoded reply (ok=false on any error).
-function vl_slack_api($method, $payload) {
-    $tok = vl_slack_bot_token();
+function vl_slack_api($method, $payload, $tok = null) {
+    if ($tok === null) $tok = vl_slack_bot_token();
     if ($tok === '') return ['ok' => false, 'error' => 'no_token'];
     $ch = curl_init('https://slack.com/api/' . $method);
     $GLOBALS['vl_slack_last_scopes'] = '';
