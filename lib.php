@@ -163,7 +163,27 @@ function vl_slack_url_for($property) {
 // Where a route posts: a Slack channel (#name or ID, via the bot token) or a webhook URL.
 function vl_slack_target($r) { return !empty($r['channel']) ? $r['channel'] : ($r['url'] ?? ''); }
 // Short label for the app: "#baronet" or "webhook …abcd". Never the full URL.
-function vl_slack_label($r) { return !empty($r['channel']) ? $r['channel'] : 'webhook …' . substr((string)($r['url'] ?? ''), -4); }
+function vl_slack_label($r) { return !empty($r['channel']) ? (!empty($r['name']) ? '#' . ltrim($r['name'], '#') : $r['channel']) : 'webhook …' . substr((string)($r['url'] ?? ''), -4); }
+// Bot scopes the Slack app needs so it can post in every property channel:
+//  chat:write (post), chat:write.public (post in public channels without being invited),
+//  channels:read + groups:read (list public/private channels to link them), channels:join (join public ones).
+const VL_SLACK_SCOPES = ['chat:write', 'chat:write.public', 'channels:read', 'groups:read', 'channels:join'];
+function vl_slack_scopes_file() { return __DIR__ . '/data/slack-scopes.txt'; }
+// Scopes the saved token has, as Slack reported on the last check ('' = never checked).
+function vl_slack_scopes_known() { $f = vl_slack_scopes_file(); return is_file($f) ? trim((string)@file_get_contents($f)) : ''; }
+// Ask Slack which scopes the token has; saves them and returns the missing ones (null if Slack didn't answer).
+function vl_slack_check_scopes() {
+    $j = vl_slack_api('auth.test', new stdClass());
+    if (empty($j['ok'])) return null;
+    $have = (string)($GLOBALS['vl_slack_last_scopes'] ?? '');
+    @file_put_contents(vl_slack_scopes_file(), $have, LOCK_EX); @chmod(vl_slack_scopes_file(), 0600);
+    return vl_slack_missing($have);
+}
+function vl_slack_missing($have) {
+    if ($have === '') return [];
+    $h = array_map('trim', explode(',', $have));
+    return array_values(array_diff(VL_SLACK_SCOPES, $h));
+}
 // Bot token (xoxb-…) lets one Slack app post to any channel. Kept in data/slack-bot.txt.
 function vl_slack_bot_file() { return __DIR__ . '/data/slack-bot.txt'; }
 function vl_slack_bot_token() {
@@ -184,7 +204,12 @@ function vl_slack_api($method, $payload) {
     $tok = vl_slack_bot_token();
     if ($tok === '') return ['ok' => false, 'error' => 'no_token'];
     $ch = curl_init('https://slack.com/api/' . $method);
+    $GLOBALS['vl_slack_last_scopes'] = '';
     curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 8,
+        CURLOPT_HEADERFUNCTION => function ($c, $line) {
+            if (stripos($line, 'x-oauth-scopes:') === 0) $GLOBALS['vl_slack_last_scopes'] = trim(substr($line, 15));
+            return strlen($line);
+        },
         CURLOPT_HTTPHEADER => ['Content-Type: application/json; charset=utf-8', 'Authorization: Bearer ' . $tok],
         CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE)]);
     $res = curl_exec($ch); curl_close($ch);
@@ -196,7 +221,13 @@ function vl_slack_post($text, $url = null) {
     if ($url === null) $url = vl_slack_webhook();
     if ($url !== '' && strpos($url, 'https://') !== 0) {
         // A channel name or ID: post with the bot token.
-        $j = vl_slack_api('chat.postMessage', ['channel' => ltrim($url, '#'), 'text' => $text]);
+        $chn = ltrim($url, '#');
+        $j = vl_slack_api('chat.postMessage', ['channel' => $chn, 'text' => $text]);
+        if (empty($j['ok']) && ($j['error'] ?? '') === 'not_in_channel' && preg_match('/^C[A-Z0-9]+$/', $chn)) {
+            // Public channel the bot isn't in yet (and no chat:write.public): join it, then try again.
+            $jj = vl_slack_api('conversations.join', ['channel' => $chn]);
+            if (!empty($jj['ok'])) $j = vl_slack_api('chat.postMessage', ['channel' => $chn, 'text' => $text]);
+        }
         return !empty($j['ok']) ? 'sent' : ((($j['error'] ?? '') === 'no_token') ? 'not_configured' : 'failed');
     }
     if ($url === '') return 'not_configured';

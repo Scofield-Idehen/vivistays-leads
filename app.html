@@ -2624,7 +2624,36 @@ function mAllCard(list){
 let shootUrl=null,shootBusy=false;
 async function shootLink(){if(shootUrl||shootBusy)return;shootBusy=true;try{const r=await fetch("api.php?action=shoot_link",{method:"POST",headers:{"Content-Type":"application/json","X-Requested-With":"fetch"},body:"{}"});const j=await r.json();shootUrl=j.url||null}catch(e){}shootBusy=false;render()}
 /* ---------- GUEST PREFS: guests' answers from the pre-arrival form, posted to the cleaners' Slack ---------- */
-let prefs=[],pfMeta=null,pfSel=null,pfBusy="",pfDate="",pfShow="upcoming",pfHook="",pfRm="",pfRu="",pfTok="",pfCh="";
+let prefs=[],pfMeta=null,pfSel=null,pfBusy="",pfDate="",pfShow="upcoming",pfHook="",pfRm="",pfRu="",pfTok="",pfCh="",pfChans=null,pfPick={},pfChQ="";
+// Slack app setup: paste this at api.slack.com/apps > Create New App > From an app manifest. Bot scopes let it post in every channel.
+const PF_MANIFEST=`display_information:
+  name: ViVi Guest Prefs
+  description: Posts guest preferences from the ViVi Stays leads app to each property's channel
+features:
+  bot_user:
+    display_name: ViVi Guest Prefs
+    always_online: true
+oauth_config:
+  scopes:
+    bot:
+      - chat:write
+      - chat:write.public
+      - channels:read
+      - groups:read
+      - channels:join
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false`;
+const PF_SCOPE_WHY={"chat:write":"post messages","chat:write.public":"post in public channels without an invite","channels:read":"list public channels","groups:read":"list private channels it's invited to","channels:join":"join public channels"};
+// Suggested property name from a channel name: "22-aberlady" -> "22 Aberlady".
+const pfGuess=n=>n.replace(/^(prop|property|house|unit)[-_]+/i,"").replace(/[-_.]+/g," ").trim().replace(/\b[a-z]/g,c=>c.toUpperCase());
+async function pfLoadChans(){try{pfBusy="Loading Slack channels…";render();const r=await licApi("prefs_channels");pfChans=r.channels;pfMeta.missing=r.missing;pfPick={};
+  pfChans.forEach(c=>{pfPick[c.id]={on:!c.linked&&/\d/.test(c.name)&&(!c.private||c.member),match:c.linked||pfGuess(c.name)}})}catch(e){toast(e.message)}pfBusy="";render()}
+async function pfLinkMany(){const links=(pfChans||[]).filter(c=>pfPick[c.id]&&pfPick[c.id].on).map(c=>({channel:c.id,name:c.name,match:(pfPick[c.id].match||"").trim()}));
+  if(!links.length){toast("Tick at least one channel");return}
+  try{pfBusy="Linking…";render();const r=await licApi("prefs_routes",{op:"link_many",links});pfMeta.routes=r.routes;toast("Linked "+r.linked+" channel"+(r.linked===1?"":"s"));pfChans=null}catch(e){toast(e.message)}pfBusy="";render()}
+
 const PF_SLACK={sent:["Sent to Slack","good"],failed:["Slack failed, will retry","hot"],not_configured:["Not sent: no Slack channel for this property","warm"],pending:["Sending…","warm"]};
 async function pfLoadMeta(){if(pfMeta||pfBusy==="meta")return;pfBusy="meta";try{pfMeta=await licApi("prefs_meta")}catch(e){toast("Couldn't load: "+e.message)}pfBusy="";render()}
 const pfNice=iso=>{if(!iso)return"";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"})};
@@ -2632,7 +2661,7 @@ const pfWhen=iso=>iso?new Date(iso).toLocaleString("en-GB",{day:"numeric",month:
 function pfLines(p){const a=p.answers||{};return(pfMeta?pfMeta.fields:[]).filter(f=>a[f.k]&&a[f.k]!==f.default).map(f=>[f.short,a[f.k]])}
 async function pfResend(p,extra){try{pfBusy="Sending to Slack…";render();await licApi("prefs_resend",Object.assign({id:p.id},extra||{}));toast("Sent to Slack")}catch(e){toast(e.message)}pfBusy="";render()}
 async function pfRoutes(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_routes",body);pfMeta.routes=r.routes;if(body.op==="add"){pfRm="";pfRu="";pfCh=""}toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
-async function pfBot(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_bot",body);pfMeta.bot=r.bot;pfTok="";toast(okMsg+(r.team?" ("+r.team+")":""))}catch(e){toast(e.message)}pfBusy="";render()}
+async function pfBot(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_bot",body);pfMeta.bot=r.bot;pfMeta.missing=r.missing||[];pfTok="";toast(okMsg+(r.team?" ("+r.team+")":"")+(r.missing&&r.missing.length?". Missing permissions: "+r.missing.join(", "):""))}catch(e){toast(e.message)}pfBusy="";render()}
 async function pfSettings(body,okMsg){try{pfBusy="Saving…";render();const r=await licApi("prefs_settings",body);pfMeta.slack=r.slack;pfHook="";toast(okMsg)}catch(e){toast(e.message)}pfBusy="";render()}
 function prefsView(){
   const head=h("div",{},h("h1",{text:"Guest prefs"}),h("p",{class:"muted",text:"What guests asked for before arrival: arrival time, guests, cots, beds, dogs and notes. Each answer goes to the cleaners' Slack channel, plus a morning list of tomorrow's arrivals."}));
@@ -2680,6 +2709,8 @@ function pfSlackCard(){
     h("div",{class:"field"},h("label",{text:bot?"Replace bot token":"Bot token"}),h("input",{type:"password",autocomplete:"off",placeholder:"xoxb-…",value:pfTok,oninput:e=>pfTok=e.target.value.trim()})),
     h("div",{class:"btns"},h("button",{class:bot?"btn":"btn primary",onclick:()=>{if(!pfTok){toast("Paste the token first");return}pfBot({token:pfTok},"Slack bot connected")}},"Save token"),
       bot?h("button",{class:"btn link small",onclick:()=>{if(confirm("Disconnect the Slack bot? Channels set by name will stop posting."))pfBot({token:""},"Disconnected")}},"Disconnect"):null),
+    pfSetupBox(bot),
+    bot?pfChanPicker():null,
     rows.length?h("div",{class:"list",style:"margin-top:12px"},...rows):h("p",{class:"muted small",text:"No property channels yet."}),
     h("div",{class:"field"},h("label",{text:"Property name or word"}),h("input",{type:"text",placeholder:"e.g. Baronet",value:pfRm,oninput:e=>pfRm=e.target.value})),
     bot?h("div",{class:"field"},h("label",{text:"Slack channel"}),h("input",{type:"text",placeholder:"#baronet",value:pfCh,oninput:e=>pfCh=e.target.value.trim()})):
@@ -2692,6 +2723,38 @@ function pfSlackCard(){
     h("div",{class:"btns"},s==="config"?null:h("button",{class:"btn",onclick:()=>{if(!pfHook){toast("Paste the webhook URL first");return}pfSettings({slack_webhook:pfHook},"Saved. Send a test to check it.")}},"Save default"),
       s?h("button",{class:"btn",onclick:()=>pfSettings({test:true},"Test message sent to the default channel.")},"Send a test"):null,
       s==="app"?h("button",{class:"btn link small",onclick:()=>{if(confirm("Remove the default channel? Properties without their own channel will be saved but not posted."))pfSettings({slack_webhook:""},"Removed")}},"Remove default"):null));
+}
+function pfSetupBox(bot){
+  const miss=(pfMeta.missing||[]);
+  const guide=h("details",{class:"tipbox small",open:!bot||miss.length?"":null},h("summary",{},h("b",{text:"Slack app setup (one time)"})),
+    h("ol",{},
+      h("li",{},"Go to api.slack.com/apps > Create New App > From an app manifest, pick the ViVi Stays workspace."),
+      h("li",{},"Paste the manifest (button below), then Create and Install to Workspace (a Slack admin must approve)."),
+      h("li",{},"Open OAuth & Permissions, copy the Bot User OAuth Token (xoxb-…) and paste it above."),
+      h("li",{},"Public channels work straight away. For each private property channel, type /invite @ViVi Guest Prefs in it."),
+      h("li",{},"Click Load all Slack channels and link them to properties.")),
+    h("p",{class:"muted",text:"Scopes: "+Object.entries(PF_SCOPE_WHY).map(([k,v])=>k+" ("+v+")").join(", ")+". If you add a scope later, reinstall the app and paste the new token."}),
+    h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>copy(PF_MANIFEST)},"Copy app manifest")));
+  const warn=bot&&miss.length?h("div",{class:"tipbox small"},h("b",{text:"Slack app is missing permissions: "}),miss.join(", ")+". Add them under OAuth & Permissions > Bot Token Scopes, click Reinstall to Workspace, then paste the new token."):null;
+  return h("div",{},warn,guide,bot?h("div",{class:"btns"},h("button",{class:"btn link small",onclick:()=>pfBot({check:true},"Permissions checked")},"Check permissions")):null);
+}
+function pfChanPicker(){
+  if(!pfChans)return h("div",{class:"btns"},h("button",{class:"btn primary",onclick:pfLoadChans},"Load all Slack channels"));
+  const q=pfChQ.toLowerCase();
+  const list=pfChans.filter(c=>!q||c.name.includes(q)||(pfPick[c.id].match||"").toLowerCase().includes(q));
+  const on=pfChans.filter(c=>pfPick[c.id]&&pfPick[c.id].on).length;
+  const rows=list.map(c=>{const p=pfPick[c.id];const blocked=c.private&&!c.member;
+    return h("div",{class:"row",style:"cursor:default;flex-wrap:wrap;gap:6px"},
+      h("input",{type:"checkbox",style:"appearance:auto;-webkit-appearance:checkbox;width:20px;height:20px;flex:none;margin:0",checked:p.on?"":null,disabled:blocked?"":null,onchange:e=>{p.on=e.target.checked;render()}}),
+      h("span",{class:"nm",text:(c.private?"🔒 ":"#")+c.name}),
+      h("input",{type:"text",style:"flex:1;min-width:140px",placeholder:"Property name in Guesty",value:p.match,oninput:e=>{p.match=e.target.value;if(e.target.value.trim()&&!blocked){p.on=true;const cb=e.target.parentNode.querySelector("input[type=checkbox]");if(cb)cb.checked=true}}}),
+      h("span",{class:"when",text:blocked?"invite the bot first":(c.linked?"linked: "+c.linked:"")}));});
+  return h("div",{style:"margin-top:12px"},
+    h("p",{class:"muted small",text:pfChans.length+" channels found. Channels named after a property are usually found on their own; linking them here makes it certain and fixes odd names. Tick each property channel and check the name matches the Guesty listing nickname (or a word from it). Private channels show only after the bot is invited."}),
+    h("div",{class:"field"},h("input",{type:"search",class:"pf-chq",placeholder:"Filter channels",value:pfChQ,oninput:e=>{pfChQ=e.target.value;const pos=e.target.selectionStart;render();const x=$("#main .pf-chq");if(x){x.focus();try{x.setSelectionRange(pos,pos)}catch(_){}}}})),
+    h("div",{class:"list",style:"max-height:420px;overflow:auto"},...rows),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:pfLinkMany},"Link "+on+" ticked channel"+(on===1?"":"s")),
+      h("button",{class:"btn link small",onclick:()=>{pfChans=null;render()}},"Close")));
 }
 function pfDetail(p){
   const back=h("button",{class:"btn link",onclick:()=>{pfSel=null;render()}},"← All submissions");
