@@ -260,6 +260,23 @@ try {
             out($r + ['linked' => $m['saved'], 'rows' => $m['rows'], 'channels' => $m['channels'],
                  'routes' => array_map(fn($x) => ['match' => $x['match'], 'tail' => vl_slack_label($x)], vl_slack_routes())]);
 
+        case 'prefs_broadcast':
+            // Post one message to every linked property channel (once per channel). Returns counts and failures.
+            require_once __DIR__ . '/prefs.php';
+            $text = trim((string)($in['text'] ?? ''));
+            if ($text === '' || mb_strlen($text) > 3000) fail('Write the message first (up to 3000 characters)');
+            if (vl_slack_bot_token() === '') fail('Save the Slack bot token first');
+            @set_time_limit(300);
+            $seen = []; $sent = 0; $failed = [];
+            foreach (vl_slack_routes() as $r) {
+                $t = vl_slack_target($r);
+                if ($t === '' || isset($seen[$t])) continue;
+                $seen[$t] = true;
+                if (vl_slack_post(vl_slack_esc($text), $t) === 'sent') $sent++; else $failed[] = $r['match'];
+                usleep(1100000); // Slack allows about 1 message per second per channel; stay gentle
+            }
+            out(['ok' => true, 'sent' => $sent, 'failed' => $failed]);
+
         case 'prefs_automatch':
             // Match every property (guest manuals) to its Slack channel by name; save:true links the ones found.
             require_once __DIR__ . '/prefs.php';
