@@ -2743,10 +2743,16 @@ function pfSetupBox(bot){
     h("p",{class:"muted",text:"Scopes: "+Object.entries(PF_SCOPE_WHY).map(([k,v])=>k+" ("+v+")").join(", ")+". If you add a scope later, reinstall the app and paste the new token."}),
     h("div",{class:"btns"},h("button",{class:"btn",onclick:()=>copy(PF_MANIFEST)},"Copy app manifest")));
   const warn=bot&&miss.length?h("div",{class:"tipbox small"},h("b",{text:"Slack app is missing permissions: "}),miss.join(", ")+". Add them under OAuth & Permissions > Bot Token Scopes, click Reinstall to Workspace, then paste the new token."):null;
-  const inv=bot?h("div",{class:"tipbox small"},h("b",{text:"Property channels private? "}),"Add the bot to all the private channels you're in, in one go: on the app's OAuth & Permissions page copy the User OAuth Token (xoxp-…) and paste it here. It's used once and not saved.",
-    h("div",{class:"field",style:"margin-top:8px"},h("input",{type:"password",autocomplete:"off",placeholder:"xoxp-…",value:pfUt,oninput:e=>pfUt=e.target.value.trim()})),
-    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:pfInviteAll},"Add bot to all my channels"))):null;
+  const inv=bot&&!pfChans?pfInviteBox():null;
   return h("div",{},warn,guide,inv,bot?h("div",{class:"btns"},h("button",{class:"btn link small",onclick:()=>pfBot({check:true},"Permissions checked")},"Check permissions")):null);
+}
+function pfInviteBox(lead){
+  return h("div",{class:"tipbox small",style:"margin:10px 0"},h("b",{text:lead||"Property channels private? "}),
+    "Slack hides private channels from the bot until it's added to them. Add it to all of them in one go:",
+    h("ol",{},h("li",{},"api.slack.com/apps > ViVi Guest Prefs > OAuth & Permissions: under User Token Scopes add groups:read and groups:write.invites, then Reinstall to Workspace."),
+      h("li",{},"Copy the User OAuth Token (starts xoxp-, not xoxb-) and paste it below. It's used once and not saved.")),
+    h("div",{class:"field",style:"margin-top:8px"},h("input",{type:"password",autocomplete:"off",placeholder:"xoxp-…",value:pfUt,oninput:e=>pfUt=e.target.value.trim()})),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:pfInviteAll},"Add bot to all my channels")));
 }
 function pfChanPicker(){
   if(!pfChans)return h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>pfAutoMatch(true)},"Match all properties to Slack channels"));
@@ -2760,6 +2766,7 @@ function pfChanPicker(){
     return h("div",{style:"display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:10px 12px;border-bottom:1px solid rgba(0,0,0,.08)"},h("b",{style:"flex:1 1 100%",text:x.property}),sel,h("span",{class:"pill "+st[1],text:st[0]}))});
   return h("div",{style:"margin-top:12px"},
     h("p",{class:"small",text:pfChans.rows.length+" properties (from Guest manuals) · "+chs.length+" Slack channels · "+nOk+" matched"+(nNo?" · "+nNo+" need a channel picked":"")}),
+    nNo>pfChans.rows.length/2?pfInviteBox("The bot can only see "+chs.length+" channels, so most properties have no match. "):null,
     h("p",{class:"muted small",text:"Each property was matched to the Slack channel named after it. Check any that say No channel found and pick the right channel from the list. Private channels appear once the bot is invited (/invite @ViVi Guest Prefs)."}),
     h("div",{class:"field"},h("input",{type:"search",class:"pf-chq",placeholder:"Filter properties",value:pfChQ,oninput:e=>{pfChQ=e.target.value;const pos=e.target.selectionStart;render();const x=$("#main .pf-chq");if(x){x.focus();try{x.setSelectionRange(pos,pos)}catch(_){}}}})),
     h("div",{class:"list",style:"max-height:520px;overflow:auto"},...list),
