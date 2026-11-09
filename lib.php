@@ -271,8 +271,10 @@ function vl_slack_api($method, $payload, $tok = null) {
             if (stripos($line, 'x-oauth-scopes:') === 0) $GLOBALS['vl_slack_last_scopes'] = trim(substr($line, 15));
             return strlen($line);
         },
-        CURLOPT_HTTPHEADER => ['Content-Type: application/json; charset=utf-8', 'Authorization: Bearer ' . $tok],
-        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE)]);
+        // Form-encoded, not JSON: Slack's read methods (conversations.list, users.conversations) ignore JSON
+        // bodies, which silently dropped "types" and made them ask for public-channel scopes.
+        CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded', 'Authorization: Bearer ' . $tok],
+        CURLOPT_POSTFIELDS => http_build_query(array_map(fn($v) => is_bool($v) ? ($v ? 'true' : 'false') : (is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : $v), (array)$payload))]);
     $res = curl_exec($ch); curl_close($ch);
     $j = $res !== false ? json_decode($res, true) : null;
     return is_array($j) ? $j : ['ok' => false, 'error' => 'no_response'];
