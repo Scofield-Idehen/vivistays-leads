@@ -271,6 +271,11 @@ try {
             $from = max(0, (int)($in['from'] ?? 0)); $count = min(25, max(1, (int)($in['count'] ?? 20)));
             $targets = []; $names = [];
             foreach (vl_slack_routes() as $r) { $t = vl_slack_target($r); if ($t !== '' && !isset($targets[$t])) { $targets[$t] = $r; } }
+            // Or a hand-picked list of channel IDs (only = ['C…', …]).
+            if (!empty($in['only']) && is_array($in['only'])) {
+                $targets = [];
+                foreach (array_slice($in['only'], 0, 200) as $cid) if (is_string($cid) && preg_match('/^[CG][A-Z0-9]{6,20}$/', $cid)) $targets[$cid] = ['match' => $cid, 'channel' => $cid];
+            }
             $all = array_values($targets); $total = count($all);
             $sent = 0; $failed = [];
             foreach (array_slice($all, $from, $count) as $r) {
