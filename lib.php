@@ -137,7 +137,8 @@ function vl_slack_channels($fresh = false) {
 }
 function vl_slack_guess_channel($property) {
     if (vl_slack_bot_token() === '' || trim((string)$property) === '') return null;
-    $split = function ($s) { $w = array_filter(explode(' ', vl_slack_norm(str_replace(['-', '_'], ' ', $s))), 'strlen'); $n = array_values(array_filter($w, 'ctype_digit')); return [array_values(array_diff($w, $n, ['the', 'flat', 'house', 'caravan', 'lodge', 'new'])), $n]; };
+    $abbr = ['rd' => 'road', 'st' => 'street', 'ave' => 'avenue', 'av' => 'avenue', 'cres' => 'crescent', 'pl' => 'place', 'sq' => 'square', 'gdns' => 'gardens', 'ct' => 'court', 'dr' => 'drive', 'ln' => 'lane', 'tce' => 'terrace'];
+    $split = function ($s) use ($abbr) { $w = array_map(fn($x) => $abbr[$x] ?? $x, array_filter(explode(' ', vl_slack_norm(str_replace(['-', '_'], ' ', $s))), 'strlen')); $n = array_values(array_filter($w, 'ctype_digit')); return [array_values(array_diff($w, $n, ['the', 'flat', 'house', 'caravan', 'lodge', 'new'])), $n]; };
     [$pw, $pn] = $split($property);
     if (!$pw) return null;
     $best = null; $bestScore = 0; $tie = false;
@@ -154,6 +155,41 @@ function vl_slack_guess_channel($property) {
         elseif ($score === $bestScore) $tie = true; // two equally good channels: don't guess
     }
     return empty($tie) ? $best : null;
+}
+// Every property name we know: the guest manuals, plus any property a guest has sent preferences for.
+function vl_property_names() {
+    $names = [];
+    foreach (vl_db()->query("SELECT col, data FROM docs WHERE col IN ('manuals','prefs')") as $row) {
+        $d = json_decode($row['data'], true);
+        $n = trim((string)($row['col'] === 'manuals' ? ($d['name'] ?? '') : ($d['property'] ?? '')));
+        if ($n !== '' && mb_strlen($n) <= 80) $names[vl_slack_norm($n)] = $names[vl_slack_norm($n)] ?? $n;
+    }
+    $names = array_values($names);
+    usort($names, 'strnatcasecmp');
+    return $names;
+}
+// Match every property to its Slack channel by name. With $save, links the ones found that aren't linked yet.
+// Returns ['rows' => [{property, linked, channel}], 'channels' => [...], 'saved' => n].
+function vl_slack_automatch($save) {
+    $chs = vl_slack_channels(true);
+    $byId = []; foreach ($chs as $c) $byId[$c['id']] = $c;
+    $routes = vl_slack_routes(); $rows = []; $saved = 0;
+    foreach (vl_property_names() as $p) {
+        $mine = null;
+        foreach ($routes as $r) if (vl_slack_norm($r['match']) === vl_slack_norm($p)) $mine = $r;
+        if ($mine && !empty($mine['channel'])) {
+            $c = $byId[ltrim($mine['channel'], '#')] ?? null;
+            if (!$c) foreach ($chs as $x) if ($x['name'] === ltrim($mine['channel'], '#')) $c = $x;
+            $rows[] = ['property' => $p, 'linked' => true, 'channel' => $c ?: ['id' => '', 'name' => ltrim(vl_slack_label($mine), '#'), 'private' => false, 'member' => true]];
+            continue;
+        }
+        $g = vl_slack_guess_channel($p);
+        if ($g && $save) { $routes[] = ['match' => $p, 'channel' => $g['id'], 'name' => $g['name']]; $saved++; }
+        $rows[] = ['property' => $p, 'linked' => (bool)($g && $save), 'channel' => $g];
+    }
+    if ($saved) vl_slack_routes_save($routes);
+    usort($chs, fn($a, $b) => strnatcasecmp($a['name'], $b['name']));
+    return ['rows' => $rows, 'channels' => $chs, 'saved' => $saved];
 }
 // Webhook for a property: its own channel, else the default channel, else ''.
 function vl_slack_url_for($property) {

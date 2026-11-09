@@ -243,20 +243,15 @@ try {
                  'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => vl_slack_label($r)], vl_slack_routes()), 'bot' => vl_slack_bot_token() !== '',
                  'scopes' => VL_SLACK_SCOPES, 'missing' => vl_slack_bot_token() !== '' ? vl_slack_missing(vl_slack_scopes_known()) : []]);
 
-        case 'prefs_channels':
-            // All Slack channels the bot can see, to link them to properties in one go.
+        case 'prefs_automatch':
+            // Match every property (guest manuals) to its Slack channel by name; save:true links the ones found.
             require_once __DIR__ . '/prefs.php';
             if (vl_slack_bot_token() === '') fail('Save the Slack bot token first');
             $missing = vl_slack_check_scopes();
             if ($missing === null) fail('Slack did not answer. Check the bot token.');
-            $chs = vl_slack_channels(true);
-            if (!$chs) fail(array_intersect(['channels:read', 'groups:read'], $missing) ? 'The Slack app needs the channels:read and groups:read scopes. Add them, reinstall the app, then paste the new token.' : 'Slack returned no channels. Check the bot is installed in the workspace.');
-            usort($chs, fn($a, $b) => strnatcasecmp($a['name'], $b['name']));
-            $linked = [];
-            foreach (vl_slack_routes() as $r) if (!empty($r['channel'])) $linked[ltrim($r['channel'], '#')] = $r['match'];
-            foreach ($chs as &$c) $c['linked'] = $linked[$c['id']] ?? ($linked[$c['name']] ?? '');
-            unset($c);
-            out(['channels' => $chs, 'missing' => $missing]);
+            $m = vl_slack_automatch(!empty($in['save']));
+            if (!$m['channels']) fail(array_intersect(['channels:read', 'groups:read'], $missing) ? 'The Slack app needs the channels:read and groups:read scopes. Add them, reinstall the app, then paste the new token.' : 'Slack returned no channels. Check the app is installed in the workspace.');
+            out($m + ['missing' => $missing, 'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => vl_slack_label($r)], vl_slack_routes())]);
 
         case 'prefs_bot':
             // Save / clear / check the Slack bot token. Never returns the token.
@@ -271,7 +266,10 @@ try {
                     if (empty($j['ok'])) { vl_slack_bot_set($old); fail('Slack rejected the token (' . ($j['error'] ?? 'unknown') . '). Check you copied the Bot User OAuth Token.'); }
                     $have = (string)($GLOBALS['vl_slack_last_scopes'] ?? '');
                     @file_put_contents(vl_slack_scopes_file(), $have, LOCK_EX); @chmod(vl_slack_scopes_file(), 0600);
-                    out(['ok' => true, 'bot' => true, 'team' => $j['team'] ?? '', 'missing' => vl_slack_missing($have)]);
+                    // Straight away, link every property whose channel is named after it.
+                    $auto = 0; try { $auto = vl_slack_automatch(true)['saved']; } catch (Throwable $e) {}
+                    out(['ok' => true, 'bot' => true, 'team' => $j['team'] ?? '', 'missing' => vl_slack_missing($have), 'autoLinked' => $auto,
+                         'routes' => array_map(fn($r) => ['match' => $r['match'], 'tail' => vl_slack_label($r)], vl_slack_routes())]);
                 }
                 @unlink(vl_slack_scopes_file());
             }
