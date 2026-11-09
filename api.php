@@ -267,15 +267,18 @@ try {
             if ($text === '' || mb_strlen($text) > 3000) fail('Write the message first (up to 3000 characters)');
             if (vl_slack_bot_token() === '') fail('Save the Slack bot token first');
             @set_time_limit(300);
-            $seen = []; $sent = 0; $failed = [];
-            foreach (vl_slack_routes() as $r) {
+            // Sent in batches (from, count) so one request stays well under the server's time limit.
+            $from = max(0, (int)($in['from'] ?? 0)); $count = min(25, max(1, (int)($in['count'] ?? 20)));
+            $targets = []; $names = [];
+            foreach (vl_slack_routes() as $r) { $t = vl_slack_target($r); if ($t !== '' && !isset($targets[$t])) { $targets[$t] = $r; } }
+            $all = array_values($targets); $total = count($all);
+            $sent = 0; $failed = [];
+            foreach (array_slice($all, $from, $count) as $r) {
                 $t = vl_slack_target($r);
-                if ($t === '' || isset($seen[$t])) continue;
-                $seen[$t] = true;
                 if (vl_slack_post(vl_slack_esc($text), $t) === 'sent') $sent++; else $failed[] = $r['match'];
-                usleep(1100000); // Slack allows about 1 message per second per channel; stay gentle
+                usleep(300000); // stay gentle with Slack's rate limits
             }
-            out(['ok' => true, 'sent' => $sent, 'failed' => $failed]);
+            out(['ok' => true, 'sent' => $sent, 'failed' => $failed, 'total' => $total, 'next' => $from + $count < $total ? $from + $count : null]);
 
         case 'prefs_automatch':
             // Match every property (guest manuals) to its Slack channel by name; save:true links the ones found.
