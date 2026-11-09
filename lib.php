@@ -169,12 +169,12 @@ function vl_slack_invite_bot_everywhere($userTok) {
     $added = 0; $already = 0; $failed = 0; $errs = []; $cursor = '';
     for ($i = 0; $i < 15; $i++) {
         $j = vl_slack_api('users.conversations', ['types' => 'private_channel', 'exclude_archived' => true, 'limit' => 200] + ($cursor ? ['cursor' => $cursor] : []), $userTok);
-        if (empty($j['ok'])) return ['error' => 'list:' . ($j['error'] ?? 'unknown')];
+        if (empty($j['ok'])) return ['error' => 'list:' . ($j['error'] ?? 'unknown'), 'needed' => $j['needed'] ?? '', 'provided' => $j['provided'] ?? ''];
         foreach ($j['channels'] ?? [] as $c) {
             $r = vl_slack_api('conversations.invite', ['channel' => $c['id'], 'users' => $botId], $userTok);
             if (!empty($r['ok'])) $added++;
             elseif (($r['error'] ?? '') === 'already_in_channel') $already++;
-            else { $failed++; $errs[$r['error'] ?? 'unknown'] = true; }
+            else { $failed++; $errs[($r['error'] ?? 'unknown') . (!empty($r['needed']) ? ' (needs ' . $r['needed'] . ')' : '')] = true; }
         }
         $cursor = (string)($j['response_metadata']['next_cursor'] ?? '');
         if ($cursor === '') break;

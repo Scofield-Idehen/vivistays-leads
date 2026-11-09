@@ -253,7 +253,7 @@ try {
             if (isset($r['error'])) {
                 $e = $r['error'];
                 if ($e === 'other_workspace') fail('That user token is for a different Slack workspace.');
-                if (strpos($e, 'missing_scope') !== false) fail('The user token needs these User Token Scopes: groups:read and groups:write.invites. Add them, reinstall the app, then copy the new User OAuth Token.');
+                if (strpos($e, 'missing_scope') !== false) fail('That user token is missing a permission. Slack says it needs: ' . ($r['needed'] ?: 'groups:read') . '. The token you pasted only has: ' . ($r['provided'] ?: 'nothing') . '. Add the missing one under User Token Scopes, click Reinstall to Workspace, then copy the User OAuth Token again (it changes after reinstalling).');
                 fail('Slack said: ' . $e);
             }
             $m = vl_slack_automatch(true);
