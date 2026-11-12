@@ -56,7 +56,14 @@ if ($ok && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $plan = ['date' => $day, 'stops' => $stops, 'at' => gmdate('c')];
         $db->prepare("INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES ('shoot', 'plan', ?, ?)")->execute([json_encode($plan, JSON_UNESCAPED_UNICODE), gmdate('c')]);
-        echo json_encode(['ok' => true, 'plan' => $plan]);
+        // Keep a plan per day too, so several days can be scheduled ahead. Empty stops removes that day.
+        $plans = $get('plans') ?: [];
+        if ($stops) $plans[$day] = $plan; else unset($plans[$day]);
+        $cut = gmdate('Y-m-d', time() - 3 * 86400);
+        foreach (array_keys($plans) as $d) if ($d < $cut) unset($plans[$d]);
+        ksort($plans);
+        $db->prepare("INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES ('shoot', 'plans', ?, ?)")->execute([json_encode($plans ?: new stdClass(), JSON_UNESCAPED_UNICODE), gmdate('c')]);
+        echo json_encode(['ok' => true, 'plan' => $plan, 'plans' => $plans]);
         exit;
     }
     if (array_key_exists('clean', $in)) {
@@ -100,6 +107,7 @@ $prog = $get('progress') ?: new stdClass();
 $clean = $get('clean') ?: new stdClass();
 $slog = $get('log') ?: [];
 $plan = $get('plan') ?: null;
+$plans = $get('plans') ?: new stdClass();
 $embed = !empty($_GET['embed']);
 ?><!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -195,7 +203,13 @@ const CAL=<?= json_encode($cal, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 let PROG=<?= json_encode($prog, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 let LOG=<?= json_encode($slog, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
 let CLEAN=<?= json_encode($clean, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
-const PLAN=<?= json_encode($plan, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+const PLAN0=<?= json_encode($plan, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+const PLANS=<?= json_encode($plans, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+let PLAN=null;
+// The plan to show: today's if there is one, otherwise the next day planned.
+function pickPlan(){const t=ukNow().date;const all=Object.assign({},PLANS||{});if(PLAN0&&PLAN0.date&&!all[PLAN0.date])all[PLAN0.date]=PLAN0;
+  const days=Object.keys(all).filter(d=>d>=t&&all[d].stops&&all[d].stops.length).sort();PLAN=days.length?all[days[0]]:null;return {all,days}}
+pickPlan();
 const BY=new URLSearchParams(location.search).get("by")||"Yasin";
 const TEAM=BY.toLowerCase()!=="yasin";
 const KEY=<?= json_encode($k) ?>;
@@ -286,7 +300,7 @@ function ukNow(){const p=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{tim
 function hm(t){const [h,m]=t.split(":").map(Number);return h*60+m}
 function durm(m){m=Math.round(Math.abs(m));return m>=60?Math.floor(m/60)+"h "+(m%60)+"m":m+" min"}
 function dur(ms){const m=Math.round(Math.abs(ms)/6e4);return m>=60?Math.floor(m/60)+"h "+(m%60)+"m":m+" min"}
-function renderPlan(){const el=document.getElementById("plan");if(!PLAN||!PLAN.stops||!PLAN.stops.length){el.hidden=true;return}
+function renderPlan(){const el=document.getElementById("plan");const P=pickPlan();if(!PLAN||!PLAN.stops||!PLAN.stops.length){el.hidden=true;return}
   const U=ukNow(),now=U.mins,isToday=PLAN.date===U.date;el.hidden=false;
   const byId=Object.fromEntries(L.map(l=>[l.id,l]));const pi=idx(new Date(PLAN.date+"T12:00:00"));
   let curShown=false;
@@ -303,7 +317,9 @@ function renderPlan(){const el=document.getElementById("plan");if(!PLAN||!PLAN.s
     const note=[w==="am"?"Be out by 2pm, guest arrives 3pm":w==="pm"?"Not before 12 noon":"Empty all day",c?(c.s==="clean"?"Cleaned":"Not cleaned yet"):"Clean not confirmed",x.note].filter(Boolean).join(" · ");
     return `<div class="${cls}"><div class="tm">${esc(x.at)}</div><div class="nm2">${k+1}. ${esc(l.name)}<small>${esc(l.area)} · ${esc(note)}</small>${x.code&&isToday&&!d?`<span class="code2">Code: ${esc(x.code)}</span>`:""}</div><div class="tmr">${tm}</div></div>`}).join("");
   const last=PLAN.stops[PLAN.stops.length-1];const fm=last?hm(last.at)+last.mins:null;
-  el.innerHTML=`<h2 id="planh" style="margin-bottom:4px">Today's plan</h2><p class="sub" style="margin:0 0 10px">${fmt(new Date(PLAN.date+"T12:00:00"),true)} · go in this order${fm!==null?` · finish around ${String(Math.floor(fm/60)).padStart(2,"0")}:${String(fm%60).padStart(2,"0")}`:""}. Times are UK time. Codes only show on the day. Please don't share them.</p><div class="plan">${rows}</div>`}
+  const nm=Object.fromEntries(L.map(l=>[l.id,l.name]));
+  const later=P.days.filter(d=>d!==PLAN.date).map(d=>`<div class="stop"><div class="tm" style="min-width:88px">${esc(fmt(new Date(d+"T12:00:00"),true))}</div><div class="nm2">${P.all[d].stops.map(x=>esc(nm[x.id]||"")).filter(Boolean).join(", ")}<small>${P.all[d].stops.length} to shoot · times and codes show on the day</small></div><div class="tmr"></div></div>`).join("");
+  el.innerHTML=`<h2 id="planh" style="margin-bottom:4px">${isToday?"Today's plan":"Next shoot day"}</h2><p class="sub" style="margin:0 0 10px">${fmt(new Date(PLAN.date+"T12:00:00"),true)} · go in this order${fm!==null?` · finish around ${String(Math.floor(fm/60)).padStart(2,"0")}:${String(fm%60).padStart(2,"0")}`:""}. Times are UK time. Codes only show on the day. Please don't share them.</p><div class="plan">${rows}</div>${later?`<h2 style="margin:18px 0 8px">Coming up</h2><div class="plan">${later}</div>`:""}`}
 const _render=render;render=function(){_render();renderPlan()};
 setInterval(renderPlan,30000);
 render();
