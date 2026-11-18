@@ -2532,22 +2532,47 @@ function mPin(ctx,x,y,r,col){
   ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(x,y-r*2,r*0.38,0,Math.PI*2);ctx.fill();ctx.restore();
 }
 const M_MAPLIBRE="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js",M_MAPSTYLE="https://tiles.openfreemap.org/styles/liberty";
-async function mMapCanvas(lat,lng,w,h,z,pinCol){
+async function mRoute(a,b){
+  // driving route from the start (park entrance, station...) to the property, from the free OSRM router
+  try{const r=await fetch("https://router.project-osrm.org/route/v1/driving/"+a.lng+","+a.lat+";"+b.lng+","+b.lat+"?overview=full&geometries=geojson");
+    const j=await r.json();const c=j&&j.routes&&j.routes[0]&&j.routes[0].geometry&&j.routes[0].geometry.coordinates;if(c&&c.length>1)return c}catch(e){}
+  return null;
+}
+function mTag(ctx,x,y,txt,fs,bgCol,fg){
+  ctx.save();ctx.font=`700 ${fs}px VOpen, Arial, sans-serif`;const tw=ctx.measureText(txt).width,pw=fs*0.5,ph=fs*0.35,bw=tw+pw*2,bh=fs+ph*2;
+  let bx=x-bw/2,by=y-bh;bx=Math.max(4,Math.min(ctx.canvas.width-bw-4,bx));by=Math.max(4,by);
+  ctx.fillStyle="rgba(0,0,0,.25)";ctx.fillRect(bx+fs*0.12,by+fs*0.12,bw,bh);ctx.fillStyle=bgCol;ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle="#1d1d1d";ctx.lineWidth=Math.max(1,fs*0.08);ctx.strokeRect(bx,by,bw,bh);
+  ctx.fillStyle=fg;ctx.textBaseline="middle";ctx.textAlign="left";ctx.fillText(txt,bx+pw,by+bh/2);ctx.restore();return{bx,by,bw,bh}
+}
+async function mMapCanvas(lat,lng,w,h,z,pinCol,o={}){
   w=Math.round(w);h=Math.round(h);await mScript(M_MAPLIBRE);
   const pr=Math.max(1,Math.min(3,w/800)),cw=Math.max(40,Math.round(w/pr)),ch=Math.max(30,Math.round(h/pr));
   const box=document.createElement("div");box.style.cssText=`position:fixed;left:-20000px;top:0;width:${cw}px;height:${ch}px`;document.body.append(box);
   let map=null;
   try{
     const r=Math.max(9,Math.min(w,h)*0.07);
-    // centre a little above the spot so the whole pin shows
+    const route=o.route&&o.route.length>1?o.route:null;
     map=new window.maplibregl.Map({container:box,style:M_MAPSTYLE,center:[lng,lat],zoom:z-1,interactive:false,attributionControl:false,preserveDrawingBuffer:true,pixelRatio:pr,fadeDuration:0});
-    map.setPadding({top:Math.round(r*1.6/pr),bottom:0,left:0,right:0});
-    await new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error("The map took too long to load. Try again")),30000);map.once("idle",()=>{clearTimeout(t);res()})});
+    await new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error("The map took too long to load. Try again")),30000);map.once("load",()=>{clearTimeout(t);res()})});
+    if(route){
+      map.addSource("vroute",{type:"geojson",data:{type:"Feature",geometry:{type:"LineString",coordinates:route}}});
+      map.addLayer({id:"vroute-case",type:"line",source:"vroute",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ffffff","line-width":Math.max(7,cw/90)}});
+      map.addLayer({id:"vroute",type:"line",source:"vroute",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#1e78c8","line-width":Math.max(4,cw/150)}});
+      const bb=route.reduce((b,c)=>[[Math.min(b[0][0],c[0]),Math.min(b[0][1],c[1])],[Math.max(b[1][0],c[0]),Math.max(b[1][1],c[1])]],[[lng,lat],[lng,lat]]);
+      const pad=Math.round(Math.min(cw,ch)*0.16);map.fitBounds(bb,{padding:{top:pad+Math.round(r*2.2/pr),bottom:pad,left:pad,right:pad},maxZoom:17.5,duration:0});
+    }else map.setPadding({top:Math.round(r*1.6/pr),bottom:0,left:0,right:0});
+    await new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error("The map took too long to load. Try again")),30000);map.once("idle",()=>{clearTimeout(t);res()});map.triggerRepaint()});
     const cv=document.createElement("canvas");cv.width=w;cv.height=h;const ctx=cv.getContext("2d");
     ctx.fillStyle="#e9e5dc";ctx.fillRect(0,0,w,h);ctx.drawImage(map.getCanvas(),0,0,w,h);
-    const pt=map.project([lng,lat]);mPin(ctx,pt.x*w/cw,pt.y*h/ch,r,pinCol);
-    const fs=Math.max(8,Math.round(h*0.042));ctx.font=fs+"px Arial, sans-serif";const txt="© OpenFreeMap © OpenMapTiles © OpenStreetMap";const tw=ctx.measureText(txt).width;
-    ctx.fillStyle="rgba(255,255,255,.8)";ctx.fillRect(w-tw-fs*0.8,h-fs*1.5,tw+fs*0.8,fs*1.5);ctx.fillStyle="#333";ctx.textBaseline="middle";ctx.fillText(txt,w-tw-fs*0.4,h-fs*0.75);
+    const P=c=>{const p=map.project(c);return[p.x*w/cw,p.y*h/ch]};
+    const fs=Math.max(10,Math.round(Math.min(w,h)*0.05));
+    if(route){const[sx,sy]=P(route[0]);ctx.fillStyle="#1e78c8";ctx.strokeStyle="#fff";ctx.lineWidth=fs*0.18;ctx.beginPath();ctx.arc(sx,sy,fs*0.45,0,Math.PI*2);ctx.fill();ctx.stroke();
+      if(o.startLabel)mTag(ctx,sx,sy-fs*0.6,o.startLabel.toUpperCase(),Math.round(fs*0.8),"#1e78c8","#fff")}
+    const[px,py]=P([lng,lat]);mPin(ctx,px,py,r,pinCol);
+    if(o.label)mTag(ctx,px,py-r*3.2,o.label.toUpperCase(),fs,"#f5d33c","#111");
+    const af=Math.max(8,Math.round(h*0.032));ctx.font=af+"px Arial, sans-serif";const txt="© OpenFreeMap © OpenMapTiles © OpenStreetMap";const tw=ctx.measureText(txt).width;
+    ctx.fillStyle="rgba(255,255,255,.8)";ctx.fillRect(w-tw-af*0.8,h-af*1.5,tw+af*0.8,af*1.5);ctx.fillStyle="#333";ctx.textBaseline="middle";ctx.textAlign="left";ctx.fillText(txt,w-tw-af*0.4,h-af*0.75);
     return cv;
   }finally{try{map&&map.remove()}catch(e){}box.remove()}
 }
@@ -2583,7 +2608,7 @@ async function mLocationPdf(m,bytes,opt={}){
   if(!okBox&&drawMap)return{out:bytes,done:false,why:"this manual's Location page isn't laid out the usual way, so the picture wasn't changed. Untick \"Replace the map picture\" to just update the address buttons"};
   const ban={top:bTop-1,bot:bBot+2,x0:Math.max(0,x0-1),x1:Math.min(W,x1+2)};
   if(drawMap){ctx.fillStyle=bg;ctx.fillRect(ban.x0,ban.bot,ban.x1-ban.x0,Math.round(H*0.006));
-    ctx.drawImage(await mMapCanvas(L.lat,L.lng,ban.x1-ban.x0,ban.bot-ban.top,17,"#c9a55c"),ban.x0,ban.top)}
+    ctx.drawImage(await mMapCanvas(L.lat,L.lng,ban.x1-ban.x0,ban.bot-ban.top,17,"#c9a55c",{route:L.route,label:L.label,startLabel:L.startLabel}),ban.x0,ban.top)}
   // address line under the picture
   const aTop=ban.bot+H*0.009,aBot=Math.min(ban.bot+H*0.042,thumbTop-H*0.004),addr=String(L.address||"").trim();
   if(okBox&&addr&&aBot-aTop>H*0.015){ctx.fillStyle=bg;ctx.fillRect(W*0.04,aTop,W*0.92,aBot-aTop);
@@ -2608,20 +2633,29 @@ let locEdit=null;
 function locBlock(m0){
   const L=m0.location;
   const head=h("div",{class:"wifihead"},h("span",{class:"muted small",text:"Location (map page)"}),
-    locEdit&&locEdit.id===m0.id?null:h("button",{class:"btn link small",onclick:()=>{locEdit={id:m0.id,q:(L&&L.address)||m0.address||"",pin:"",map:true,res:null,busy:"",out:null};render()}},L?"Change":"Add location"));
+    locEdit&&locEdit.id===m0.id?null:h("button",{class:"btn link small",onclick:()=>{locEdit={id:m0.id,q:(L&&L.address)||m0.address||"",pin:"",map:true,res:null,busy:"",out:null,label:(L&&L.label)||m0.name,from:(L&&L.start&&L.start.q)||"",fromLabel:(L&&L.startLabel)||"Entrance"};render()}},L?"Change":"Add location"));
   if(!(locEdit&&locEdit.id===m0.id))return h("div",{class:"codeblock"},head,
     L?h("p",{class:"small",text:L.address+" · pinned at "+L.lat.toFixed(5)+", "+L.lng.toFixed(5)}):h("p",{class:"muted small",text:"No location saved yet. Add one to redraw the map picture, the address line and the Google / Apple / Waze buttons on the Location page."}));
   const e=locEdit;
   const q=h("input",{type:"text",value:e.q,placeholder:"e.g. 2 Muirfield, Seton Sands, EH32 0QF",autocomplete:"off","aria-label":"Address as guests should see it",oninput:ev=>{e.q=ev.target.value;e.out=null}});
   const pin=h("input",{type:"text",value:e.pin||"",placeholder:"Optional: paste a Google Maps link or 55.9704, -2.9300",autocomplete:"off","aria-label":"Exact pin",oninput:ev=>{e.pin=ev.target.value;e.out=null}});
+  const starts=[...new Map(manuals.filter(x=>x.location&&x.location.start&&x.location.start.q).map(x=>[x.location.start.q,x.location.start])).values()];
+  const dl=h("datalist",{id:"loc-starts"},...starts.map(st=>h("option",{value:st.q})));
+  const lab=h("input",{type:"text",value:e.label||"",placeholder:"e.g. 2 Muirfield",autocomplete:"off","aria-label":"Name tag on the map",oninput:ev=>{e.label=ev.target.value;e.out=null}});
+  const from=h("input",{type:"text",value:e.from||"",list:"loc-starts",placeholder:"Optional: park entrance or station. Address, Google Maps link or 55.97, -2.92",autocomplete:"off","aria-label":"Route from",oninput:ev=>{e.from=ev.target.value;e.out=null}});
+  const fromLab=h("input",{type:"text",value:e.fromLabel||"",placeholder:"Entrance",autocomplete:"off","aria-label":"Start label",oninput:ev=>{e.fromLabel=ev.target.value;e.out=null}});
   const mapCb=h("input",{type:"checkbox",onchange:ev=>{e.map=ev.target.checked;e.out=null;render()}});mapCb.checked=e.map!==false;
   const find=async()=>{if(!e.q.trim()&&!e.pin.trim()){toast("Type the address or postcode");return}e.busy="Searching…";e.res=null;e.out=null;render();
-    try{e.res=await mGeocode(e.q,e.pin);if(!e.res)toast("Couldn't find that. Add the postcode, or paste a Google Maps link in Exact pin")}catch(err){toast("Couldn't search the map")}e.busy="";render()};
+    try{e.res=await mGeocode(e.q,e.pin);if(!e.res)toast("Couldn't find that. Add the postcode, or paste a Google Maps link in Exact pin");
+      else if(e.from.trim()){const known=starts.find(st=>st.q===e.from.trim());const st=known&&isFinite(known.lat)?known:await mGeocode(e.from,e.from);
+        if(!st)toast("Couldn't find the route start. Paste a Google Maps link for it");
+        else{e.res.start={q:e.from.trim(),lat:st.lat,lng:st.lng};e.res.route=await mRoute(st,e.res);if(!e.res.route)toast("Couldn't draw the route, so the map will show just the pin")}}}
+    catch(err){toast("Couldn't search the map")}e.busy="";render()};
   q.addEventListener("keydown",ev=>{if(ev.key==="Enter")find()});
   const preview=async()=>{e.busy="Building the new Location page…";render();
     try{const r=await fetch("manual-pdf.php?id="+encodeURIComponent(m0.id),{credentials:"same-origin",cache:"no-store"});if(!r.ok)throw new Error(m0.name+" has no PDF in the app yet");
       const bytes=new Uint8Array(await r.arrayBuffer());
-      const t={...m0,location:{address:e.q.trim(),lat:e.res.lat,lng:e.res.lng}};
+      const t={...m0,location:{address:e.q.trim(),lat:e.res.lat,lng:e.res.lng,label:e.label.trim(),route:e.res.route||null,startLabel:e.res.route?e.fromLabel.trim():""}};
       const res=await mLocationPdf(t,bytes,{map:e.map!==false});
       if(!res.done){toast(res.why);e.busy="";render();return}
       const pdf=await window.pdfjsLib.getDocument({data:res.out.slice()}).promise;const pg=await pdf.getPage(res.page);const vp=pg.getViewport({scale:1.2});
@@ -2629,7 +2663,7 @@ function locBlock(m0){
       e.out={bytes:res.out,img:cv.toDataURL("image/jpeg",0.85),maps:res.maps,page:res.page}}
     catch(err){console.error(err);toast(err.message||"Couldn't build the page")}
     e.busy="";render()};
-  const save=async()=>{if(mBusy)return;const loc={address:e.q.trim(),lat:e.res.lat,lng:e.res.lng,found:e.res.label};
+  const save=async()=>{if(mBusy)return;const loc={address:e.q.trim(),lat:e.res.lat,lng:e.res.lng,found:e.res.label,label:e.label.trim(),route:e.res.route||null,start:e.res.start||null,startLabel:e.res.route?e.fromLabel.trim():""};
     mBusy="Saving the new "+m0.name+" manual…";render();
     try{const name=m0.file||(m0.name+" - Guest Manual ViVi Stays.pdf");
       await mUploadPdf(m0.id,new Blob([e.out.bytes],{type:"application/pdf"}),name,m0.name);
@@ -2640,12 +2674,15 @@ function locBlock(m0){
     catch(err){console.error(err);toast("Couldn't save: "+(err.message||err))}
     mBusy="";render()};
   const prev=h("div",{style:"margin-top:8px"});
-  if(e.res&&!e.out){mMapCanvas(e.res.lat,e.res.lng,900,260,17,"#c9a55c").then(c=>{c.style.cssText="width:100%;border-radius:8px;display:block";prev.append(c)}).catch(err=>prev.append(h("p",{class:"small warn",text:err.message})))}
+  if(e.res&&!e.out){mMapCanvas(e.res.lat,e.res.lng,900,300,17,"#c9a55c",{route:e.res.route,label:e.label,startLabel:e.res.route?e.fromLabel:""}).then(c=>{c.style.cssText="width:100%;border-radius:8px;display:block";prev.append(c)}).catch(err=>prev.append(h("p",{class:"small warn",text:err.message})))}
   if(e.out)prev.append(h("p",{class:"small",text:"How the Location page will look (page "+e.out.page+"). "+e.out.maps+" map buttons will open the new spot. Nothing is saved until you press Save."}),
     h("img",{src:e.out.img,alt:"New Location page",style:"width:100%;max-width:420px;border-radius:8px;display:block;border:1px solid var(--line)"}));
   return h("div",{class:"codeblock"},head,
     h("div",{class:"field"},h("label",{text:"Address as guests should see it (with postcode)"}),q),
     h("div",{class:"field"},h("label",{text:"Exact pin (optional, best for caravans)"}),pin),
+    h("div",{class:"field"},h("label",{text:"Name tag on the map"}),lab),
+    h("div",{class:"field"},h("label",{text:"Draw the route from (optional)"}),from,dl),
+    e.from.trim()?h("div",{class:"field"},h("label",{text:"Label for the start"}),fromLab):null,
     h("label",{class:"small",style:"display:flex;gap:8px;align-items:center;margin:6px 0"},mapCb,"Replace the map picture (untick to keep a hand-made site map and just update the address and buttons)"),
     h("div",{class:"btns"},h("button",{class:"btn",disabled:!!e.busy,onclick:find},e.busy==="Searching…"?"Searching…":"Find on map"),
       e.res&&!e.out?h("button",{class:"btn primary",disabled:!!e.busy,onclick:preview},e.busy&&e.busy!=="Searching…"?"Building…":"Preview the Location page"):null,
@@ -3413,7 +3450,7 @@ async function mCreateManual(c){
     let out=(await mBuildPdf(m,new File([p.out],"t.pdf",{type:"application/pdf"}))).out;let wifiDone=false;
     if(m.wifi){const w=await mWifiPdf(m,out);if(w.done){out=w.out;wifiDone=true}}
     let locDone=false;try{mBusy="Drawing the map for "+m.address+"…";render();const g=await mGeocode(m.address);
-      if(g){m.location={address:m.address,lat:g.lat,lng:g.lng,found:g.label};const r=await mLocationPdf(m,out);if(r.done){out=r.out;locDone=true}}}catch(e){console.error(e)}
+      if(g){m.location={address:m.address,lat:g.lat,lng:g.lng,found:g.label,label:name};const ts=t.location&&t.location.start;if(ts&&isFinite(ts.lat)){const rt=await mRoute(ts,g);if(rt){m.location.route=rt;m.location.start=ts;m.location.startLabel=t.location.startLabel||"Entrance"}}const r=await mLocationPdf(m,out);if(r.done){out=r.out;locDone=true}}}catch(e){console.error(e)}
     const now=new Date().toISOString();
     const docData={name,page:m.page,sections:m.sections,address:m.address,from:t.id,file:m.file,created:now,updated:now,
       log:[{at:now,by:window.VL_USER||"",what:"Created from the "+t.name+" manual"}],...(m.wifi?{wifi:m.wifi}:{}),...(locDone?{location:m.location}:{})};
