@@ -2629,6 +2629,7 @@ async function mLocationPdf(m,bytes,opt={}){
     if(key){A.set(PDFName.of("URI"),PDFString.of(url[key]));maps++}}
   return{out:await doc.save({useObjectStreams:true}),done:true,page:f.pn,maps,thumbs};
 }
+window.VL_manualTools={mLocationPdf,mRoute,mUploadPdf,mPinFrom};
 let locEdit=null;
 function locBlock(m0){
   const L=m0.location;

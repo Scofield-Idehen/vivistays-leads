@@ -136,6 +136,13 @@ try {
             if (filesize($tmp) > 60 * 1024 * 1024) { @unlink($tmp); fail('PDF is too large (60 MB max)'); }
             $fh = fopen($tmp, 'rb'); $head = fread($fh, 5); fclose($fh);
             if ($head !== '%PDF-') { @unlink($tmp); fail('That file is not a PDF'); }
+            // keep the previous PDF so a change can be undone (data/manuals/backup/, last 5 per manual)
+            if (is_file("$dir/$id.pdf")) {
+                $bd = "$dir/backup"; if (!is_dir($bd)) mkdir($bd, 0750, true);
+                @copy("$dir/$id.pdf", "$bd/$id-" . gmdate('Ymd-His') . ".pdf");
+                $old = glob("$bd/$id-*.pdf") ?: []; sort($old);
+                foreach (array_slice($old, 0, max(0, count($old) - 5)) as $f) @unlink($f);
+            }
             rename($tmp, "$dir/$id.pdf");
             $file = mb_substr(preg_replace('/[\\\\\/:*?"<>|\r\n]/', '', (string)($in['file'] ?? '')), 0, 150);
             $name = mb_substr(trim((string)($in['name'] ?? '')), 0, 120);
