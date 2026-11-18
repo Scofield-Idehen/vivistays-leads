@@ -2506,12 +2506,17 @@ async function mWifiPdf(m,bytes){
 }
 
 /* ---------- Location page: new map picture, address line and map buttons ----------
-   The team types the address or postcode. It's found with OpenStreetMap (Nominatim), falling back
-   to postcodes.io for the postcode. The map picture is drawn here from OpenStreetMap tiles
-   (credited on the picture), then the Location page image is redrawn and its Google / Apple /
-   Waze buttons pointed at the exact spot. Nothing needs a key or an account. */
+   The team types the address (and can paste a Google Maps link or coordinates for an exact pin).
+   It's found with OpenStreetMap (Nominatim), falling back to postcodes.io for the postcode.
+   The map picture is drawn in this browser with MapLibre from OpenFreeMap (free, no key, credited
+   on the picture), then the Location page image is redrawn and its Google / Apple / Waze buttons
+   pointed at the exact spot. If a manual's Location page isn't laid out the usual way, nothing is
+   changed and the team is told. */
 const M_MAPRE=/google\.[^/]+\/maps|maps\.google|goo\.gl\/maps|maps\.app\.goo\.gl|maps\.apple\.com|waze\.com/i;
-async function mGeocode(q){
+function mPinFrom(t){t=String(t||"");const m=t.match(/@(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/)||t.match(/[?&](?:q|query|ll|daddr)=(-?\d{1,2}\.\d+)(?:,|%2C)\s*(-?\d{1,3}\.\d+)/i)||t.match(/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/);
+  if(!m)return null;const lat=+m[1],lng=+m[2];return lat>49&&lat<61&&lng>-9&&lng<3?{lat,lng,label:"Exact pin "+lat.toFixed(5)+", "+lng.toFixed(5),how:"pin"}:null}
+async function mGeocode(q,pin){
+  const p=mPinFrom(pin)||mPinFrom(q);if(p)return p;
   q=String(q||"").trim();if(!q)return null;
   const pc=q.match(/\b([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})\b/i);
   try{const r=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=gb&q="+encodeURIComponent(q),{headers:{Accept:"application/json"}});
@@ -2520,28 +2525,31 @@ async function mGeocode(q){
     if(j&&j.result)return{lat:j.result.latitude,lng:j.result.longitude,label:j.result.postcode+(j.result.admin_district?", "+j.result.admin_district:""),how:"postcode"}}catch(e){}}
   return null;
 }
-function mTile(z,x,y){return new Promise(res=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>res(i);i.onerror=()=>res(null);i.src="https://tile.openstreetmap.org/"+z+"/"+x+"/"+y+".png"})}
 function mPin(ctx,x,y,r,col){
   ctx.save();ctx.fillStyle=col;ctx.strokeStyle="#fff";ctx.lineWidth=Math.max(1,r*0.16);
   ctx.beginPath();ctx.moveTo(x,y);ctx.bezierCurveTo(x-r*0.25,y-r*0.8,x-r,y-r*1.25,x-r,y-r*2);ctx.arc(x,y-r*2,r,Math.PI,0);ctx.bezierCurveTo(x+r,y-r*1.25,x+r*0.25,y-r*0.8,x,y);ctx.closePath();
   ctx.shadowColor="rgba(0,0,0,.35)";ctx.shadowBlur=r*0.5;ctx.fill();ctx.shadowBlur=0;ctx.stroke();
   ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(x,y-r*2,r*0.38,0,Math.PI*2);ctx.fill();ctx.restore();
 }
+const M_MAPLIBRE="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js",M_MAPSTYLE="https://tiles.openfreemap.org/styles/liberty";
 async function mMapCanvas(lat,lng,w,h,z,pinCol){
-  w=Math.round(w);h=Math.round(h);const cv=document.createElement("canvas");cv.width=w;cv.height=h;const ctx=cv.getContext("2d");
-  const s=Math.max(1,Math.min(3,w/900)),n=2**z,lr=lat*Math.PI/180;
-  const X=(lng+180)/360*n*256,Y=(1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n*256;
-  const vw=w/s,vh=h/s,x0=X-vw/2,y0=Y-vh*0.55;
-  ctx.fillStyle="#e9e5dc";ctx.fillRect(0,0,w,h);
-  const jobs=[];
-  for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+vw)/256);tx++)for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+vh)/256);ty++)
-    jobs.push(mTile(z,((tx%n)+n)%n,ty).then(img=>{if(img){ctx.drawImage(img,(tx*256-x0)*s,(ty*256-y0)*s,256*s,256*s);return 1}return 0}));
-  const ok=(await Promise.all(jobs)).reduce((a,b)=>a+b,0);
-  if(!ok)throw new Error("Couldn't load the map from OpenStreetMap. Check the internet connection and try again");
-  mPin(ctx,(X-x0)*s,(Y-y0)*s,Math.max(9,Math.min(w,h)*0.07),pinCol);
-  const fs=Math.max(9,Math.round(h*0.045));ctx.font=fs+"px Arial, sans-serif";const txt="© OpenStreetMap contributors";const tw=ctx.measureText(txt).width;
-  ctx.fillStyle="rgba(255,255,255,.8)";ctx.fillRect(w-tw-fs*0.8,h-fs*1.5,tw+fs*0.8,fs*1.5);ctx.fillStyle="#333";ctx.textBaseline="middle";ctx.fillText(txt,w-tw-fs*0.4,h-fs*0.75);
-  return cv;
+  w=Math.round(w);h=Math.round(h);await mScript(M_MAPLIBRE);
+  const pr=Math.max(1,Math.min(3,w/800)),cw=Math.max(40,Math.round(w/pr)),ch=Math.max(30,Math.round(h/pr));
+  const box=document.createElement("div");box.style.cssText=`position:fixed;left:-20000px;top:0;width:${cw}px;height:${ch}px`;document.body.append(box);
+  let map=null;
+  try{
+    const r=Math.max(9,Math.min(w,h)*0.07);
+    // centre a little above the spot so the whole pin shows
+    map=new window.maplibregl.Map({container:box,style:M_MAPSTYLE,center:[lng,lat],zoom:z-1,interactive:false,attributionControl:false,preserveDrawingBuffer:true,pixelRatio:pr,fadeDuration:0});
+    map.setPadding({top:Math.round(r*1.6/pr),bottom:0,left:0,right:0});
+    await new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error("The map took too long to load. Try again")),30000);map.once("idle",()=>{clearTimeout(t);res()})});
+    const cv=document.createElement("canvas");cv.width=w;cv.height=h;const ctx=cv.getContext("2d");
+    ctx.fillStyle="#e9e5dc";ctx.fillRect(0,0,w,h);ctx.drawImage(map.getCanvas(),0,0,w,h);
+    const pt=map.project([lng,lat]);mPin(ctx,pt.x*w/cw,pt.y*h/ch,r,pinCol);
+    const fs=Math.max(8,Math.round(h*0.042));ctx.font=fs+"px Arial, sans-serif";const txt="© OpenFreeMap © OpenMapTiles © OpenStreetMap";const tw=ctx.measureText(txt).width;
+    ctx.fillStyle="rgba(255,255,255,.8)";ctx.fillRect(w-tw-fs*0.8,h-fs*1.5,tw+fs*0.8,fs*1.5);ctx.fillStyle="#333";ctx.textBaseline="middle";ctx.fillText(txt,w-tw-fs*0.4,h-fs*0.75);
+    return cv;
+  }finally{try{map&&map.remove()}catch(e){}box.remove()}
 }
 function mMapUrls(L){const ll=L.lat.toFixed(6)+","+L.lng.toFixed(6);
   return{g:"https://www.google.com/maps/search/?api=1&query="+ll,a:"https://maps.apple.com/?ll="+ll+"&q="+encodeURIComponent(L.address||"ViVi Stays"),w:"https://waze.com/ul?ll="+ll+"&navigate=yes"}}
@@ -2550,7 +2558,8 @@ async function mLocPageNo(pdf){
     const a=(await pg.getAnnotations()).filter(a=>a.subtype==="Link"&&a.url&&M_MAPRE.test(a.url));if(a.length>=2)return{pn:i,links:a}}
   return null;
 }
-async function mLocationPdf(m,bytes){
+async function mLocationPdf(m,bytes,opt={}){
+  const drawMap=opt.map!==false;
   const L=m.location;if(!L||!isFinite(L.lat)||!isFinite(L.lng))return{out:bytes,done:false,why:"no location saved"};
   await mLibs();
   const pdf=await window.pdfjsLib.getDocument({data:bytes.slice()}).promise;const f=await mLocPageNo(pdf);
@@ -2561,27 +2570,30 @@ async function mLocationPdf(m,bytes){
   const W=cv.width,H=cv.height;
   const rects=f.links.map(a=>{const[x1,y1,x2,y2]=vp.convertToViewportRectangle(a.rect);return{x1:Math.min(x1,x2),x2:Math.max(x1,x2),top:Math.min(y1,y2),bot:Math.max(y1,y2)}});
   const thumbTop=Math.min(...rects.map(r=>r.top));
-  const bgc=ctx.getImageData(Math.round(W*0.015),Math.round(thumbTop-H*0.01),1,1).data,bg=`rgb(${bgc[0]},${bgc[1]},${bgc[2]})`;
-  // the wide map picture: a full-width band above the thumbnails (template position if it can't be seen)
+  const bgc=ctx.getImageData(Math.round(W*0.01),Math.round(thumbTop-H*0.008),1,1).data,bg=`rgb(${bgc[0]},${bgc[1]},${bgc[2]})`;
+  // the map picture: the big box above the map buttons
   const yS=Math.round(H*0.15),yE=Math.round(thumbTop);const d=ctx.getImageData(0,yS,W,yE-yS).data;
-  const busy=y=>{let c=0,t=0;for(let x=0;x<W;x+=4){t++;const i=((y-yS)*W+x)*4;if(Math.abs(d[i]-bgc[0])+Math.abs(d[i+1]-bgc[1])+Math.abs(d[i+2]-bgc[2])>40)c++}return c/t>0.85};
-  let y=yE-1;while(y>yS&&!busy(y))y--;const bBot=y;while(y>yS&&busy(y))y--;
-  const part=y=>{let c=0,t=0;for(let x=0;x<W;x+=4){t++;const i=((y-yS)*W+x)*4;if(Math.abs(d[i]-bgc[0])+Math.abs(d[i+1]-bgc[1])+Math.abs(d[i+2]-bgc[2])>30)c++}return c/t>0.2};
-  let bb=bBot;while(bb<yE-1&&bb-bBot<H*0.01&&part(bb+1))bb++;
-  let ban={top:y-1,bot:bb+2};
-  if(ban.bot-ban.top<H*0.08||ban.bot-ban.top>H*0.35||thumbTop-ban.bot>H*0.15)ban={top:thumbTop-H*255/841,bot:thumbTop-H*77/841};
-  ban.top=Math.round(ban.top);ban.bot=Math.round(ban.bot);
-  ctx.fillStyle=bg;ctx.fillRect(0,ban.bot,W,Math.round(H*0.008));
-  ctx.drawImage(await mMapCanvas(L.lat,L.lng,W,ban.bot-ban.top,17,"#c9a55c"),0,ban.top);
+  const off=(x,y,t)=>{const i=((y-yS)*W+x)*4;return Math.abs(d[i]-bgc[0])+Math.abs(d[i+1]-bgc[1])+Math.abs(d[i+2]-bgc[2])>t};
+  const rowFrac=y=>{let c=0,t=0;for(let x=0;x<W;x+=4){t++;if(off(x,y,40))c++}return c/t};
+  let y=yE-1;while(y>yS&&rowFrac(y)<0.5)y--;const bBot=y;while(y>yS&&rowFrac(y)>=0.5)y--;const bTop=y+1;
+  let x0=0,x1=W-1;{const cols=new Float32Array(W);let n=0;for(let yy=bTop;yy<=bBot;yy+=3){n++;for(let x=0;x<W;x++)if(off(x,yy,40))cols[x]++}
+    while(x0<W&&cols[x0]<n*0.5)x0++;while(x1>0&&cols[x1]<n*0.5)x1--}
+  const bh=bBot-bTop,bw=x1-x0;
+  const okBox=!(bh<H*0.07||bh>H*0.48||bw<W*0.5||thumbTop-bBot>H*0.2);
+  if(!okBox&&drawMap)return{out:bytes,done:false,why:"this manual's Location page isn't laid out the usual way, so the picture wasn't changed. Untick \"Replace the map picture\" to just update the address buttons"};
+  const ban={top:bTop-1,bot:bBot+2,x0:Math.max(0,x0-1),x1:Math.min(W,x1+2)};
+  if(drawMap){ctx.fillStyle=bg;ctx.fillRect(ban.x0,ban.bot,ban.x1-ban.x0,Math.round(H*0.006));
+    ctx.drawImage(await mMapCanvas(L.lat,L.lng,ban.x1-ban.x0,ban.bot-ban.top,17,"#c9a55c"),ban.x0,ban.top)}
   // address line under the picture
-  const aTop=ban.bot+H*0.011,aBot=ban.bot+H*0.044,addr=String(L.address||"").trim();
-  if(addr){ctx.fillStyle=bg;ctx.fillRect(W*0.04,aTop,W*0.92,aBot-aTop);
+  const aTop=ban.bot+H*0.009,aBot=Math.min(ban.bot+H*0.042,thumbTop-H*0.004),addr=String(L.address||"").trim();
+  if(okBox&&addr&&aBot-aTop>H*0.015){ctx.fillStyle=bg;ctx.fillRect(W*0.04,aTop,W*0.92,aBot-aTop);
     await document.fonts.load("400 12pt VOpen").catch(()=>{});
-    let fs=Math.round(H*0.0185);ctx.font=`400 ${fs}px VOpen, Arial, sans-serif`;while(ctx.measureText(addr).width>W*0.88&&fs>8){fs--;ctx.font=`400 ${fs}px VOpen, Arial, sans-serif`}
+    let fs=Math.round(Math.min(H*0.0185,(aBot-aTop)*0.62));ctx.font=`400 ${fs}px VOpen, Arial, sans-serif`;while(ctx.measureText(addr).width>W*0.88&&fs>8){fs--;ctx.font=`400 ${fs}px VOpen, Arial, sans-serif`}
     const cy=(aTop+aBot)/2,tw=ctx.measureText(addr).width;ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(addr,W/2,cy);
     ctx.fillRect(W/2-tw/2,cy+fs*0.62,tw,Math.max(1,fs*0.07))}
-  // the three small map pictures behind the buttons
-  for(const r of rects)ctx.drawImage(await mMapCanvas(L.lat,L.lng,r.x2-r.x1,r.bot-r.top,16,"#e0332e"),Math.round(r.x1),Math.round(r.top));
+  // the small map pictures behind the buttons (only when they are real map pictures, not small buttons)
+  let thumbs=0;
+  if(drawMap)for(const r of rects)if(r.bot-r.top>H*0.06&&r.x2-r.x1>W*0.15){ctx.drawImage(await mMapCanvas(L.lat,L.lng,r.x2-r.x1,r.bot-r.top,16,"#e0332e"),Math.round(r.x1),Math.round(r.top));thumbs++}
   const jpg=await new Promise(r=>cv.toBlob(b=>r(b),"image/jpeg",0.9));
   const {PDFDocument,PDFName,PDFString}=window.PDFLib;const doc=await PDFDocument.load(bytes,{ignoreEncryption:true});
   const page=doc.getPage(f.pn-1);const sz=page.getSize();const img=await doc.embedJpg(new Uint8Array(await jpg.arrayBuffer()));
@@ -2590,35 +2602,58 @@ async function mLocationPdf(m,bytes){
   if(ann)for(let i=0;i<ann.size();i++){const a=doc.context.lookup(ann.get(i));const A=a&&a.lookup&&a.lookup(PDFName.of("A"));const U=A&&A.lookup&&A.lookup(PDFName.of("URI"));if(!U)continue;
     const u=U.decodeText?U.decodeText():String(U);const key=/maps\.apple\.com/i.test(u)?"a":/waze\.com/i.test(u)?"w":/w3w\.co|what3words\.com/i.test(u)?"g":/google\.[^/]+\/maps|maps\.google|goo\.gl\/maps|maps\.app\.goo\.gl/i.test(u)?"g":null;
     if(key){A.set(PDFName.of("URI"),PDFString.of(url[key]));maps++}}
-  return{out:await doc.save({useObjectStreams:true}),done:true,page:f.pn,maps};
+  return{out:await doc.save({useObjectStreams:true}),done:true,page:f.pn,maps,thumbs};
 }
 let locEdit=null;
 function locBlock(m0){
   const L=m0.location;
   const head=h("div",{class:"wifihead"},h("span",{class:"muted small",text:"Location (map page)"}),
-    locEdit&&locEdit.id===m0.id?null:h("button",{class:"btn link small",onclick:()=>{locEdit={id:m0.id,q:(L&&L.address)||m0.address||"",res:null,busy:false};render()}},L?"Change":"Add location"));
+    locEdit&&locEdit.id===m0.id?null:h("button",{class:"btn link small",onclick:()=>{locEdit={id:m0.id,q:(L&&L.address)||m0.address||"",pin:"",map:true,res:null,busy:"",out:null};render()}},L?"Change":"Add location"));
   if(!(locEdit&&locEdit.id===m0.id))return h("div",{class:"codeblock"},head,
-    L?h("p",{class:"small",text:L.address+" · pinned at "+L.lat.toFixed(5)+", "+L.lng.toFixed(5)}):h("p",{class:"muted small",text:"No location saved yet. Add one to redraw the map picture, the address line and the Google / Apple / Waze buttons."}));
+    L?h("p",{class:"small",text:L.address+" · pinned at "+L.lat.toFixed(5)+", "+L.lng.toFixed(5)}):h("p",{class:"muted small",text:"No location saved yet. Add one to redraw the map picture, the address line and the Google / Apple / Waze buttons on the Location page."}));
   const e=locEdit;
-  const q=h("input",{type:"text",value:e.q,placeholder:"e.g. 2 Muirfield, Seton Sands, EH32 0QF",autocomplete:"off","aria-label":"Address or postcode",oninput:ev=>{e.q=ev.target.value}});
-  const find=async()=>{if(!e.q.trim()){toast("Type the address or postcode");return}e.busy=true;e.res=null;render();
-    try{e.res=await mGeocode(e.q);if(!e.res)toast("Couldn't find that. Try adding the postcode")}catch(err){toast("Couldn't search the map")}e.busy=false;render()};
+  const q=h("input",{type:"text",value:e.q,placeholder:"e.g. 2 Muirfield, Seton Sands, EH32 0QF",autocomplete:"off","aria-label":"Address as guests should see it",oninput:ev=>{e.q=ev.target.value;e.out=null}});
+  const pin=h("input",{type:"text",value:e.pin||"",placeholder:"Optional: paste a Google Maps link or 55.9704, -2.9300",autocomplete:"off","aria-label":"Exact pin",oninput:ev=>{e.pin=ev.target.value;e.out=null}});
+  const mapCb=h("input",{type:"checkbox",onchange:ev=>{e.map=ev.target.checked;e.out=null;render()}});mapCb.checked=e.map!==false;
+  const find=async()=>{if(!e.q.trim()&&!e.pin.trim()){toast("Type the address or postcode");return}e.busy="Searching…";e.res=null;e.out=null;render();
+    try{e.res=await mGeocode(e.q,e.pin);if(!e.res)toast("Couldn't find that. Add the postcode, or paste a Google Maps link in Exact pin")}catch(err){toast("Couldn't search the map")}e.busy="";render()};
   q.addEventListener("keydown",ev=>{if(ev.key==="Enter")find()});
+  const preview=async()=>{e.busy="Building the new Location page…";render();
+    try{const r=await fetch("manual-pdf.php?id="+encodeURIComponent(m0.id),{credentials:"same-origin",cache:"no-store"});if(!r.ok)throw new Error(m0.name+" has no PDF in the app yet");
+      const bytes=new Uint8Array(await r.arrayBuffer());
+      const t={...m0,location:{address:e.q.trim(),lat:e.res.lat,lng:e.res.lng}};
+      const res=await mLocationPdf(t,bytes,{map:e.map!==false});
+      if(!res.done){toast(res.why);e.busy="";render();return}
+      const pdf=await window.pdfjsLib.getDocument({data:res.out.slice()}).promise;const pg=await pdf.getPage(res.page);const vp=pg.getViewport({scale:1.2});
+      const cv=document.createElement("canvas");cv.width=vp.width;cv.height=vp.height;await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
+      e.out={bytes:res.out,img:cv.toDataURL("image/jpeg",0.85),maps:res.maps,page:res.page}}
+    catch(err){console.error(err);toast(err.message||"Couldn't build the page")}
+    e.busy="";render()};
+  const save=async()=>{if(mBusy)return;const loc={address:e.q.trim(),lat:e.res.lat,lng:e.res.lng,found:e.res.label};
+    mBusy="Saving the new "+m0.name+" manual…";render();
+    try{const name=m0.file||(m0.name+" - Guest Manual ViVi Stays.pdf");
+      await mUploadPdf(m0.id,new Blob([e.out.bytes],{type:"application/pdf"}),name,m0.name);
+      await mCachePut(m0.id,{name,bytes:e.out.bytes,saved:new Date().toISOString()});
+      const log=(m0.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what:"Location set: "+loc.address+" (Location page updated)"});
+      await db.collection("manuals").doc(m0.id).update({location:loc,updated:new Date().toISOString(),log});
+      m0.location=loc;m0.log=log;locEdit=null;toast(m0.name+" Location page updated")}
+    catch(err){console.error(err);toast("Couldn't save: "+(err.message||err))}
+    mBusy="";render()};
   const prev=h("div",{style:"margin-top:8px"});
-  if(e.res){mMapCanvas(e.res.lat,e.res.lng,900,260,17,"#c9a55c").then(c=>{c.style.cssText="width:100%;border-radius:8px;display:block";prev.append(c)}).catch(err=>prev.append(h("p",{class:"small warn",text:err.message})))}
-  const use=async()=>{const loc={address:e.q.trim(),lat:e.res.lat,lng:e.res.lng,found:e.res.label};
-    const log=(m0.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what:"Location set: "+loc.address});
-    try{await db.collection("manuals").doc(m0.id).update({location:loc,updated:new Date().toISOString(),log});m0.location=loc;m0.log=log;locEdit=null;toast("Location saved. Redrawing the map page…");render()}
-    catch(err){toast("Couldn't save the location: "+(err.message||err));return}
-    await mUpdatePdf(m0,false,{auto:true,house:false,wifi:false,location:true})};
+  if(e.res&&!e.out){mMapCanvas(e.res.lat,e.res.lng,900,260,17,"#c9a55c").then(c=>{c.style.cssText="width:100%;border-radius:8px;display:block";prev.append(c)}).catch(err=>prev.append(h("p",{class:"small warn",text:err.message})))}
+  if(e.out)prev.append(h("p",{class:"small",text:"How the Location page will look (page "+e.out.page+"). "+e.out.maps+" map buttons will open the new spot. Nothing is saved until you press Save."}),
+    h("img",{src:e.out.img,alt:"New Location page",style:"width:100%;max-width:420px;border-radius:8px;display:block;border:1px solid var(--line)"}));
   return h("div",{class:"codeblock"},head,
     h("div",{class:"field"},h("label",{text:"Address as guests should see it (with postcode)"}),q),
-    h("div",{class:"btns"},h("button",{class:"btn",disabled:e.busy,onclick:find},e.busy?"Searching…":"Find on map"),
-      e.res?h("button",{class:"btn primary",disabled:!!mBusy,onclick:use},"Use this location and update the manual"):null,
+    h("div",{class:"field"},h("label",{text:"Exact pin (optional, best for caravans)"}),pin),
+    h("label",{class:"small",style:"display:flex;gap:8px;align-items:center;margin:6px 0"},mapCb,"Replace the map picture (untick to keep a hand-made site map and just update the address and buttons)"),
+    h("div",{class:"btns"},h("button",{class:"btn",disabled:!!e.busy,onclick:find},e.busy==="Searching…"?"Searching…":"Find on map"),
+      e.res&&!e.out?h("button",{class:"btn primary",disabled:!!e.busy,onclick:preview},e.busy&&e.busy!=="Searching…"?"Building…":"Preview the Location page"):null,
+      e.out?h("button",{class:"btn primary",disabled:!!mBusy,onclick:save},"Save to the manual"):null,
       h("button",{class:"btn link",onclick:()=>{locEdit=null;render()}},"Cancel")),
-    e.res?h("p",{class:"small",text:"Found: "+e.res.label+(e.res.how==="postcode"?" (postcode centre, so check the pin)":"")}):null,
+    e.res?h("p",{class:"small",text:"Found: "+e.res.label+(e.res.how==="postcode"?" (postcode centre only. For the exact spot paste a Google Maps link in Exact pin)":"")}):null,
     prev,
-    h("p",{class:"muted small",text:"Updates the big map picture, the address line under it and the three map buttons on the Location page. Map © OpenStreetMap contributors."}));
+    h("p",{class:"muted small",text:"Map © OpenFreeMap, OpenMapTiles, OpenStreetMap contributors."}));
 }
 
 /* Rebuild the manual: House Manual page (codes and links) and the Wi-Fi page.
