@@ -3536,11 +3536,14 @@ function comboInput(value,options,set,placeholder){
 /* ---------- PROPERTIES: one list of every unit — live, onboarding or off — with its licence and who's working on it ----------
    Built on the Onboarding cards (one card per property), so nothing is kept twice. The unit sheet (xlsx) can be
    loaded at any time: it shows what would change first, and only applies it when you say so. */
-let prQ="",prSt="all",prLic="all",prMine=false,prSync=null,prBusy="",prEdit=null;
+let prQ="",prSt="all",prLic="all",prMine=false,prSync=null,prBusy="",prEdit=null,prPage=0,prAdding=null,prSheetHide=false;
+/* the reconciled unit count sheet (19 Nov 2026): [nickname, Guesty title, live|onboarding|off] */
+const PR_SHEET_DATE="19 Nov 2026",PR_SHEET=[["1 Baronet","3BR Home Nr Edinburgh, Hot Tub, Parking, Sleeps 8","live"],["1 Gullane","Family Friendly|Pool |Seton Sand |Parking| Sleep 7","live"],["103 Ainslie Street","Nr BAE Systems - Contractor Stay -Close to Tram","live"],["11 Kingsbarns","Family Holiday Home - 3BR Walk to Beach - Wi-Fi","live"],["11 Moray Place","Seton Sands 3BR Family Caravan Near Edinburgh","live"],["11 The Turnberry","The Turnberry 3BR Luxury Caravan - Near Edinburgh","live"],["110 Wardlaw way","Spacious 3BR Home, Sleeps 6, Free Parking, Garden","live"],["114 aberlady","Near Pool |3BR Family -Friendly | Sea Views| Ramp | Wi-Fi | Pet OK","live"],["115 Barclay Way","Family & Contractor Stay - Parking - Nr Edinburgh","live"],["115 Pitt Street Edin","Edinburgh Leith 1BR, Free Parking, Workspace","live"],["136 Bankhead Road","Free Parking | Nr Airport & TECA | Spacious Home","live"],["14 Falconer Place","Spacious Inverurie Stay -Nr Train Station -Parking","live"],["142 McDonald Road","Private Patio & BBQ Walk to Tram Heart of Edinburgh City Centre","live"],["147 Red Bank Road","Spacious 4BR Near Beach, Free Parking, Sleeps 9","live"],["16 Roxburgh","2BR Deluxe - Starlink -Pool -Seton Sands -Sleeps 6","live"],["16A 1 Hall Place","Central Galashiels Stay - 5-Bed - Wi-Fi - Near Town","live"],["16A 2 Hall Place","Nr Gala Water walks & countryside trails -WiFi-5BR","live"],["17 Archerfield","Archerfield Lodge-Spacious 3BR-Golf & Beach Access","live"],["17 Oswald Ave","Nr Falkirk & Edinburgh 2BR Cottage Parking Wi-Fi","live"],["17 Walter St Brunswick Village","Contractors Stays,Nr City Access & Airport,Parking","live"],["18 Archerfield","Free Parking - Seton Sands Luxury - Sleeps6 -Wi-Fi","live"],["19 Calender Place","Aberdeen Spacious House- 3 BR-Free Parking & Wi-Fi","live"],["19 Stewart Terrace","Stylish Ground Floor Apt - City Centre & Murrayfield","live"],["19 Wentworth","Seton Sands wentworth luxury lodge - 2 Beds Sleeps 6 with starlink","live"],["191 Cameron Crescent","Easy Edinburgh Access, Parking,Near Rosslyn Chapel","live"],["191 GarthTwentyFour","Spacious 6-Bed Home for 9, Free Parking, Nr Centre","live"],["19B Oliver Crescent, Hawick","Contractor, Business-Friendly 2BR in Hawick, Free Parking","live"],["2 East Shore","Beachfront 2BR, Pease Bay, Sea View, Pets, Parking","live"],["2 Gullane","Seton Sands Gullane Luxe Lodge 3BR Sleeps 8 | WiFi","live"],["2 Kingsbarns","Luxury at Seton Sands | Beach Access | Starlink","live"],["2 Muirfield","Seton Sands 3BR Premium Caravan - Near Edinburgh","live"],["20 Belfry","25 mins to Edinburgh Nr Beach & Pool Free Parking","live"],["21 Ann St Stonehaven","Premium 2Beds Sleeps4, very short walk to the Beach with Free Parking","live"],["21 Preston Crescent","Coastal 2BR, Free Parking, Edinburgh 25 Min","live"],["21 Troon","2BR Coastal Holiday Home, Sleeps 6, Seton Sands, Parking","live"],["22 Aberlady","3BR Premium Caravan | Near Edinburgh |Parking|WiFi","live"],["22 Mayfield Gardens","Spacious Aberdeen Home- Dedicated Workspace-Wi-Fi","live"],["22 New Street","Near Train & City- Paisley-8 mins Glasgow Airport","live"],["23 Kingsbarn","2BR Luxury Caravan - Seton Sands Kingsbarns Retreat - Sleeps 6","live"],["26 Forth View","Seaside Caravan Nr Edinburgh Seton Sands Family Fun","live"],["26 Victoria Park,Peebles","3BR Peebles, Glentress, Free Parking, Walk to Town","live"],["292 Hardgate","Stylish 2BR -Free Parking -Near Shops and Cafes","live"],["3 Carnoustie Drive","Carnoustie Shores - 3Beds Luxury Coastal Lodge Sleeps 8","live"],["30 Aberlady","Near Edinburgh - Seton Sands 3BR Spacious Caravan","live"],["31 Engine Rd","Ground Floor 2BR for 4, Parking, Edinburgh 25 Min","live"],["32 Silver Birch Mews Thurston Manor","Spacious Thurston Manor Caravan | Sleeps 8 | Nr Beach & Power Station","live"],["33 Aberlady","25min to Edinburgh - Parking - Wi-Fi - Seton Sands","live"],["33 Forth View Tranent","Hot Tub,Parking,Nr Edinburgh,Contractor Stay,4BED","live"],["36 Auld coal road","3BR Parking Nr Dalhousie Castle &Edinburgh Airport","live"],["36 Bankhead Crescent","Parking - Wi-Fi -Near Falkirk & Stirling -Sleeps 6","live"],["398 St Vincent Street","Glasgow City Centre, Nr Central Station, Private Parking","live"],["4 Buchan Braes","Spacious 2BR Ground Floor Sleeps 5 Near Peterhead Harbour FREE Parking Fast WiFi","live"],["42 Park Ave, Coxhoe,","Nr Durham - Free Parking- 2BR Home- Wi-Fi-Sleeps 5","live"],["43 Main St","Spacious 2BR- Parking- Nr Fife Coast & Leven Beach","live"],["44B Stevenson Drive","7 Min to City, Free Parking -Nr Airport- Sleeps 10","live"],["45C Hawick","Central Hawick Flat, Sleeps 13, Families & Work","live"],["49 Curror Street Selkirk","1BR Selkirk Town Centre Flat, Parking, Sleeps 4","live"],["4D Commissioner St","3BR Free Parking Near Hopetoun & Edinburgh Airport","live"],["5 Drummond Street","Central Edinburgh Apt, Old Town, 3 Min Royal Mile","live"],["51 Macadam Street","3BR Gateshead Stay-Parking-Nr Newcastle &Quayside","live"],["55 Aberlady","Starlink Wi-Fi - Near Pool & Beach - 3BR Seton Sands","live"],["56 Syme Place","Fife Coast Stay with Parking & Garden in Rosyth - WiFi","live"],["58 Anchor Bay - PeaseBay","Beachfront Family Escape, Pease Bay 3BR, Sleeps 7","live"],["63 Trondheim","Nr Edinburgh/Rosyth Dockyard Stylish Home Sleeps 6","live"],["64 Ponymeadows","Thurston Manor Caravan - Sleeps 6 - Nr Power Station","live"],["66 Henderson Cres, B","NR Edinburgh Airport & City Modern Home-Parking","live"],["67 strawberrybank","Stylish 2BR-Near Union Square &Train Station-Wi-Fi - Central Location","live"],["67 Surrey Crescent, Consett","Pet Friendly Home for 6, Parking, Contractors","live"],["69 Grampian Road","Aberdeen Home w/ Parking Near Centre, Harbour & Airport - Fast WiFi","live"],["69 St Andrews","Nr Beach-30 Mins to Edinburgh-3BR Coastal Caravan","live"],["7 Roxburgh Court","Super Prime Holiday Home- AirCon - Parking - Near Edinburgh","live"],["72 Balcarres Street","Morningside 2BR, Direct Bus to Old Town Edinburgh","live"],["72 Sea Road","Walk to Seaburn Beach - Sleeps 6 - Coastal Stay","live"],["74 Kidd Street","Near Beach 2BR Ground Floor Flat-Free Parking","live"],["79 Broad Street","Parking Aberdeenshire Retreat Central Peterhead","live"],["8 Stonebank","Contractor & Family Friendly House - Sleeps 8 - FREE Parking and Fast Wi-Fi","live"],["86 Cockenzie","Stylish Apt Near Golf, Beach, Wi-Fi & Free Parking","live"],["89 Greengate Street","10 Mins BAE Systems -Contractor Stay -Free Parking","live"],["89C Urquhart","Offshore Contractor 1BR University Area with Fast Wi-Fi and free parking","live"],["8E Grove Park","Glasgow West End 2BR, Free Parking, Subway 8 Min","live"],["9 Gullane","Luxury Beachside Stay Near Edinburgh with FREE Parking & Wi-Fi","live"],["9 Kingsbarns","3BR Luxe Coastal Holiday Home - Sleeps 8- Seabreeze","live"],["9 Murano Place","Edinburgh Stay | Near City Centre | Free Parking","live"],["9 Princes Street","2BR in Central Hawick, Work Trips, Borders Getaways","live"],["93/10 Liberton Gardens","Liberton 2BR for 5, Parking, Easy Edinburgh Access","live"],["98 St Andrews","Seton Sands 3Beds Caravan with fast WiFi and Free Parking","live"],["Flat 1 - Drumlanrig Square Hawick","Spacious 3BR Hawick Apartment, Sleeps 6, Parking","live"],["Flat 3 Brougham Place, Hawick","Contractor Friendly Hawick Apt, Parking, Sleeps 5","live"],["Lodge Cottage @ Craigesk","Luxe 2BR Cottage Near Edinburgh with Hot Tub - Sleeps 6 - Free Parking - Wi-Fi","live"],["12 Mallard Walk","","live"],["2 Moray Court","2 Bed 2 Bath Coastal Holiday Lodge Nr Edinburgh - Parking","live"],["9 Caledonian Place","","live"],["9 Royal Musselburgh Court","","live"],["The Grange, 7 Heriot House, Heriot, EH38 5YB","","live"],["11 The Glenn","","live"],["1 Fircroft - Dunoon","UPCOMING - Spacious Lodge w/ Sea Views - Hunters Quay - Garden","onboarding"],["1 School Street 1","UPCOMING","onboarding"],["1 Walled Garden Thurston 1","UPCOMING - Thurston Manor Caravan - Sleeps 6 - Nr Power Station","onboarding"],["11 Eaglecroft -Dunoon","UPCOMING - Free Parking - Hunters Quay 3 Bed Lodge - Coastal","onboarding"],["14 Heathercroft-Dunoon","UPCOMING - Hot Tub - Hunters Quay 3BR Lodge -Free Parking","onboarding"],["15F Fraser Place, Aberdeen 1","UPCOMING -","onboarding"],["20 DUMBIEDYKES ROAD 1","UPCOMING -","onboarding"],["33a Commercial Street, Dundee, DD1 3DG","UPCOMING - (added manually, not in export)","onboarding"],["6 St Andrews walk","UPCOMING","onboarding"],["6C Cairns Rd 1","UPCOMING -","onboarding"],["89 Clark St 1","UPCOMING -","onboarding"],["Flat 5, 5 Ayr Street 1","UPCOMING - TROON","onboarding"],["Hampden Way","UPCOMING - Akif","onboarding"],["8 Cairncatto Road AB42 1NW","UPCOMING -","onboarding"],["52C Grangeburn Road","UPCOMING","onboarding"],["16 Middlebank Cres","UPCOMING","onboarding"],["3/6 Northfield Road","UPCOMING","onboarding"],["66 st Andrews","UPCOMING","onboarding"],["19/2 Stead's Place","Spacious Apt Stay - Near City Centre & Tram -Walk to Leith","off"],["8 Breadalbane Terrace","Central Edinburgh Near Haymarket Parking,Wi-Fi","off"]];
+const prClean=n=>String(n||"").replace(/\s+1$/,"").trim();
 const PR_LIC=[["","Not checked"],["none","No licence yet"],["applied","Applied (outside the app)"],["granted","Licence granted"],["na","Not needed / exempt"]];
 const PR_LICL=Object.fromEntries(PR_LIC);
 const prStatus=c=>c.stage==="live"?"live":c.stage==="hold"?"off":c.stage==="lost"?"lost":"onboarding";
-const PR_STL={live:"Live",onboarding:"Onboarding",off:"Temp disconnected",lost:"Lost"};
+const PR_STL={live:"Live",onboarding:"Upcoming",off:"Temp disconnected",lost:"Lost"};
 /* licence picture for a card: an application in the Licences tab wins over the manual field */
 function prLicOf(c){const a=obLicence(c);
   if(a){const g=a.stage==="granted";return{k:g?"granted":"progress",t:g?"Granted":a.stage==="submitted"?"Submitted to council":"Application in progress",a,num:(c.lic&&c.lic.number)||a.licenceNumber||"",exp:(c.lic&&c.lic.expiry)||""}}
@@ -3565,22 +3568,25 @@ async function prReadSheet(file){
         const raw=String((iS>=0&&r[iS])||n).toLowerCase();const st=/inactive|disconnect/.test(raw)?"off":/pipeline|upcoming/.test(raw)?"onboarding":/live/.test(raw)?"live":null;if(!st)continue;
         units.push({name:nm,title:String((iT>=0&&r[iT])||"").trim(),type:String((iY>=0&&r[iY])||"").trim(),st,tab:n})}}
     if(!units.length)throw new Error("No units found. The sheet needs a NICKNAME column and a STATUS column (Live / Pipeline / Inactive).");
+    prSync=prCompare(units,file.name);
+  }catch(e){toast(e.message||"Couldn't read that file")}prBusy="";render()}
+function prCompare(units,label){
     const seen=new Set(),add=[],change=[],same=[];
     for(const u of units){const c=prFind(u.name);if(c){seen.add(c.id);const cur=prStatus(c);if(cur===u.st||(cur==="lost"&&u.st!=="live"))same.push({u,c});else change.push({u,c,from:cur})}else add.push(u)}
     const missing=obCards.filter(c=>!seen.has(c.id)&&prStatus(c)==="live");
-    prSync={file:file.name,units,add,change,same,missing,pick:Object.fromEntries([...add.map(u=>["a:"+u.name,true]),...change.map(x=>["c:"+x.c.id,true])])};
-  }catch(e){toast(e.message||"Couldn't read that file")}prBusy="";render()}
+    return{file:label,units,add,change,same,missing,pick:Object.fromEntries([...add.map(u=>["a:"+u.name,true]),...change.map(x=>["c:"+x.c.id,true])])}}
+const prBuiltIn=()=>prCompare(PR_SHEET.map(([name,title,st])=>({name,title,st,type:""})),"the unit sheet ("+PR_SHEET_DATE+")");
 async function prApply(){const s=prSync;let n=0;const now=new Date().toISOString();
   try{prBusy="Updating…";render();
     for(const x of s.change){if(!s.pick["c:"+x.c.id])continue;const st=x.u.st==="live"?"live":x.u.st==="off"?"hold":(["live","hold","lost"].includes(x.c.stage)?"listing":x.c.stage);
       const patch={stage:st,check:false,...(x.u.title&&!x.c.guestyTitle?{guestyTitle:x.u.title}:{})};if(st==="live"&&!x.c.liveAt)patch.liveAt=today();
       await obSave(x.c,patch,"Unit sheet: "+PR_STL[x.u.st]);n++}
     for(const u of s.add){if(!s.pick["a:"+u.name])continue;
-      await db.collection("onboard").add({property:u.name.trim(),address:"",type:"",stage:u.st==="live"?"live":u.st==="off"?"hold":"listing",source:"unit sheet",check:u.st==="onboarding",owner:{name:"",email:"",phone:""},assignee:"",next:{what:"",date:""},furnishing:{status:"",quotes:[]},notes:"",guestyTitle:u.title,...(u.st==="live"?{liveAt:today()}:{}),log:[{at:now,by:window.VL_USER||"",what:"Added from the unit sheet ("+PR_STL[u.st]+")"}],created:now,by:window.VL_USER||""});n++}
+      await db.collection("onboard").add({property:prClean(u.name),address:"",type:"",stage:u.st==="live"?"live":u.st==="off"?"hold":"listing",source:"unit sheet",check:u.st==="onboarding",owner:{name:"",email:"",phone:""},assignee:"",next:{what:"",date:""},furnishing:{status:"",quotes:[]},notes:"",guestyTitle:u.title,...(u.st==="live"?{liveAt:today()}:{}),log:[{at:now,by:window.VL_USER||"",what:"Added from the unit sheet ("+PR_STL[u.st]+")"}],created:now,by:window.VL_USER||""});n++}
     toast(n+" updated from the unit sheet");prSync=null}catch(e){toast("Stopped: "+(e.message||e))}prBusy="";render()}
 function prSyncView(){const s=prSync;const box=(k,label)=>{const i=h("input",{type:"checkbox"});i.checked=!!s.pick[k];i.onchange=()=>s.pick[k]=i.checked;return h("label",{class:"small",style:"display:flex;gap:8px;align-items:center;padding:4px 0"},i,label)};
   const n=Object.values(s.pick).filter(Boolean).length;
-  return h("div",{class:"card"},h("h3",{text:"Unit sheet: "+s.file}),
+  return h("div",{class:"card"},h("h3",{text:"Update from "+s.file}),
     h("p",{class:"muted small",text:s.units.length+" units on the sheet · "+s.same.length+" already match · "+s.change.length+" to change · "+s.add.length+" new. Untick anything that's wrong, then apply."}),
     s.change.length?h("div",{},h("h4",{text:"Status changes"}),...s.change.map(x=>box("c:"+x.c.id,x.c.property+": "+PR_STL[x.from]+" → "+PR_STL[x.u.st]+(obNorm(x.c.property)!==obNorm(x.u.name)?" (sheet: "+x.u.name+")":"")))):null,
     s.add.length?h("div",{},h("h4",{text:"New to the app"}),...s.add.map(u=>box("a:"+u.name,u.name+" · "+PR_STL[u.st]))):null,
@@ -3590,6 +3596,30 @@ function prSyncView(){const s=prSync;const box=(k,label)=>{const i=h("input",{ty
 function prCsv(list){const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
   const rows=[["Property","Status","Stage","Licence","Licence number","Licence expiry","Working on","Who","Next step","Guesty title"],...list.map(c=>{const L=prLicOf(c);return[c.property,PR_STL[prStatus(c)],OB_STAGE[c.stage]||"",L.t,L.num,L.exp,c.working?"Yes":"",c.assignee||"",(c.next&&c.next.what)||"",c.guestyTitle||""]})];
   const a=h("a",{href:URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"})),download:"vivistays-properties-"+today()+".csv"});document.body.append(a);a.click();a.remove()}
+
+function prAddForm(){const f=prAdding;const set=(k,v)=>{f[k]=v};
+  const inp=(k,ph)=>h("input",{type:"text",value:f[k]||"",placeholder:ph,oninput:e=>set(k,e.target.value)});
+  const sel=(k,opts)=>h("select",{onchange:e=>set(k,e.target.value)},...opts.map(([v,t])=>{const o=h("option",{value:v,text:t});if((f[k]||"")===v)o.selected=true;return o}));
+  async function save(){const name=String(f.property||"").trim();if(!name){toast("Add the property name");return}
+    const dup=prFind(name);if(dup&&!confirm(dup.property+" is already in the list. Add it again anyway?"))return;
+    const now=new Date().toISOString();const st=f.status||"onboarding";
+    await db.collection("onboard").add({property:name,address:(f.address||"").trim(),type:"",stage:st==="live"?"live":st==="off"?"hold":"lead",source:"added on Properties",check:false,
+      owner:{name:(f.owner||"").trim(),email:"",phone:""},assignee:f.working?(window.VL_USER||""):"",working:!!f.working,next:{what:"",date:""},furnishing:{status:"",quotes:[]},notes:"",guestyTitle:(f.title||"").trim(),
+      lic:{status:f.lic||"",number:(f.number||"").trim(),expiry:""},...(st==="live"?{liveAt:today()}:{}),
+      log:[{at:now,by:window.VL_USER||"",what:"Added on Properties as "+PR_STL[st]}],created:now,by:window.VL_USER||""});
+    toast(name+" added");prAdding=null;prQ=name;prPage=0;render()}
+  const wk=h("input",{type:"checkbox",onchange:e=>set("working",e.target.checked)});wk.checked=!!f.working;
+  return h("div",{class:"card"},h("h3",{text:"Add a property"}),
+    h("div",{class:"form"},
+      h("div",{class:"field"},h("label",{text:"Property name (as on the unit sheet)"}),inp("property","e.g. 12 Main Street")),
+      h("div",{class:"field"},h("label",{text:"Address"}),inp("address","Street, town, postcode")),
+      h("div",{class:"field"},h("label",{text:"Status"}),sel("status",[["onboarding","Upcoming"],["live","Live"],["off","Temp disconnected"]])),
+      h("div",{class:"field"},h("label",{text:"Guesty title (if listed)"}),inp("title","")),
+      h("div",{class:"field"},h("label",{text:"Owner"}),inp("owner","Owner's name")),
+      h("div",{class:"field"},h("label",{text:"Licence"}),sel("lic",PR_LIC)),
+      h("div",{class:"field"},h("label",{text:"Licence number"}),inp("number","")),
+      h("label",{class:"small",style:"display:flex;gap:8px;align-items:center"},wk,"I'm working on this one")),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:save},"Add property"),h("button",{class:"btn",onclick:()=>{prAdding=null;render()}},"Cancel")))}
 
 function prLicEditor(c){const L=prLicOf(c);
   const sel=h("select",{"aria-label":"Licence status",onchange:e=>prSetLic(c,{status:e.target.value},"Licence: "+PR_LICL[e.target.value])},...PR_LIC.map(([k,t])=>{const o=h("option",{value:k,text:t});if(((c.lic&&c.lic.status)||"")===k)o.selected=true;return o}));
@@ -3606,26 +3636,32 @@ function propertiesView(){
   const out=[head];
   if(prBusy)out.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+prBusy})));
   if(prSync)out.push(prSyncView());
+  else if(!prSheetHide&&obLoaded){const d=prBuiltIn();const n=d.add.length+d.change.length;
+    if(n)out.push(h("div",{class:"banner"},h("span",{text:"The unit sheet ("+PR_SHEET_DATE+") has "+(d.add.length?d.add.length+" propert"+(d.add.length===1?"y":"ies")+" not in this list":"")+(d.add.length&&d.change.length?" and ":"")+(d.change.length?d.change.length+" status change"+(d.change.length===1?"":"s"):"")+". "}),
+      h("button",{class:"btn primary small",onclick:()=>{prSync=d;render()}},"Review and add"),h("button",{class:"btn link small",onclick:()=>{prSheetHide=true;render()}},"Not now")))}
+  if(prAdding)out.push(prAddForm());
   const all=obCards.filter(c=>c.property);
   const cnt=k=>all.filter(c=>prStatus(c)===k).length;
   const lic=all.filter(c=>prStatus(c)!=="lost").map(prLicOf);
-  const stats=h("div",{class:"obstats"},...[["Live",cnt("live")],["Onboarding",cnt("onboarding")],["Temp disconnected",cnt("off")],["Licence granted",lic.filter(x=>x.k==="granted").length],["Licence in progress",lic.filter(x=>x.k==="progress").length],["No licence / not checked",lic.filter(x=>x.k==="none"||x.k==="unknown").length],["Being worked on",all.filter(c=>c.working).length]].map(([t,n])=>h("div",{},h("b",{text:n}),h("span",{class:"muted small",text:t}))));
-  const chips=(cur,set,opts)=>h("div",{class:"chips"},...opts.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(cur===k),onclick:()=>{set(k);render()}},t)));
+  const stats=h("div",{class:"obstats"},...[["Live",cnt("live")],["Upcoming",cnt("onboarding")],["Temp disconnected",cnt("off")],["Licence granted",lic.filter(x=>x.k==="granted").length],["Licence in progress",lic.filter(x=>x.k==="progress").length],["No licence / not checked",lic.filter(x=>x.k==="none"||x.k==="unknown").length],["Being worked on",all.filter(c=>c.working).length]].map(([t,n])=>h("div",{},h("b",{text:n}),h("span",{class:"muted small",text:t}))));
+  const chips=(cur,set,opts)=>h("div",{class:"chips"},...opts.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(cur===k),onclick:()=>{set(k);prPage=0;render()}},t)));
   const file=h("input",{type:"file",accept:".xlsx,.xls,.csv",style:"display:none",onchange:e=>{const f=e.target.files[0];if(f)prReadSheet(f);e.target.value=""}});
   const search=h("input",{class:"search",type:"search",placeholder:"Search property, owner or person",value:prQ,style:"max-width:300px",
-    oninput:e=>{prQ=e.target.value;const pos=e.target.selectionStart;render();const s=$("#main .search");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}}});
+    oninput:e=>{prQ=e.target.value;prPage=0;const pos=e.target.selectionStart;render();const s=$("#main .search");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}}});
   const q=obNorm(prQ);
   const list=all.filter(c=>(prSt==="all"?prStatus(c)!=="lost":prStatus(c)===prSt)&&(prLic==="all"||(prLic==="nolic"?["none","unknown"].includes(prLicOf(c).k):prLicOf(c).k===prLic))&&(!prMine||c.working)&&(!q||obNorm([c.property,c.address,c.owner&&c.owner.name,c.assignee,c.guestyTitle].join(" ")).includes(q)))
     .sort((a,b)=>(!!b.working-!!a.working)||String(a.property).localeCompare(String(b.property),undefined,{numeric:true}));
   out.push(stats,
-    chips(prSt,v=>prSt=v,[["all","All ("+(all.length-cnt("lost"))+")"],["live","Live"],["onboarding","Onboarding"],["off","Temp disconnected"],["lost","Lost"]]),
+    chips(prSt,v=>prSt=v,[["all","All ("+(all.length-cnt("lost"))+")"],["live","Live ("+cnt("live")+")"],["onboarding","Upcoming ("+cnt("onboarding")+")"],["off","Temp disconnected ("+cnt("off")+")"],["lost","Lost"]]),
     chips(prLic,v=>prLic=v,[["all","Any licence"],["granted","Granted"],["progress","In progress"],["nolic","No licence / not checked"],["na","Not needed"]]),
-    h("div",{class:"btns"},search,h("button",{class:"chip","aria-pressed":String(prMine),onclick:()=>{prMine=!prMine;render()}},"Being worked on only"),
+    h("div",{class:"btns"},search,h("button",{class:"chip","aria-pressed":String(prMine),onclick:()=>{prMine=!prMine;prPage=0;render()}},"Being worked on only"),
+      h("button",{class:"btn primary",onclick:()=>{prAdding={status:"onboarding"};render();scrollTo(0,0)}},"+ Add property"),
       h("button",{class:"btn",onclick:()=>file.click()},"Load unit sheet"),h("button",{class:"btn",onclick:()=>prCsv(list)},"Download CSV"),file));
   if(!all.length){out.push(h("div",{class:"card"},h("p",{class:"muted",text:"No properties yet. Tap \"Load unit sheet\" and pick the unit count spreadsheet to fill this list."})));return out}
   const stSel=c=>{const s=h("select",{"aria-label":"Status",style:"width:auto;min-width:0",onclick:e=>e.stopPropagation(),onchange:e=>prSetStatus(c,e.target.value)},...Object.entries(PR_STL).map(([k,t])=>{const o=h("option",{value:k,text:t});if(prStatus(c)===k)o.selected=true;return o}));return s};
   const wk=c=>{const i=h("input",{type:"checkbox","aria-label":"Being worked on",onclick:e=>e.stopPropagation(),onchange:e=>prWorking(c,e.target.checked)});i.checked=!!c.working;return i};
-  const rows=list.flatMap(c=>{const L=prLicOf(c);const st=prStatus(c);
+  const PER=10,pages=Math.max(1,Math.ceil(list.length/PER));if(prPage>=pages)prPage=pages-1;const pageList=list.slice(prPage*PER,prPage*PER+PER);
+  const rows=pageList.flatMap(c=>{const L=prLicOf(c);const st=prStatus(c);
     const r=h("tr",{onclick:()=>{prEdit=prEdit===c.id?null:c.id;render()}},
       h("td",{},h("b",{text:c.property}),h("div",{class:"small muted",text:st==="onboarding"?(OB_STAGE[c.stage]||""):(c.guestyTitle||"")})),
       h("td",{},stSel(c)),
@@ -3633,13 +3669,17 @@ function propertiesView(){
       h("td",{},h("label",{style:"display:flex;gap:6px;align-items:center",onclick:e=>e.stopPropagation()},wk(c),h("span",{class:"small",text:c.working?(c.assignee||"Yes"):""}))),
       h("td",{class:"hide-s small",text:(c.next&&c.next.what)?c.next.what+(c.next.date?" ("+niceDate(c.next.date)+")":""):""}));
     return prEdit===c.id?[r,h("tr",{},h("td",{colspan:"5"},prLicEditor(c)))]:[r]});
-  out.push(h("div",{class:"tk-card",style:"margin-top:12px"},h("p",{class:"sub",text:list.length+" shown. Tap a row to add the licence number, expiry or start an application."}),
-    h("div",{style:"overflow:auto"},h("table",{class:"tk-tbl"},h("thead",{},h("tr",{},h("th",{text:"Property"}),h("th",{text:"Status"}),h("th",{text:"Licence"}),h("th",{text:"Working on"}),h("th",{class:"hide-s",text:"Next step"}))),h("tbody",{},...rows)))));
+  out.push(h("div",{class:"tk-card",style:"margin-top:12px"},h("p",{class:"sub",text:list.length?("Showing "+(prPage*PER+1)+"–"+(prPage*PER+pageList.length)+" of "+list.length+". Search to find a property; tap a row to add its licence."):"Nothing matches. Try another search or filter."}),
+    h("div",{style:"overflow:auto"},h("table",{class:"tk-tbl"},h("thead",{},h("tr",{},h("th",{text:"Property"}),h("th",{text:"Status"}),h("th",{text:"Licence"}),h("th",{text:"Working on"}),h("th",{class:"hide-s",text:"Next step"}))),h("tbody",{},...rows))),
+    pages>1?h("div",{class:"btns",style:"justify-content:space-between;align-items:center;margin-top:10px"},
+      h("button",{class:"btn small",disabled:prPage===0,onclick:()=>{prPage--;prEdit=null;render()}},"‹ Previous"),
+      h("span",{class:"small muted",text:"Page "+(prPage+1)+" of "+pages}),
+      h("button",{class:"btn small",disabled:prPage>=pages-1,onclick:()=>{prPage++;prEdit=null;render()}},"Next ›")):null));
   return out;
 }
 
 /* ---------- ONBOARDING (owner → contract → furnishing → listing → licence → live) ---------- */
-let obCards=[],obSel=null,obTab="pipeline",obQ="",obMeta=null,obNew=null,obWho="";
+let obLoaded=false,obCards=[],obSel=null,obTab="pipeline",obQ="",obMeta=null,obNew=null,obWho="";
 const OB_STAGES=[["new","New / form received"],["call","Call booked"],["proposal","Proposal sent"],["contract_sent","Contract sent"],["signed","Contract signed"],["awaiting_licence","Awaiting licence"],["listing","Listing created"],["pending_licence","Listed, pending licence"],["live","Live"],["hold","On hold / temp disconnected"],["lost","Lost"]];
 const OB_STAGE=Object.fromEntries(OB_STAGES);
 const OB_BOARD=["new","call","proposal","contract_sent","signed","awaiting_licence","listing","pending_licence","hold"];
@@ -3800,7 +3840,7 @@ render();
   db.collection("photos").onSnapshot(snap=>{photosUp=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   db.collection("nl_campaigns").onSnapshot(snap=>{nlCamps=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="newsletter"&&!busy())render()},()=>{});
   db.collection("licence").onSnapshot(snap=>{const old=Object.fromEntries(licences.map(x=>[x.id,x._link]));licences=snap.docs.map(x=>({id:x.id,...x.data(),_link:old[x.id]}));if((view==="licences"||view==="properties")&&!busy())render()},()=>{});
-  db.collection("onboard").onSnapshot(snap=>{obCards=snap.docs.map(x=>({id:x.id,...x.data()}));if((view==="onboard"||view==="properties")&&!busy())render();else renderTabs()},()=>{});
+  db.collection("onboard").onSnapshot(snap=>{obLoaded=true;obCards=snap.docs.map(x=>({id:x.id,...x.data()}));if((view==="onboard"||view==="properties")&&!busy())render();else renderTabs()},()=>{});
   db.collection("prefs").onSnapshot(snap=>{prefs=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="prefs"&&!busy())render()},()=>{});
   db.collection("manuals").onSnapshot(snap=>{manuals=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="manuals"&&!busy()&&!mBusy)render()},()=>{});
   db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
