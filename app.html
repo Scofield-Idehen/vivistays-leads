@@ -3628,7 +3628,10 @@ function prLicEditor(c){const L=prLicOf(c);
     h("div",{class:"field"},h("label",{text:"Licence number"}),h("input",{type:"text",value:(c.lic&&c.lic.number)||"",placeholder:"e.g. EH-12345-F",onchange:e=>prSetLic(c,{number:e.target.value.trim()},"Licence number updated")})),
     h("div",{class:"field"},h("label",{text:"Expires"}),h("input",{type:"date",value:(c.lic&&c.lic.expiry)||"",onchange:e=>prSetLic(c,{expiry:e.target.value},"Licence expiry updated")})),
     h("div",{class:"btns"},L.a?null:h("button",{class:"btn small",onclick:()=>{licNew={property:c.property,address:c.address||"",council:"",owner:{name:(c.owner&&c.owner.name)||"",email:(c.owner&&c.owner.email)||"",phone:(c.owner&&c.owner.phone)||""},every:3,obId:c.id};go("licences")}},"Start a licence application"),
-      h("button",{class:"btn small",onclick:()=>{obSel=c.id;go("onboard")}},"Open the onboarding card"),h("button",{class:"btn link small",onclick:()=>{prEdit=null;render()}},"Close")))}
+      h("button",{class:"btn small",onclick:()=>{obSel=c.id;go("onboard")}},"Open the onboarding card"),
+      h("button",{class:"btn small",style:"color:#b42318",onclick:async()=>{if(!confirm("Remove "+c.property+" from the list? This deletes its onboarding card, notes and licence details. If it's only off for now, set it to Temp disconnected or Lost instead."))return;
+        try{await db.collection("onboard").doc(c.id).delete();prEdit=null;toast(c.property+" removed");render()}catch(e){toast("Couldn't remove it")}}},"Remove property"),
+      h("button",{class:"btn link small",onclick:()=>{prEdit=null;render()}},"Close")))}
 
 function propertiesView(){
   if(!licMeta)licLoadMeta();
@@ -3669,7 +3672,7 @@ function propertiesView(){
       h("td",{},h("label",{style:"display:flex;gap:6px;align-items:center",onclick:e=>e.stopPropagation()},wk(c),h("span",{class:"small",text:c.working?(c.assignee||"Yes"):""}))),
       h("td",{class:"hide-s small",text:(c.next&&c.next.what)?c.next.what+(c.next.date?" ("+niceDate(c.next.date)+")":""):""}));
     return prEdit===c.id?[r,h("tr",{},h("td",{colspan:"5"},prLicEditor(c)))]:[r]});
-  out.push(h("div",{class:"tk-card",style:"margin-top:12px"},h("p",{class:"sub",text:list.length?("Showing "+(prPage*PER+1)+"–"+(prPage*PER+pageList.length)+" of "+list.length+". Search to find a property; tap a row to add its licence."):"Nothing matches. Try another search or filter."}),
+  out.push(h("div",{class:"tk-card",style:"margin-top:12px"},h("p",{class:"sub",text:list.length?("Showing "+(prPage*PER+1)+"–"+(prPage*PER+pageList.length)+" of "+list.length+". Search to find a property; tap a row to add its licence or remove it."):"Nothing matches. Try another search or filter."}),
     h("div",{style:"overflow:auto"},h("table",{class:"tk-tbl"},h("thead",{},h("tr",{},h("th",{text:"Property"}),h("th",{text:"Status"}),h("th",{text:"Licence"}),h("th",{text:"Working on"}),h("th",{class:"hide-s",text:"Next step"}))),h("tbody",{},...rows))),
     pages>1?h("div",{class:"btns",style:"justify-content:space-between;align-items:center;margin-top:10px"},
       h("button",{class:"btn small",disabled:prPage===0,onclick:()=>{prPage--;prEdit=null;render()}},"‹ Previous"),
