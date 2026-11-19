@@ -17,9 +17,9 @@ if (!defined('VL_APP')) {
 // type: select | number | yesno | textarea.  default: the "nothing special" answer; answers equal to it
 // are left out of the Slack message.  always: always shown in Slack when answered.  short: Slack label.
 const PREF_FIELDS = [
-    'bed'      => ['label' => 'Bed setup', 'short' => 'Beds', 'type' => 'select', 'default' => 'As listed',
-                   'options' => ['As listed', 'Super king bed', 'King bed', 'Single beds', 'Super king split into 2 single beds', 'Sofa bed made up'],
-                   'note' => 'Only where the property has these options. We can split a super king into 2 singles; double beds can\'t be split.'],
+    'bed'      => ['label' => 'Bed setup', 'short' => 'Beds', 'type' => 'beds', 'default' => 'As listed', 'max_rooms' => 8,
+                   'options' => ['As listed', 'Super king bed', 'King bed', 'Double bed', 'Single beds', 'Super king split into 2 single beds', 'Bunk beds', 'Sofa bed made up'],
+                   'note' => 'Pick a setup for each bedroom. Only where the property has these options: we can split a super king into 2 singles; double beds can\'t be split.'],
     'cot'      => ['label' => 'Cot needed', 'short' => 'Cot', 'type' => 'yesno', 'default' => 'No'],
     'highchair'=> ['label' => 'Highchair needed', 'short' => 'Highchair', 'type' => 'yesno', 'default' => 'No'],
     'dog'      => ['label' => 'Travelling with a dog', 'short' => 'Dog', 'type' => 'yesno', 'default' => 'No',
@@ -82,6 +82,16 @@ function pref_answers($src, $fields) {
     $a = [];
     foreach ($fields as $k => $f) {
         $v = trim((string)($src[$k] ?? ''));
+        if ($f['type'] === 'beds') {
+            $rooms = $src[$k] ?? [];
+            if (!is_array($rooms)) $rooms = [$rooms];
+            $rooms = array_slice(array_values(array_filter(array_map(fn($x) => in_array(trim((string)$x), $f['options'], true) ? trim((string)$x) : '', $rooms), fn($x) => $x !== '')), 0, $f['max_rooms'] ?? 8);
+            if (!$rooms) $v = '';
+            elseif (count($rooms) === 1) $v = $rooms[0];
+            else { $v = []; foreach ($rooms as $i => $r) $v[] = 'Bedroom ' . ($i + 1) . ': ' . $r; $v = implode("\n", $v); }
+            if ($v !== '') $a[$k] = $v;
+            continue;
+        }
         if ($f['type'] === 'select') $v = in_array($v, $f['options'], true) ? $v : '';
         elseif ($f['type'] === 'yesno') $v = in_array($v, ['Yes', 'No'], true) ? $v : '';
         elseif ($f['type'] === 'number') $v = ctype_digit($v) && (int)$v >= ($f['min'] ?? 0) && (int)$v <= ($f['max'] ?? 99) ? (string)(int)$v : '';
@@ -90,22 +100,32 @@ function pref_answers($src, $fields) {
     }
     return $a;
 }
-// The answers worth telling the cleaners: anything not the default.
+// Every answer the guest gave: [label, value, special (not the usual setup), changed since their last send].
 function pref_lines($doc) {
     $out = [];
+    $prev = $doc['prevAnswers'] ?? null;
     foreach (pref_fields($doc['property'] ?? '') as $k => $f) {
         $v = $doc['answers'][$k] ?? '';
-        if ($v === '' || (!empty($f['default']) && $v === $f['default'])) continue;
-        $out[] = [$f['short'] ?? $f['label'], $v];
+        if ($v === '') continue;
+        $special = empty($f['default']) || $v !== $f['default'];
+        $changed = is_array($prev) && ($prev[$k] ?? '') !== $v;
+        $out[] = [$f['short'] ?? $f['label'], $v, $special, $changed];
     }
+    if (is_array($prev)) foreach (pref_fields($doc['property'] ?? '') as $k => $f)
+        if (($prev[$k] ?? '') !== '' && ($doc['answers'][$k] ?? '') === '') $out[] = [$f['short'] ?? $f['label'], 'removed', true, true];
     return $out;
 }
 function pref_slack_block($doc) {
     $t = 'Check-in: ' . vl_slack_esc(pref_nice_date($doc['checkin'] ?? '', $doc['checkinRaw'] ?? '') ?: 'not given')
        . ' · Code: ' . vl_slack_esc($doc['code'] ?? '');
+    if (($doc['guest'] ?? '') !== '') $t .= ' · Guest: ' . vl_slack_esc($doc['guest']);
     $lines = pref_lines($doc);
-    foreach ($lines as [$l, $v]) $t .= "\n• " . vl_slack_esc($l) . ': ' . vl_slack_esc(str_replace("\n", ' / ', $v));
-    if (!$lines) $t .= "\n• No special requests";
+    foreach ($lines as [$l, $v, $special, $changed]) {
+        $val = vl_slack_esc(str_replace("\n", ' / ', $v));
+        $t .= "\n• " . vl_slack_esc($l) . ': ' . ($special ? '*' . $val . '*' : $val) . ($changed ? '  _(changed)_' : '');
+    }
+    if (!$lines) $t .= "\n• No answers given";
+    elseif (!array_filter($lines, fn($x) => $x[2])) $t .= "\n_Nothing special: usual setup._";
     return $t;
 }
 function pref_slack_text($doc, $updated) {
@@ -170,6 +190,20 @@ function pref_digest($force = false) {
     if ($r === 'sent') @file_put_contents($f, $today, LOCK_EX);
     return $r;
 }
+// Properties for the guest's dropdown: every onboarding card that isn't lost, A-Z.
+function pref_property_list() {
+    $out = [];
+    try {
+        foreach (vl_db()->query("SELECT data FROM docs WHERE col = 'onboard'") as $r) {
+            $d = json_decode($r['data'], true) ?: [];
+            $n = trim((string)($d['property'] ?? ''));
+            if ($n !== '' && ($d['stage'] ?? '') !== 'lost') $out[$n] = true;
+        }
+    } catch (Throwable $e) {}
+    $out = array_keys($out);
+    natcasesort($out);
+    return array_values($out);
+}
 // The link to paste into Guesty. Placeholders are examples: use Guesty's own variable names.
 function pref_template($base) {
     return rtrim($base, '/') . '/s?c={{confirmation_code}}&p={{listing_nickname}}&d={{check_in_date}}';
@@ -211,6 +245,8 @@ $fromLink = [
 if (!pref_code_ok($fromLink['c'])) $fromLink['c'] = '';
 $val = [];
 foreach ($fromLink as $k => $v) $val[$k] = $v !== '' ? $v : pref_param($src[$k] ?? '', $k === 'p' ? 120 : ($k === 'g' ? 60 : 40));
+if ($fromLink['p'] === '' && $val['p'] === '__other') $val['p'] = pref_param($src['p_other'] ?? '', 120);
+$propList = $fromLink['p'] === '' ? pref_property_list() : [];
 $errors = []; $done = false; $answers = [];
 $fields = pref_fields($val['p']);
 
@@ -232,6 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $doc = [
                 'code' => $id, 'property' => $val['p'], 'checkin' => pref_date($val['in']), 'checkinRaw' => $val['in'],
                 'guest' => $val['g'], 'answers' => $answers, 'submittedAt' => $now,
+                'prevAnswers' => $old ? ($old['answers'] ?? []) : null,
                 'firstSubmittedAt' => $old['firstSubmittedAt'] ?? $now, 'submissions' => (int)($old['submissions'] ?? 0) + 1,
                 'slackStatus' => 'pending',
             ];
@@ -280,9 +317,15 @@ button{font:inherit;font-weight:600;border-radius:10px;padding:12px 16px;border:
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .count{font-size:13px;color:var(--muted);text-align:right}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+[hidden]{display:none!important}
 .foot{font-size:14px;color:var(--muted);text-align:center}
 .foot a{color:inherit}
 ul.sum{margin:8px 0 0;padding-left:20px}
+.rooms{display:grid;gap:8px;margin:-10px 0 18px}
+.room{display:grid;grid-template-columns:88px minmax(0,1fr) auto;gap:8px;align-items:center}
+.room .rl{font-size:14px;color:var(--muted);font-weight:600}
+.room .rm{width:44px;min-height:44px;padding:0;background:#fff;color:var(--ink);border-color:var(--line)}
+.rooms .add{background:#fff;color:var(--ink);border:1px dashed var(--line);min-height:44px}
 </style></head><body><div class="wrap">
 <header style="text-align:center"><img class="logo" src="img/logo.png" alt="ViVi Stays" width="180" height="47">
 <?php if ($done): ?>
@@ -298,7 +341,7 @@ ul.sum{margin:8px 0 0;padding-left:20px}
 <section class="card">
 <div class="okbox" role="status">Your preferences are saved.</div>
 <?php $lines = pref_lines(['property' => $val['p'], 'answers' => $answers]); if ($lines): ?>
-<ul class="sum"><?php foreach ($lines as [$l, $v]): ?><li><?= $h($l) ?>: <b><?= $h($v) ?></b></li><?php endforeach; ?></ul>
+<ul class="sum"><?php foreach ($lines as [$l, $v]): ?><li><?= $h($l) ?>: <b><?= nl2br($h($v)) ?></b></li><?php endforeach; ?></ul>
 <?php endif; ?>
 <p class="sub">Need to change something? <a href="<?= $h('s?' . http_build_query(array_filter($val, fn($v) => $v !== ''))) ?>">Send the form again</a> and we'll use your latest answers.</p>
 </section>
@@ -310,7 +353,11 @@ ul.sum{margin:8px 0 0;padding-left:20px}
 
 <?php if ($fromLink['in'] === '' || $fromLink['p'] === ''): ?>
 <section class="card" aria-labelledby="ah"><h2 id="ah">About your stay</h2>
-<?php if ($fromLink['p'] === ''): ?><label class="q" for="f-p"><span>Where you're staying</span><input id="f-p" type="text" name="p" value="<?= $h($val['p']) ?>" maxlength="120" placeholder="e.g. 20 Belfry, Seton Sands"></label><?php endif; ?>
+<?php if ($fromLink['p'] === ''): $inList = in_array($val['p'], $propList, true); ?>
+<label class="q" for="f-p"><span>Where you're staying</span>
+<select id="f-p" name="p"><option value="">Choose your property…</option><?php foreach ($propList as $n): ?><option<?= $val['p'] === $n ? ' selected' : '' ?>><?= $h($n) ?></option><?php endforeach; ?><option value="__other"<?= ($val['p'] !== '' && !$inList) ? ' selected' : '' ?>>Not in the list</option></select></label>
+<label class="q" for="f-po" id="po-wrap"<?= ($val['p'] !== '' && !$inList) ? '' : ' hidden' ?>><span>Property name</span><input id="f-po" type="text" name="p_other" value="<?= $inList ? '' : $h($val['p']) ?>" maxlength="120" placeholder="e.g. 20 Belfry, Seton Sands"></label>
+<?php endif; ?>
 <?php if ($fromLink['in'] === ''): ?><label class="q" for="f-in"><span>Check-in date</span><input id="f-in" type="date" name="in" value="<?= $h(pref_date($val['in']) ?: '') ?>"></label><?php endif; ?>
 </section>
 <?php endif; ?>
@@ -323,7 +370,11 @@ ul.sum{margin:8px 0 0;padding-left:20px}
 <?php if (!empty($f['note'])): ?><small><?= $h($f['note']) ?></small><?php endif; ?></fieldset>
 <?php else: ?>
 <label class="q" for="<?= $id ?>"><span><?= $h($f['label']) ?></span>
-<?php if ($f['type'] === 'select'): ?>
+<?php if ($f['type'] === 'beds'): $rooms = $v !== '' ? array_map(fn($x) => preg_replace('/^Bedroom \d+: /', '', $x), explode("\n", $v)) : [$f['default']]; ?>
+</label><div class="rooms" data-max="<?= (int)($f['max_rooms'] ?? 8) ?>">
+<?php foreach ($rooms as $i => $rv): ?><div class="room"><span class="rl">Bedroom <?= $i + 1 ?></span><select name="<?= $h($k) ?>[]" aria-label="Bedroom <?= $i + 1 ?>"><?php foreach ($f['options'] as $o): ?><option<?= $rv === $o ? ' selected' : '' ?>><?= $h($o) ?></option><?php endforeach; ?></select><button type="button" class="rm" aria-label="Remove this bedroom"<?= $i === 0 ? ' hidden' : '' ?>>✕</button></div><?php endforeach; ?>
+<button type="button" class="add">+ Add another bedroom</button></div><label class="q" style="margin-top:-10px">
+<?php elseif ($f['type'] === 'select'): ?>
 <select id="<?= $id ?>" name="<?= $h($k) ?>"><?php if (empty($f['default'])): ?><option value="">Choose…</option><?php endif; ?><?php foreach ($f['options'] as $o): ?><option<?= $v === $o ? ' selected' : '' ?>><?= $h($o) ?></option><?php endforeach; ?></select>
 <?php elseif ($f['type'] === 'number'): ?>
 <input id="<?= $id ?>" type="number" name="<?= $h($k) ?>" value="<?= $h($v) ?>" min="<?= (int)($f['min'] ?? 0) ?>" max="<?= (int)($f['max'] ?? 99) ?>" inputmode="numeric">
@@ -344,5 +395,10 @@ ul.sum{margin:8px 0 0;padding-left:20px}
 </div>
 <script>
 document.querySelectorAll("[data-count]").forEach(c=>{const t=document.getElementById(c.dataset.count);t&&t.addEventListener("input",()=>c.textContent=t.value.length)});
+const fp=document.getElementById("f-p"),po=document.getElementById("po-wrap");if(fp&&po)fp.addEventListener("change",()=>{po.hidden=fp.value!=="__other";if(!po.hidden)document.getElementById("f-po").focus()});
+document.querySelectorAll(".rooms").forEach(box=>{const max=+box.dataset.max||8,add=box.querySelector(".add");
+  const fix=()=>{const rs=box.querySelectorAll(".room");rs.forEach((r,i)=>{r.querySelector(".rl").textContent="Bedroom "+(i+1);r.querySelector("select").setAttribute("aria-label","Bedroom "+(i+1));r.querySelector(".rm").hidden=rs.length===1});add.hidden=rs.length>=max};
+  box.addEventListener("click",e=>{if(e.target.closest(".rm")){e.target.closest(".room").remove();fix()}});
+  add.addEventListener("click",()=>{const rs=box.querySelectorAll(".room");const n=rs[rs.length-1].cloneNode(true);n.querySelector("select").selectedIndex=0;box.insertBefore(n,add);fix();n.querySelector("select").focus()});fix()});
 </script>
 </body></html>
