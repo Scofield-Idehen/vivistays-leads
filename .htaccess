@@ -21,4 +21,9 @@ DirectoryIndex index.php
 
   # Short guest link: /s?c=...&p=...&d=... opens the guest preferences form.
   RewriteRule ^s/?$ prefs.php [L,QSA]
+
+  # stay.vivistays.com is for guests only: the form and its logo. Anything else goes to the main website.
+  RewriteCond %{HTTP_HOST} ^stay\.vivistays\.com$ [NC]
+  RewriteCond %{REQUEST_URI} !^/(s/?|prefs\.php|img/logo\.png|favicon\.ico)$
+  RewriteRule ^ https://vivistays.com/ [L,R=302]
 </IfModule>

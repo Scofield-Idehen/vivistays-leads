@@ -205,7 +205,23 @@ function pref_property_list() {
     return array_values($out);
 }
 // The link to paste into Guesty, with Guesty's own variable names (help.guesty.com article 9360540826397).
+// The guests' address on our own domain. Used for the Guesty link once it answers (checked at most hourly);
+// until then the link keeps using the address Leads is opened on.
+const PREF_PUBLIC_BASE = 'https://stay.vivistays.com';
+function pref_public_base() {
+    $f = __DIR__ . '/data/prefs-public.json';
+    $c = json_decode((string)@file_get_contents($f), true) ?: [];
+    if (($c['base'] ?? '') === PREF_PUBLIC_BASE && ($c['at'] ?? 0) > time() - 3600) return $c['ok'] ? PREF_PUBLIC_BASE : '';
+    $ok = false;
+    $ctx = stream_context_create(['http' => ['method' => 'GET', 'timeout' => 4, 'ignore_errors' => true, 'follow_location' => 0]]);
+    $body = @file_get_contents(PREF_PUBLIC_BASE . '/s', false, $ctx);
+    if ($body !== false && strpos($body, 'Help us get your stay ready') !== false) $ok = true;
+    @file_put_contents($f, json_encode(['base' => PREF_PUBLIC_BASE, 'ok' => $ok, 'at' => time()]), LOCK_EX);
+    return $ok ? PREF_PUBLIC_BASE : '';
+}
 function pref_template($base) {
+    $pub = pref_public_base();
+    if ($pub !== '') $base = $pub;
     return rtrim($base, '/') . '/s?c={{confirmation_code}}&p={{listing_nickname}}&d={{checkin}}&g={{guest_first}}';
 }
 // Simple per-IP limit, kept in files under data/prefs-rate/ (IP is hashed, files older than a day removed).
