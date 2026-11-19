@@ -204,9 +204,9 @@ function pref_property_list() {
     natcasesort($out);
     return array_values($out);
 }
-// The link to paste into Guesty. Placeholders are examples: use Guesty's own variable names.
+// The link to paste into Guesty, with Guesty's own variable names (help.guesty.com article 9360540826397).
 function pref_template($base) {
-    return rtrim($base, '/') . '/s?c={{confirmation_code}}&p={{listing_nickname}}&d={{check_in_date}}';
+    return rtrim($base, '/') . '/s?c={{confirmation_code}}&p={{listing_nickname}}&d={{checkin}}&g={{guest_first}}';
 }
 // Simple per-IP limit, kept in files under data/prefs-rate/ (IP is hashed, files older than a day removed).
 function pref_rate_ok() {

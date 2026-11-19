@@ -2893,8 +2893,8 @@ function pfLinkCard(){
     h("p",{class:"muted small",text:"Paste this link into a Guesty automated pre-arrival message (for example 3 days before check-in). Guesty fills in each guest's details."}),
     h("div",{class:"msg",style:"font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px",text:t}),
     h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>copy(t)},"Copy link template"),
-      h("button",{class:"btn",onclick:()=>copy("Hi {{guest_first_name}}, we're getting {{listing_nickname}} ready for you. Let us know anything you need (bed setup, cot, highchair, dog) here: "+t)},"Copy with a message")),
-    h("div",{class:"tipbox small"},h("b",{text:"Before you save it in Guesty: "}),"replace each {{…}} with Guesty's own variable names for confirmation code, listing nickname and check-in date (pick them from Guesty's variable list in the message editor). Then send yourself a test message and open the link: the property and date should show in the line under the heading."));
+      h("button",{class:"btn",onclick:()=>copy("Hi {{guest_first}}, we're getting {{listing_nickname}} ready for you. Let us know anything you need (bed setup, cot, highchair, dog) here: "+t)},"Copy with a message")),
+    h("div",{class:"tipbox small"},h("b",{text:"Uses Guesty's own variables: "}),"{{confirmation_code}}, {{listing_nickname}}, {{checkin}} and {{guest_first}}. Paste it exactly as it is: a misspelt variable can stop Guesty sending the message. Send yourself a test and open the link: your name, the property and the date should show under the heading."));
 }
 function pfSlackCard(){
   const s=pfMeta.slack, routes=pfMeta.routes||[];
