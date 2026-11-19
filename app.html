@@ -540,7 +540,7 @@ const BLANK={post:"",postUrl:"",group:"",kind:"owner",name:"",profileUrl:"",loca
 let draft={...BLANK};
 let aiBusy=false,aiNote="",aiDone=false,openPost=null;
 let stayfulInfo=null,stayfulBusy=false;
-try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","shoot","onboard","licences","prefs","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem("vl-view");if(["today","tracker","codes","shoot","properties","onboard","licences","prefs","leads","stayful","outreach","projects","social","newsletter","manuals","help","add"].includes(v))view=v}catch(e){}
 
 const isDue=l=>!CLOSED.has(l.status)&&(l.status==="new"||(!!l.nextFollowUp&&l.nextFollowUp<=today()));
 const rank={hot:0,warm:1,cold:2};
@@ -553,6 +553,7 @@ function go(v,sel){view=v;selected=sel||null;query="";try{localStorage.setItem("
 /* ---------- navigation ---------- */
 const ICON={
   onboard:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>',
+  properties:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>',
   licences:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6Z"/><path d="M15 3v4h4"/><path d="m9 14 2 2 4-4"/></svg>',
   prefs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"/><path d="M5 18v-3a7 7 0 0 1 14 0v3"/><path d="M12 8V6"/><path d="M10 6h4"/></svg>',
   shoot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
@@ -570,8 +571,8 @@ const ICON={
   codes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.5 11.5 9-9"/><path d="m17 6 3 3"/><path d="m14.5 8.5 2 2"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>'
 };
-const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["shoot","Shoot days"],["onboard","Onboarding"],["licences","Licences"],["prefs","Guest prefs"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
-const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",shoot:"Shoot",onboard:"Onboard",licences:"Licences",prefs:"Prefs",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
+const NAV=[["today","Dashboard"],["tracker","Lead tracker"],["codes","Lock codes"],["shoot","Shoot days"],["properties","Properties"],["onboard","Onboarding"],["licences","Licences"],["prefs","Guest prefs"],["leads","Facebook leads"],["stayful","Stayful landlords"],["outreach","Outreach"],["projects","Projects"],["social","Posts"],["newsletter","Newsletter"],["manuals","Guest manuals"],["help","Guides"]];
+const SHORT={today:"Home",tracker:"Tracker",codes:"Codes",shoot:"Shoot",properties:"Properties",onboard:"Onboard",licences:"Licences",prefs:"Prefs",more:"More",leads:"Leads",stayful:"Stayful",outreach:"Outreach",projects:"Projects",social:"Posts",newsletter:"Email",manuals:"Manuals",help:"Guides"};
 function navCounts(){
   return{today:leads.filter(isDue).length+contacts.filter(oDue).length,
     leads:leads.filter(l=>l.source!=="stayful"&&!CLOSED.has(l.status)).length,
@@ -624,7 +625,7 @@ function render(){
   renderTabs();
   const m=$("#main");
   m.className="wrap"+(view==="add"||view==="help"?" narrow":"");
-  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="shoot"?shootView():view==="onboard"?onboardView():view==="licences"?licencesView():view==="prefs"?prefsView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
+  const parts=view==="today"?todayView():view==="tracker"?trackerView():view==="codes"?codesView():view==="shoot"?shootView():view==="properties"?propertiesView():view==="onboard"?onboardView():view==="licences"?licencesView():view==="prefs"?prefsView():view==="leads"||view==="stayful"?leadsView():view==="outreach"?outreachView():view==="projects"?projectsView():view==="social"?socialView():view==="newsletter"?newsletterView():view==="manuals"?manualsView():view==="add"?addAnyView():helpView();
   const arr=[].concat(parts).filter(Boolean);
   const hc=selected&&window.innerWidth<=820?null:helpCard(view);if(hc)arr.splice(view==="leads"||view==="stayful"||view==="outreach"?0:1,0,hc);
   m.replaceChildren(...arr);
@@ -3532,6 +3533,111 @@ function comboInput(value,options,set,placeholder){
   return h("div",{class:"combo"},inp,list);
 }
 
+/* ---------- PROPERTIES: one list of every unit — live, onboarding or off — with its licence and who's working on it ----------
+   Built on the Onboarding cards (one card per property), so nothing is kept twice. The unit sheet (xlsx) can be
+   loaded at any time: it shows what would change first, and only applies it when you say so. */
+let prQ="",prSt="all",prLic="all",prMine=false,prSync=null,prBusy="",prEdit=null;
+const PR_LIC=[["","Not checked"],["none","No licence yet"],["applied","Applied (outside the app)"],["granted","Licence granted"],["na","Not needed / exempt"]];
+const PR_LICL=Object.fromEntries(PR_LIC);
+const prStatus=c=>c.stage==="live"?"live":c.stage==="hold"?"off":c.stage==="lost"?"lost":"onboarding";
+const PR_STL={live:"Live",onboarding:"Onboarding",off:"Temp disconnected",lost:"Lost"};
+/* licence picture for a card: an application in the Licences tab wins over the manual field */
+function prLicOf(c){const a=obLicence(c);
+  if(a){const g=a.stage==="granted";return{k:g?"granted":"progress",t:g?"Granted":a.stage==="submitted"?"Submitted to council":"Application in progress",a,num:(c.lic&&c.lic.number)||a.licenceNumber||"",exp:(c.lic&&c.lic.expiry)||""}}
+  const s=(c.lic&&c.lic.status)||"";return{k:s==="applied"?"progress":s||"unknown",t:PR_LICL[s]||"Not checked",num:(c.lic&&c.lic.number)||"",exp:(c.lic&&c.lic.expiry)||""}}
+const prKey=s=>obNorm(s).replace(/\bstreet\b/g,"st").replace(/\broad\b/g,"rd").replace(/\bcrescent\b/g,"cres").replace(/\bavenue\b/g,"ave").replace(/\bplace\b/g,"pl")
+  .replace(/\b(dunoon|pease ?bay|peasebay|thurston manor|thurston|edin|edinburgh|aberdeen|tranent|hawick|peebles|selkirk|stonehaven|consett|coxhoe|brunswick village)\b/g,"").replace(/\bthe\b/g,"").replace(/\s+\d$/,"").replace(/\b([a-z]{5,})s\b/g,"$1").replace(/\s+/g," ").trim();
+function prFind(name){const k=prKey(name);if(!k)return null;let m=obCards.find(c=>prKey(c.property)===k);if(m)return m;
+  const two=k.split(" ").slice(0,2).join(" ");if(!/\d/.test(two)||two.split(" ").length<2)return null;
+  const hits=obCards.filter(c=>prKey(c.property).split(" ").slice(0,2).join(" ")===two);return hits.length===1?hits[0]:null}
+async function prSetLic(c,patch,what){await obSave(c,{lic:{...(c.lic||{}),...patch}},what)}
+function prSetStatus(c,v){if(v===prStatus(c))return;const st=v==="live"?"live":v==="off"?"hold":v==="lost"?"lost":(["live","hold","lost"].includes(c.stage)?"listing":c.stage);obStage(c,st)}
+async function prWorking(c,on){await obSave(c,{working:on,...(on&&!c.assignee?{assignee:window.VL_USER||""}:{})},on?"Marked as being worked on":"No longer being worked on")}
+
+/* ---- unit sheet: read, compare, apply ---- */
+async function prReadSheet(file){
+  try{prBusy="Reading the unit sheet…";render();
+    if(!window.XLSX)await new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";s.onload=res;s.onerror=()=>rej(new Error("Couldn't load the spreadsheet reader"));document.head.append(s)});
+    const wb=window.XLSX.read(await file.arrayBuffer(),{type:"array"});const units=[];
+    for(const n of wb.SheetNames){const rows=window.XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false});const hi=rows.findIndex(r=>r&&r.some(x=>/^nickname$/i.test(String(x||"").trim())));if(hi<0)continue;
+      const H=rows[hi].map(x=>String(x||"").trim().toLowerCase());const ci=k=>H.indexOf(k);const iN=ci("nickname"),iT=ci("title"),iS=ci("status"),iY=ci("type of unit");
+      for(const r of rows.slice(hi+1)){const nm=String(r[iN]||"").trim();if(!nm||/^count$/i.test(nm))continue;
+        const raw=String((iS>=0&&r[iS])||n).toLowerCase();const st=/inactive|disconnect/.test(raw)?"off":/pipeline|upcoming/.test(raw)?"onboarding":/live/.test(raw)?"live":null;if(!st)continue;
+        units.push({name:nm,title:String((iT>=0&&r[iT])||"").trim(),type:String((iY>=0&&r[iY])||"").trim(),st,tab:n})}}
+    if(!units.length)throw new Error("No units found. The sheet needs a NICKNAME column and a STATUS column (Live / Pipeline / Inactive).");
+    const seen=new Set(),add=[],change=[],same=[];
+    for(const u of units){const c=prFind(u.name);if(c){seen.add(c.id);const cur=prStatus(c);if(cur===u.st||(cur==="lost"&&u.st!=="live"))same.push({u,c});else change.push({u,c,from:cur})}else add.push(u)}
+    const missing=obCards.filter(c=>!seen.has(c.id)&&prStatus(c)==="live");
+    prSync={file:file.name,units,add,change,same,missing,pick:Object.fromEntries([...add.map(u=>["a:"+u.name,true]),...change.map(x=>["c:"+x.c.id,true])])};
+  }catch(e){toast(e.message||"Couldn't read that file")}prBusy="";render()}
+async function prApply(){const s=prSync;let n=0;const now=new Date().toISOString();
+  try{prBusy="Updating…";render();
+    for(const x of s.change){if(!s.pick["c:"+x.c.id])continue;const st=x.u.st==="live"?"live":x.u.st==="off"?"hold":(["live","hold","lost"].includes(x.c.stage)?"listing":x.c.stage);
+      const patch={stage:st,check:false,...(x.u.title&&!x.c.guestyTitle?{guestyTitle:x.u.title}:{})};if(st==="live"&&!x.c.liveAt)patch.liveAt=today();
+      await obSave(x.c,patch,"Unit sheet: "+PR_STL[x.u.st]);n++}
+    for(const u of s.add){if(!s.pick["a:"+u.name])continue;
+      await db.collection("onboard").add({property:u.name.trim(),address:"",type:"",stage:u.st==="live"?"live":u.st==="off"?"hold":"listing",source:"unit sheet",check:u.st==="onboarding",owner:{name:"",email:"",phone:""},assignee:"",next:{what:"",date:""},furnishing:{status:"",quotes:[]},notes:"",guestyTitle:u.title,...(u.st==="live"?{liveAt:today()}:{}),log:[{at:now,by:window.VL_USER||"",what:"Added from the unit sheet ("+PR_STL[u.st]+")"}],created:now,by:window.VL_USER||""});n++}
+    toast(n+" updated from the unit sheet");prSync=null}catch(e){toast("Stopped: "+(e.message||e))}prBusy="";render()}
+function prSyncView(){const s=prSync;const box=(k,label)=>{const i=h("input",{type:"checkbox"});i.checked=!!s.pick[k];i.onchange=()=>s.pick[k]=i.checked;return h("label",{class:"small",style:"display:flex;gap:8px;align-items:center;padding:4px 0"},i,label)};
+  const n=Object.values(s.pick).filter(Boolean).length;
+  return h("div",{class:"card"},h("h3",{text:"Unit sheet: "+s.file}),
+    h("p",{class:"muted small",text:s.units.length+" units on the sheet · "+s.same.length+" already match · "+s.change.length+" to change · "+s.add.length+" new. Untick anything that's wrong, then apply."}),
+    s.change.length?h("div",{},h("h4",{text:"Status changes"}),...s.change.map(x=>box("c:"+x.c.id,x.c.property+": "+PR_STL[x.from]+" → "+PR_STL[x.u.st]+(obNorm(x.c.property)!==obNorm(x.u.name)?" (sheet: "+x.u.name+")":"")))):null,
+    s.add.length?h("div",{},h("h4",{text:"New to the app"}),...s.add.map(u=>box("a:"+u.name,u.name+" · "+PR_STL[u.st]))):null,
+    s.missing.length?h("div",{},h("h4",{text:"Live in the app but not on the sheet ("+s.missing.length+")"}),h("p",{class:"muted small",text:"Not changed. Check these by hand: renamed on the sheet, or no longer live?"}),h("p",{class:"small",text:s.missing.map(c=>c.property).join(" · ")})):null,
+    h("div",{class:"btns"},h("button",{class:"btn primary",disabled:!n||!!prBusy,onclick:prApply},"Apply "+n+" change"+(n===1?"":"s")),h("button",{class:"btn",onclick:()=>{prSync=null;render()}},"Cancel")))}
+
+function prCsv(list){const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+  const rows=[["Property","Status","Stage","Licence","Licence number","Licence expiry","Working on","Who","Next step","Guesty title"],...list.map(c=>{const L=prLicOf(c);return[c.property,PR_STL[prStatus(c)],OB_STAGE[c.stage]||"",L.t,L.num,L.exp,c.working?"Yes":"",c.assignee||"",(c.next&&c.next.what)||"",c.guestyTitle||""]})];
+  const a=h("a",{href:URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"})),download:"vivistays-properties-"+today()+".csv"});document.body.append(a);a.click();a.remove()}
+
+function prLicEditor(c){const L=prLicOf(c);
+  const sel=h("select",{"aria-label":"Licence status",onchange:e=>prSetLic(c,{status:e.target.value},"Licence: "+PR_LICL[e.target.value])},...PR_LIC.map(([k,t])=>{const o=h("option",{value:k,text:t});if(((c.lic&&c.lic.status)||"")===k)o.selected=true;return o}));
+  return h("div",{class:"form",style:"margin-top:8px"},
+    L.a?h("p",{class:"small",text:"Licence application in the app: "+L.t+". "},h("button",{class:"btn link small",onclick:()=>{licSel=L.a.id;go("licences")}},"Open it")):h("div",{class:"field"},h("label",{text:"Licence"}),sel),
+    h("div",{class:"field"},h("label",{text:"Licence number"}),h("input",{type:"text",value:(c.lic&&c.lic.number)||"",placeholder:"e.g. EH-12345-F",onchange:e=>prSetLic(c,{number:e.target.value.trim()},"Licence number updated")})),
+    h("div",{class:"field"},h("label",{text:"Expires"}),h("input",{type:"date",value:(c.lic&&c.lic.expiry)||"",onchange:e=>prSetLic(c,{expiry:e.target.value},"Licence expiry updated")})),
+    h("div",{class:"btns"},L.a?null:h("button",{class:"btn small",onclick:()=>{licNew={property:c.property,address:c.address||"",council:"",owner:{name:(c.owner&&c.owner.name)||"",email:(c.owner&&c.owner.email)||"",phone:(c.owner&&c.owner.phone)||""},every:3,obId:c.id};go("licences")}},"Start a licence application"),
+      h("button",{class:"btn small",onclick:()=>{obSel=c.id;go("onboard")}},"Open the onboarding card"),h("button",{class:"btn link small",onclick:()=>{prEdit=null;render()}},"Close")))}
+
+function propertiesView(){
+  if(!licMeta)licLoadMeta();
+  const head=h("div",{},h("h1",{text:"Properties"}),h("p",{class:"muted",text:"Every unit in one list: live, onboarding or off, its licence, and whether someone is working on it. Load the unit sheet whenever it changes."}));
+  const out=[head];
+  if(prBusy)out.push(h("div",{class:"banner"},h("span",{class:"spin"}),h("span",{text:" "+prBusy})));
+  if(prSync)out.push(prSyncView());
+  const all=obCards.filter(c=>c.property);
+  const cnt=k=>all.filter(c=>prStatus(c)===k).length;
+  const lic=all.filter(c=>prStatus(c)!=="lost").map(prLicOf);
+  const stats=h("div",{class:"obstats"},...[["Live",cnt("live")],["Onboarding",cnt("onboarding")],["Temp disconnected",cnt("off")],["Licence granted",lic.filter(x=>x.k==="granted").length],["Licence in progress",lic.filter(x=>x.k==="progress").length],["No licence / not checked",lic.filter(x=>x.k==="none"||x.k==="unknown").length],["Being worked on",all.filter(c=>c.working).length]].map(([t,n])=>h("div",{},h("b",{text:n}),h("span",{class:"muted small",text:t}))));
+  const chips=(cur,set,opts)=>h("div",{class:"chips"},...opts.map(([k,t])=>h("button",{class:"chip","aria-pressed":String(cur===k),onclick:()=>{set(k);render()}},t)));
+  const file=h("input",{type:"file",accept:".xlsx,.xls,.csv",style:"display:none",onchange:e=>{const f=e.target.files[0];if(f)prReadSheet(f);e.target.value=""}});
+  const search=h("input",{class:"search",type:"search",placeholder:"Search property, owner or person",value:prQ,style:"max-width:300px",
+    oninput:e=>{prQ=e.target.value;const pos=e.target.selectionStart;render();const s=$("#main .search");if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}}}});
+  const q=obNorm(prQ);
+  const list=all.filter(c=>(prSt==="all"?prStatus(c)!=="lost":prStatus(c)===prSt)&&(prLic==="all"||(prLic==="nolic"?["none","unknown"].includes(prLicOf(c).k):prLicOf(c).k===prLic))&&(!prMine||c.working)&&(!q||obNorm([c.property,c.address,c.owner&&c.owner.name,c.assignee,c.guestyTitle].join(" ")).includes(q)))
+    .sort((a,b)=>(!!b.working-!!a.working)||String(a.property).localeCompare(String(b.property),undefined,{numeric:true}));
+  out.push(stats,
+    chips(prSt,v=>prSt=v,[["all","All ("+(all.length-cnt("lost"))+")"],["live","Live"],["onboarding","Onboarding"],["off","Temp disconnected"],["lost","Lost"]]),
+    chips(prLic,v=>prLic=v,[["all","Any licence"],["granted","Granted"],["progress","In progress"],["nolic","No licence / not checked"],["na","Not needed"]]),
+    h("div",{class:"btns"},search,h("button",{class:"chip","aria-pressed":String(prMine),onclick:()=>{prMine=!prMine;render()}},"Being worked on only"),
+      h("button",{class:"btn",onclick:()=>file.click()},"Load unit sheet"),h("button",{class:"btn",onclick:()=>prCsv(list)},"Download CSV"),file));
+  if(!all.length){out.push(h("div",{class:"card"},h("p",{class:"muted",text:"No properties yet. Tap \"Load unit sheet\" and pick the unit count spreadsheet to fill this list."})));return out}
+  const stSel=c=>{const s=h("select",{"aria-label":"Status",style:"width:auto;min-width:0",onclick:e=>e.stopPropagation(),onchange:e=>prSetStatus(c,e.target.value)},...Object.entries(PR_STL).map(([k,t])=>{const o=h("option",{value:k,text:t});if(prStatus(c)===k)o.selected=true;return o}));return s};
+  const wk=c=>{const i=h("input",{type:"checkbox","aria-label":"Being worked on",onclick:e=>e.stopPropagation(),onchange:e=>prWorking(c,e.target.checked)});i.checked=!!c.working;return i};
+  const rows=list.flatMap(c=>{const L=prLicOf(c);const st=prStatus(c);
+    const r=h("tr",{onclick:()=>{prEdit=prEdit===c.id?null:c.id;render()}},
+      h("td",{},h("b",{text:c.property}),h("div",{class:"small muted",text:st==="onboarding"?(OB_STAGE[c.stage]||""):(c.guestyTitle||"")})),
+      h("td",{},stSel(c)),
+      h("td",{},h("span",{class:"obtag"+(L.k==="granted"||L.k==="progress"||L.k==="na"?"":" warn"),style:"white-space:nowrap",text:L.t}),L.num?h("div",{class:"small muted",text:L.num+(L.exp?" · exp "+L.exp:"")}):null),
+      h("td",{},h("label",{style:"display:flex;gap:6px;align-items:center",onclick:e=>e.stopPropagation()},wk(c),h("span",{class:"small",text:c.working?(c.assignee||"Yes"):""}))),
+      h("td",{class:"hide-s small",text:(c.next&&c.next.what)?c.next.what+(c.next.date?" ("+niceDate(c.next.date)+")":""):""}));
+    return prEdit===c.id?[r,h("tr",{},h("td",{colspan:"5"},prLicEditor(c)))]:[r]});
+  out.push(h("div",{class:"tk-card",style:"margin-top:12px"},h("p",{class:"sub",text:list.length+" shown. Tap a row to add the licence number, expiry or start an application."}),
+    h("div",{style:"overflow:auto"},h("table",{class:"tk-tbl"},h("thead",{},h("tr",{},h("th",{text:"Property"}),h("th",{text:"Status"}),h("th",{text:"Licence"}),h("th",{text:"Working on"}),h("th",{class:"hide-s",text:"Next step"}))),h("tbody",{},...rows)))));
+  return out;
+}
+
 /* ---------- ONBOARDING (owner → contract → furnishing → listing → licence → live) ---------- */
 let obCards=[],obSel=null,obTab="pipeline",obQ="",obMeta=null,obNew=null,obWho="";
 const OB_STAGES=[["new","New / form received"],["call","Call booked"],["proposal","Proposal sent"],["contract_sent","Contract sent"],["signed","Contract signed"],["awaiting_licence","Awaiting licence"],["listing","Listing created"],["pending_licence","Listed, pending licence"],["live","Live"],["hold","On hold / temp disconnected"],["lost","Lost"]];
@@ -3693,8 +3799,8 @@ render();
   db.collection("groups").onSnapshot(snap=>{groups=snap.docs.map(x=>({id:x.id,...x.data()}));if(!busy())render()},()=>{});
   db.collection("photos").onSnapshot(snap=>{photosUp=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
   db.collection("nl_campaigns").onSnapshot(snap=>{nlCamps=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="newsletter"&&!busy())render()},()=>{});
-  db.collection("licence").onSnapshot(snap=>{const old=Object.fromEntries(licences.map(x=>[x.id,x._link]));licences=snap.docs.map(x=>({id:x.id,...x.data(),_link:old[x.id]}));if(view==="licences"&&!busy())render()},()=>{});
-  db.collection("onboard").onSnapshot(snap=>{obCards=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="onboard"&&!busy())render();else renderTabs()},()=>{});
+  db.collection("licence").onSnapshot(snap=>{const old=Object.fromEntries(licences.map(x=>[x.id,x._link]));licences=snap.docs.map(x=>({id:x.id,...x.data(),_link:old[x.id]}));if((view==="licences"||view==="properties")&&!busy())render()},()=>{});
+  db.collection("onboard").onSnapshot(snap=>{obCards=snap.docs.map(x=>({id:x.id,...x.data()}));if((view==="onboard"||view==="properties")&&!busy())render();else renderTabs()},()=>{});
   db.collection("prefs").onSnapshot(snap=>{prefs=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="prefs"&&!busy())render()},()=>{});
   db.collection("manuals").onSnapshot(snap=>{manuals=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="manuals"&&!busy()&&!mBusy)render()},()=>{});
   db.collection("social").onSnapshot(snap=>{social=snap.docs.map(x=>({id:x.id,...x.data()}));if(view==="social"&&!busy())render()},()=>{});
