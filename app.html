@@ -2834,7 +2834,8 @@ async function mMapPicture(bytes){
 }
 async function vxLoad(){if(vx||vxBusy==="load")return;vxBusy="load";try{vx=await licApi("vivixo_settings")}catch(e){vx={linked:false,hint:null}}vxBusy="";render()}
 async function vxSave(key){vxBusy="Saving…";render();try{vx=await licApi("vivixo_settings",{key});vxKey="";toast(key?"Vivixo key saved":"Vivixo key removed")}catch(e){toast(e.message)}vxBusy="";render()}
-async function vxSendOne(m){const map=await mMapPicture(await mTplPdf(m));return licApi("vivixo_map",{home:m.name,...map})}
+// m.vivixoName: the home's name in Vivixo when it differs from the manual's ("1 Baronet" for "1 Baronet Park").
+async function vxSendOne(m){const map=await mMapPicture(await mTplPdf(m));return licApi("vivixo_map",{home:m.vivixoName||m.name,...map})}
 async function vxSend(list){
   const todo=list.filter(m=>m.pdfAt);if(!todo.length)return;
   vxReport={sent:[],failed:[],total:todo.length};
