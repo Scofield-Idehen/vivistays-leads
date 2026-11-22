@@ -2820,7 +2820,8 @@ async function mMapPicture(bytes){
   const yS=Math.round(H*0.15),yE=Math.round(thumbTop);const d=ctx.getImageData(0,yS,W,yE-yS).data;
   const off=(x,y,t)=>{const i=((y-yS)*W+x)*4;return Math.abs(d[i]-bgc[0])+Math.abs(d[i+1]-bgc[1])+Math.abs(d[i+2]-bgc[2])>t};
   const rowFrac=y=>{let c=0,t=0;for(let x=0;x<W;x+=4){t++;if(off(x,y,40))c++}return c/t};
-  let y=yE-1;while(y>yS&&rowFrac(y)<0.5)y--;const bBot=y;while(y>yS&&rowFrac(y)>=0.5)y--;const bTop=y+1;
+  // the tallest band of rows that aren't the page colour (a thin line, such as the address underline, is skipped)
+  let bTop=0,bBot=-1;{let runEnd=-1;for(let y=yE-1;y>=yS;y--){const on=rowFrac(y)>=0.5;if(on&&runEnd<0)runEnd=y;if((!on||y===yS)&&runEnd>=0){const top=on?y:y+1;if(runEnd-top>bBot-bTop){bTop=top;bBot=runEnd}runEnd=-1}}}
   let x0=0,x1=W-1;{const cols=new Float32Array(W);let n=0;for(let yy=bTop;yy<=bBot;yy+=3){n++;for(let x=0;x<W;x++)if(off(x,yy,40))cols[x]++}
     while(x0<W&&cols[x0]<n*0.5)x0++;while(x1>0&&cols[x1]<n*0.5)x1--}
   const bh=bBot-bTop,bw=x1-x0;
