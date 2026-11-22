@@ -89,6 +89,35 @@ function vl_slack_set($url) {
     file_put_contents(vl_slack_file(), $url, LOCK_EX);
     @chmod(vl_slack_file(), 0600);
 }
+// ---------- Vivixo (22 Nov 2026): send each home's map from its guest manual ----------
+// The key is made in Vivixo (Workspace > Vivistays Leads) and pasted in the app (Guest manuals >
+// Vivixo maps). Kept in data/vivixo-key.txt (never in GitHub, never served).
+const VL_VIVIXO_URL = 'https://app.vivixo.io/v1/leads-link/home-map';
+function vl_vivixo_file() { return __DIR__ . '/data/vivixo-key.txt'; }
+function vl_vivixo_key() { $f = vl_vivixo_file(); return is_file($f) ? trim((string)@file_get_contents($f)) : ''; }
+function vl_vivixo_set($key) {
+    $dir = __DIR__ . '/data';
+    if (!is_dir($dir)) mkdir($dir, 0750, true);
+    if ($key === '') { @unlink(vl_vivixo_file()); return; }
+    file_put_contents(vl_vivixo_file(), $key, LOCK_EX);
+    @chmod(vl_vivixo_file(), 0600);
+}
+// One home's map to Vivixo. Returns [http status, decoded reply].
+function vl_vivixo_put($payload) {
+    $ch = curl_init(VL_VIVIXO_URL);
+    curl_setopt_array($ch, [
+        CURLOPT_CUSTOMREQUEST => 'PUT',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . vl_vivixo_key()],
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+    ]);
+    $body = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return [$code, json_decode((string)$body, true) ?: []];
+}
+
 // Slack treats & < > specially in message text.
 function vl_slack_esc($s) { return str_replace(['&', '<', '>'], ['&amp;', '&lt;', '&gt;'], (string)$s); }
 // Per-property channels: each route is {match, url}. A property whose name contains

@@ -391,6 +391,32 @@ try {
             vl_slack_set($url);
             out(['ok' => true, 'slack' => vl_slack_source()]);
 
+        case 'vivixo_settings':
+            // Save or clear the Vivixo key. Replies only with whether one is saved, and its end.
+            if (array_key_exists('key', $in)) {
+                $k = trim((string)$in['key']);
+                if ($k !== '' && !preg_match('/^vlk_[A-Za-z0-9_-]{20,100}$/', $k)) fail('That is not a Vivixo key (it starts vlk_)');
+                vl_vivixo_set($k);
+            }
+            $k = vl_vivixo_key();
+            out(['linked' => $k !== '', 'hint' => $k !== '' ? substr($k, -4) : null]);
+
+        case 'vivixo_map':
+            // One home's map picture (from its manual's Location page) and map links, to Vivixo.
+            if (vl_vivixo_key() === '') fail('Add the Vivixo key first');
+            $home = trim((string)($in['home'] ?? ''));
+            $type = (string)($in['contentType'] ?? '');
+            $img = (string)($in['image'] ?? '');
+            if ($home === '' || !in_array($type, ['image/jpeg', 'image/png'], true) || strlen($img) < 100 || strlen($img) > 8000000) fail('Bad map');
+            $links = [];
+            foreach (['google', 'apple', 'waze'] as $k) {
+                $u = (string)($in['links'][$k] ?? '');
+                if ($u !== '' && preg_match('#^https://#', $u) && strlen($u) <= 2000) $links[$k] = $u;
+            }
+            [$code, $r] = vl_vivixo_put(['home' => $home, 'contentType' => $type, 'image' => $img, 'links' => (object)$links]);
+            if ($code !== 200) fail($r['error']['message'] ?? ('Vivixo answered ' . $code), $code >= 400 && $code < 500 ? 400 : 502);
+            out(['ok' => true, 'homeName' => $r['homeName'] ?? $home]);
+
         case 'prefs_resend':
             require_once __DIR__ . '/prefs.php';
             $id = id_ok($in['id'] ?? '');

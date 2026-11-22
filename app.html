@@ -2321,6 +2321,7 @@ function newsletterView(){
    manual in this browser (pdf.js + html2canvas + pdf-lib) and downloads the new file.
    Lock codes live only in this private database, never in the public code. */
 let manuals=[],mSel=null,mQuery="",mBusy="",mDirty=null,mShowWording=false,mCacheInfo={};
+let vx=null,vxBusy="",vxKey="",vxReport=null;
 const M_LIBS={
   pdflib:"https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",
   pdfjs:"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
@@ -2800,6 +2801,58 @@ async function mSave(m,what){
   const log=(m.log||[]).slice(-29);log.push({at:new Date().toISOString(),by:window.VL_USER||"",what});
   await db.collection("manuals").doc(m.id).update({sections:m.sections,updated:new Date().toISOString(),log});
   m.log=log;mDirty=null;toast("Saved. Updating the manual…");
+}
+
+/* ---------- Vivixo maps (22 Nov 2026): each manual's Location picture, sent to the guest page ----------
+   The map picture is cut from the Location page (the big box above the map buttons, found the same
+   way as when the map is redrawn), and sent with that page's Google / Apple / Waze links. */
+async function mMapPicture(bytes){
+  await mLibs();
+  const pdf=await window.pdfjsLib.getDocument({data:bytes.slice()}).promise;const f=await mLocPageNo(pdf);
+  if(!f)throw new Error("no Location page (no map buttons)");
+  const p=await pdf.getPage(f.pn);const vp=p.getViewport({scale:200/72});
+  const cv=document.createElement("canvas");cv.width=Math.ceil(vp.width);cv.height=Math.ceil(vp.height);const ctx=cv.getContext("2d");
+  await p.render({canvasContext:ctx,viewport:vp}).promise;
+  const W=cv.width,H=cv.height;
+  const rects=f.links.map(a=>{const[x1,y1,x2,y2]=vp.convertToViewportRectangle(a.rect);return{top:Math.min(y1,y2)}});
+  const thumbTop=Math.min(...rects.map(r=>r.top));
+  const bgc=ctx.getImageData(Math.round(W*0.01),Math.round(thumbTop-H*0.008),1,1).data;
+  const yS=Math.round(H*0.15),yE=Math.round(thumbTop);const d=ctx.getImageData(0,yS,W,yE-yS).data;
+  const off=(x,y,t)=>{const i=((y-yS)*W+x)*4;return Math.abs(d[i]-bgc[0])+Math.abs(d[i+1]-bgc[1])+Math.abs(d[i+2]-bgc[2])>t};
+  const rowFrac=y=>{let c=0,t=0;for(let x=0;x<W;x+=4){t++;if(off(x,y,40))c++}return c/t};
+  let y=yE-1;while(y>yS&&rowFrac(y)<0.5)y--;const bBot=y;while(y>yS&&rowFrac(y)>=0.5)y--;const bTop=y+1;
+  let x0=0,x1=W-1;{const cols=new Float32Array(W);let n=0;for(let yy=bTop;yy<=bBot;yy+=3){n++;for(let x=0;x<W;x++)if(off(x,yy,40))cols[x]++}
+    while(x0<W&&cols[x0]<n*0.5)x0++;while(x1>0&&cols[x1]<n*0.5)x1--}
+  const bh=bBot-bTop,bw=x1-x0;
+  if(bh<H*0.07||bh>H*0.48||bw<W*0.5||thumbTop-bBot>H*0.2)throw new Error("the Location page isn't laid out the usual way");
+  const out=document.createElement("canvas");out.width=bw;out.height=bh;out.getContext("2d").drawImage(cv,x0,bTop,bw,bh,0,0,bw,bh);
+  const blob=await new Promise(r=>out.toBlob(b=>r(b),"image/jpeg",0.88));
+  const buf=new Uint8Array(await blob.arrayBuffer());let bin="";for(let i=0;i<buf.length;i+=32768)bin+=String.fromCharCode.apply(null,buf.subarray(i,i+32768));
+  const links={};for(const a of f.links){const u=String(a.url);const k=/maps\.apple\.com/i.test(u)?"apple":/waze\.com/i.test(u)?"waze":"google";if(!links[k]&&/^https:/i.test(u))links[k]=u}
+  return{contentType:"image/jpeg",image:btoa(bin),links};
+}
+async function vxLoad(){if(vx||vxBusy==="load")return;vxBusy="load";try{vx=await licApi("vivixo_settings")}catch(e){vx={linked:false,hint:null}}vxBusy="";render()}
+async function vxSave(key){vxBusy="Saving…";render();try{vx=await licApi("vivixo_settings",{key});vxKey="";toast(key?"Vivixo key saved":"Vivixo key removed")}catch(e){toast(e.message)}vxBusy="";render()}
+async function vxSendOne(m){const map=await mMapPicture(await mTplPdf(m));return licApi("vivixo_map",{home:m.name,...map})}
+async function vxSend(list){
+  const todo=list.filter(m=>m.pdfAt);if(!todo.length)return;
+  vxReport={sent:[],failed:[],total:todo.length};
+  for(const m of todo){vxBusy="Sending "+(vxReport.sent.length+vxReport.failed.length+1)+" of "+todo.length+"…";render();
+    try{await vxSendOne(m);vxReport.sent.push(m.name)}catch(e){vxReport.failed.push({name:m.name,why:e.message||String(e)})}}
+  vxBusy="";render();toast(vxReport.sent.length+" map"+(vxReport.sent.length===1?"":"s")+" sent to Vivixo");
+}
+function vxCard(m0){
+  if(!vx){vxLoad();return null}
+  const busy=!!vxBusy;
+  const keyRow=h("div",{class:"form"},h("div",{class:"field"},h("label",{text:vx.linked?"Key ending "+vx.hint+" · paste a new one to change it":"Key from Vivixo (Workspace › Vivistays Leads)"}),
+    h("input",{type:"password",value:vxKey,placeholder:"vlk_…",autocomplete:"off",oninput:e=>{vxKey=e.target.value.trim()}})));
+  const btns=h("div",{class:"btns"},h("button",{class:"btn",disabled:busy,onclick:()=>{if(vxKey)vxSave(vxKey)}},"Save key"),
+    vx.linked?h("button",{class:"btn primary",disabled:busy,onclick:()=>vxSend(m0?[m0]:manuals)},m0?"Send this map to Vivixo":"Send all maps to Vivixo"):null,
+    vx.linked?h("button",{class:"btn link small",disabled:busy,onclick:()=>{if(confirm("Remove the Vivixo key from Leads?"))vxSave("")}},"Remove key"):null);
+  const rep=vxReport?h("div",{},h("p",{class:"small",text:vxReport.sent.length+" of "+vxReport.total+" sent"+(vxReport.failed.length?", "+vxReport.failed.length+" not sent:":".")}),
+    ...vxReport.failed.map(f=>h("p",{class:"muted small",text:f.name+": "+f.why}))):null;
+  return h("div",{class:"card"},h("div",{class:"cardhead"},h("h3",{text:"Vivixo maps"}),h("span",{class:"muted small",text:vxBusy&&vxBusy!=="load"?vxBusy:vx.linked?"Linked":"Not linked"})),
+    h("p",{class:"muted small",text:"Sends each manual's map picture and its map buttons to the guest page in Vivixo, matched by property name."}),keyRow,btns,rep);
 }
 
 function mAllCard(list){
@@ -3288,8 +3341,9 @@ function manualsView(){
   const out=[...head,h("div",{class:"card"},h("div",{class:"form"},h("div",{class:"field"},h("label",{text:"Find"}),search),h("div",{class:"field"},h("label",{text:"Property"},),sel)),
     h("div",{class:"btns"},h("label",{class:"btn",style:"position:relative;overflow:hidden;cursor:pointer"},"Upload manual PDFs",h("input",{type:"file",id:"m-bulk",multiple:true,accept:".pdf,.json,application/pdf,application/json",style:"position:absolute;inset:0;opacity:0;cursor:pointer",onchange:e=>{const fs=[...e.target.files];e.target.value="";e.target.blur();mBulk(fs)}})),h("button",{class:"btn link small",onclick:mImport},"Import a data file")),
     h("p",{class:"muted small",text:"Upload PDFs: pick one or many manual files (named like \"21 Troon - Guest Manual ViVi Stays.pdf\"). Each replaces that property's current PDF."}))];
-  const m0=manuals.find(x=>x.id===mSel);if(!m0){out.push(mAllCard(list));return out}
+  const m0=manuals.find(x=>x.id===mSel);if(!m0){out.push(vxCard(null),mAllCard(list));return out}
   const rep=mReportCard();if(rep)out.push(rep);
+  out.push(vxCard(m0));
   const m=mDirty&&mDirty.id===m0.id?mDirty:JSON.parse(JSON.stringify(m0));
   const touch=()=>{mDirty=m};
   const {codes,links}=mFields(m);
