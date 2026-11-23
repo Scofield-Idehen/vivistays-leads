@@ -1,4 +1,11 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}.signout{font-size:14px;color:var(--ink2);text-decoration:none;white-space:nowrap}.signout:hover{color:var(--accent)}</style></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}.signout{font-size:14px;color:var(--ink2);text-decoration:none;white-space:nowrap}.signout:hover{color:var(--accent)}.cv-tl{display:grid;gap:10px}
+.cv-item{border:1px solid var(--line);border-left:4px solid var(--accent,#c9a55c);border-radius:10px;padding:10px 12px;background:var(--card,#fff)}
+.cv-item.in{border-left-color:#2e7d5b;background:color-mix(in srgb,#2e7d5b 6%,var(--card,#fff))}
+.cv-head{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.cv-ch{font-size:13px;padding:2px 8px;border-radius:999px;background:var(--well,#f1efe9)}
+.cv-said{margin:8px 0 4px;white-space:pre-wrap;overflow-wrap:anywhere}
+.cv-sys{padding:2px 4px}
+</style></head><body>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@500;700&family=Playfair+Display:ital,wght@1,700&display=swap"><title>Vivistays Leads</title>
 <style>
 /* Layout: Apple-style sidebar (desktop) / tab bar (phone). One UI-style page head: a calm "viewing area" (big title, one plain sentence) above the "interaction area" of grouped cards.
@@ -674,7 +681,7 @@ async function tkSaveNew(w){
   const a=tkAdd;if(!a.name.trim()){toast("Add the lead's name");return}
   const at=new Date().toISOString();
   const data={kind:"owner",name:a.name.trim(),phone:a.phone.trim(),email:a.email.trim(),source:a.source,group:a.source,location:a.location.trim(),score:"warm",type:"other",properties:"",need:a.said.trim(),notes:"",status:a.status,owner:w,createdBy:window.VL_USER||w,created:at,updated:at,
-    nextFollowUp:(NEXT_DAYS.owner[a.status]==null?null:addDays(NEXT_DAYS.owner[a.status])),activity:[{at,by:w,status:a.status,channel:a.channel,said:a.said.trim()}]};
+    nextFollowUp:(NEXT_DAYS.owner[a.status]==null?null:addDays(NEXT_DAYS.owner[a.status])),activity:[{at,by:w,dir:"out",status:a.status,channel:a.channel,said:a.said.trim()}],startedBy:w,startedAt:at,startedVia:a.channel};
   try{await db.collection("leads").add(data);tkAdd={...tkAdd,name:"",phone:"",email:"",location:"",said:""};toast("Lead added for "+w);render()}catch(e){toast("Couldn't save. Try again.")}
 }
 async function tkSaveLog(w){
@@ -682,7 +689,7 @@ async function tkSaveLog(w){
   if(!tkLog.said.trim()&&!tkLog.status){toast("Write what they said or pick a stage");return}
   const status=tkLog.status||l.status||"messaged",at=new Date().toISOString();
   const n=NEXT_DAYS[kindOf(l)][status];
-  const patch={status,owner:l.owner||w,activity:[...(l.activity||[]),{at,by:w,status,channel:tkLog.channel,said:tkLog.said.trim()}].slice(-60),
+  const patch={status,owner:l.owner||w,activity:[...(l.activity||[]),{at,by:w,dir:"out",status,channel:tkLog.channel,said:tkLog.said.trim()}].slice(-400),
     nextFollowUp:tkLog.next||(n==null?(l.nextFollowUp||null):addDays(n))};
   await save(l,patch);tkLog={id:"",channel:tkLog.channel,said:"",status:"",next:""};tkQ="";toast("Update saved");render();
 }
@@ -847,6 +854,7 @@ function leadRow(l,onclick){
   const right=l.archived?"Archived":CLOSED.has(l.status)?STATUS_LABEL[l.status]:l.status==="new"?"New":late?"Overdue":niceDate(l.nextFollowUp)||STATUS_LABEL[l.status];
   const g=kindOf(l)==="guest";
   const sub=g?["Guest",l.location,l.dates]:["Owner",l.location,l.need||TYPE_LABEL[l.type]];
+  if(l.owner)sub.push("Handled by "+l.owner);const cl=cvLine(l);if(cl)sub.push("Last: "+cl);
   return h("button",{class:"row","aria-selected":String(selected===l.id),onclick},
     h("span",{class:"dot "+(l.score||"warm"),"aria-label":SCORE_LABEL[l.score]||"Warm"}),
     h("span",{class:"nm",text:l.name||(g?"Guest enquiry":"Unnamed lead")}),
@@ -898,6 +906,7 @@ function detail(){
     archiveCard(l,false),
     l.archived?null:nextCard(l),
     contactCard(l),
+    convoCard(l),
     ...(callGuideCard(l)||[]),
     stayfulCard(l),
     l.need?h("div",{class:"card"},h("h3",{text:g?"What they're looking for":"What they need"}),h("p",{class:"text",text:l.need})):null,
@@ -1026,6 +1035,83 @@ function callGuideCard(l){
 
 /* ---------- Stayful landlord leads ---------- */
 function waLink(p){let d=String(p||"").replace(/[^\d+]/g,"");if(d.startsWith("+"))d=d.slice(1);else if(d.startsWith("00"))d=d.slice(2);else if(d.startsWith("0"))d="44"+d.slice(1);return d.length>=10?"https://wa.me/"+d:null}
+/* ---------- CONVERSATION: who said what, when and how, so anyone on the team can pick a lead up ---------- */
+const CV_TEAM=["Barbara","Fola","Saba","Scofield","Valencia"];
+const CV_CH=["WhatsApp","Phone call","Email","Text","Facebook Messenger","Facebook comment","Instagram","In person","Stayful","Other"];
+const CV_ICON={"WhatsApp":"💬","Phone call":"📞","Email":"✉️","Text":"📱","Facebook Messenger":"💬","Facebook comment":"💭","Instagram":"📷","In person":"🤝","Stayful":"🏠","Other":"•"};
+let cvForm={};
+function cvTeam(){const s=new Set(CV_TEAM);if(window.VL_USER)s.add(window.VL_USER);try{for(const w of tkWorkers())s.add(w)}catch(e){}return[...s].filter(Boolean).sort((a,b)=>a.localeCompare(b))}
+const cvTalk=a=>!!(a&&(a.said||a.channel));
+function cvAgo(at){if(!at)return"";const d=Math.round((Date.now()-new Date(at))/864e5);return d<=0?"today":d===1?"yesterday":d<7?d+" days ago":d<30?Math.round(d/7)+" wk ago":niceDate(at.slice(0,10))}
+function cvWhen(at){try{return new Date(at).toLocaleString("en-GB",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}catch(e){return at}}
+function cvFirst(l){return(l.activity||[]).filter(cvTalk).slice().sort((a,b)=>a.at.localeCompare(b.at))[0]||null}
+function cvLast(l){return(l.activity||[]).filter(cvTalk).slice().sort((a,b)=>b.at.localeCompare(a.at))[0]||null}
+function cvLine(l){const a=cvLast(l);if(!a)return"";return(a.dir==="in"?"They replied":a.by||"Someone")+" · "+(a.channel||"note")+" · "+cvAgo(a.at)}
+function cvState(l){if(!cvForm[l.id])cvForm[l.id]={by:window.VL_USER||"",dir:"out",channel:l.phone?"WhatsApp":l.email?"Email":"WhatsApp",said:"",at:"",status:"",next:"",nextStep:""};return cvForm[l.id]}
+function cvPrep(l,channel){const f=cvState(l);f.channel=channel;f.dir="out";setTimeout(()=>{const t=document.getElementById("cv-said-"+l.id);if(t){t.scrollIntoView({block:"center",behavior:"smooth"});t.focus()}},50);render()}
+async function cvSave(l){
+  const f=cvState(l);if(!f.said.trim()&&!f.status){toast("Write what was said");return}
+  if(!f.by){toast("Pick who on the team logged this");return}
+  const at=f.at?new Date(f.at).toISOString():new Date().toISOString();
+  const status=f.status||(f.dir==="in"&&!TALKING.has(l.status)&&!CLOSED.has(l.status)?"replied":"");
+  const entry={at,by:f.by,dir:f.dir,channel:f.channel,said:f.said.trim(),...(status?{status}:{})};
+  const activity=[...(l.activity||[]),entry].sort((a,b)=>String(a.at).localeCompare(String(b.at))).slice(-400);
+  const patch={activity,lastContact:at,lastChannel:f.channel,owner:l.owner||f.by};
+  if(!l.startedBy&&!cvFirst(l))Object.assign(patch,{startedBy:f.by,startedAt:at,startedVia:f.channel});
+  if(status){patch.status=status;const n=NEXT_DAYS[kindOf(l)][status];if(!f.next)patch.nextFollowUp=n==null?(l.nextFollowUp||null):addDays(n)}
+  if(f.next)patch.nextFollowUp=f.next;
+  if(f.nextStep.trim())patch.nextStep=f.nextStep.trim();
+  await save(l,patch);cvForm[l.id]={...f,said:"",at:"",status:"",next:"",nextStep:""};toast("Saved to the conversation");render();
+}
+async function cvDelete(l,e){if(!confirm("Delete this entry from the conversation?"))return;await save(l,{activity:(l.activity||[]).filter(a=>a!==e)});render()}
+function convoCard(l){
+  const f=cvState(l),team=cvTeam(),g=kindOf(l)==="guest";
+  const first=cvFirst(l),last=cvLast(l);
+  const startedBy=l.startedBy||(first&&(first.dir==="in"?"":first.by))||"",startedAt=l.startedAt||(first&&first.at)||"",startedVia=l.startedVia||(first&&first.channel)||"";
+  const opt=(v,t,cur)=>{const o=h("option",{value:v,text:t});if(cur===v)o.selected=true;return o};
+  const ownerSel=h("select",{"aria-label":"Who's handling this",onchange:e=>{save(l,{owner:e.target.value});render()}},opt("","Nobody yet",l.owner||""),...team.map(n=>opt(n,n,l.owner||"")));
+  const summary=h("dl",{class:"facts",style:"border-top:0;padding-top:0"},
+    h("dt",{text:"Where they are"}),h("dd",{},h("span",{class:"pill",text:STATUS_LABEL[l.status]||"New"})),
+    h("dt",{text:"Handled by"}),h("dd",{},ownerSel),
+    h("dt",{text:"Started by"}),h("dd",{text:startedBy?startedBy+(startedVia?" · "+startedVia:"")+(startedAt?" · "+niceDate(startedAt.slice(0,10)):""):"Not contacted yet"}),
+    h("dt",{text:"Last contact"}),h("dd",{text:last?(last.dir==="in"?"They contacted us":(last.by||"Someone")+" contacted them")+" · "+(last.channel||"note")+" · "+cvAgo(last.at):"None yet"}),
+    h("dt",{text:"Next step"}),h("dd",{},h("input",{type:"text",value:l.nextStep||"",placeholder:"e.g. Send proposal after call",style:"margin-bottom:6px",onchange:e=>save(l,{nextStep:e.target.value.trim()})}),
+      h("input",{type:"date",value:l.nextFollowUp||"","aria-label":"Next step date",style:"width:auto",onchange:e=>{save(l,{nextFollowUp:e.target.value||null});render()}})));
+  // add form
+  const set=(k,v)=>{f[k]=v};
+  const dirBtn=(v,t)=>h("button",{type:"button",class:"chip","aria-pressed":String(f.dir===v),onclick:()=>{f.dir=v;render()}},t);
+  const statusOpts=(g?GUEST_STATUSES:OWNER_STATUSES);
+  const form=h("div",{class:"form",style:"margin-top:6px;grid-template-columns:1fr"},
+    h("div",{class:"chips"},dirBtn("out","We contacted them"),dirBtn("in","They contacted us")),
+    h("div",{class:"field"},h("label",{text:f.dir==="in"?"Logged by":"Who on the team"}),h("select",{onchange:e=>set("by",e.target.value)},opt("","— pick your name —",f.by),...team.map(n=>opt(n,n,f.by)))),
+    h("div",{class:"field"},h("label",{text:"How"}),h("select",{onchange:e=>set("channel",e.target.value)},...CV_CH.map(c=>opt(c,c,f.channel)))),
+    h("div",{class:"field"},h("label",{text:f.dir==="in"?"What they said":"What was said or agreed"}),
+      h("textarea",{id:"cv-said-"+l.id,rows:"3",placeholder:f.dir==="in"?"Paste their message, or sum up what they said":"Paste what you sent, or the key points of the call",oninput:e=>set("said",e.target.value)},f.said)),
+    h("details",{},h("summary",{class:"small"},"More: stage, next step, earlier date"),
+      h("div",{class:"field"},h("label",{text:"Move them to"}),h("select",{onchange:e=>set("status",e.target.value)},opt("","Keep as "+(STATUS_LABEL[l.status]||"New"),f.status),...statusOpts.map(([v,t])=>opt(v,t,f.status)))),
+      h("div",{class:"field"},h("label",{text:"Next step"}),h("input",{type:"text",value:f.nextStep,placeholder:"e.g. Call back Thursday",oninput:e=>set("nextStep",e.target.value)})),
+      h("div",{class:"field"},h("label",{text:"Next step date"}),h("input",{type:"date",value:f.next,style:"width:auto",onchange:e=>set("next",e.target.value)})),
+      h("div",{class:"field"},h("label",{text:"When it happened (leave blank for now)"}),h("input",{type:"datetime-local",value:f.at,style:"width:auto",onchange:e=>set("at",e.target.value)}))),
+    h("div",{class:"btns"},h("button",{class:"btn primary",onclick:()=>cvSave(l)},"Add to conversation")));
+  // timeline
+  const items=(l.activity||[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  const tl=items.map(a=>{
+    if(!cvTalk(a))return h("div",{class:"cv-sys small muted",text:(a.by||"Someone")+" moved them to "+(STATUS_LABEL[a.status]||a.status||"—")+" · "+cvWhen(a.at)});
+    const inb=a.dir==="in";
+    return h("div",{class:"cv-item"+(inb?" in":"")},
+      h("div",{class:"cv-head"},h("b",{text:inb?(l.name||"They")+" → us":(a.by||"Someone")+" → "+(l.name||"them")}),
+        h("span",{class:"cv-ch",text:(CV_ICON[a.channel]||"")+" "+(a.channel||"Note")}),
+        a.status?h("span",{class:"tk-pill",text:STATUS_LABEL[a.status]||a.status}):null,
+        h("span",{class:"muted small",style:"margin-left:auto",text:cvWhen(a.at)})),
+      a.said?h("p",{class:"cv-said",text:a.said}):null,
+      h("div",{class:"cv-foot small muted"},inb&&a.by?"Logged by "+a.by+" · ":"",h("button",{class:"btn link small",style:"padding:0",onclick:()=>cvDelete(l,a)},"Delete")))});
+  return h("div",{class:"card"},h("h3",{text:"Conversation"}),
+    h("p",{class:"muted small",text:"Everything said with "+(l.name||"this "+(g?"guest":"owner"))+", by whom, how and when. Log every call and message so anyone can carry on."}),
+    summary,h("h4",{text:"Log a message or call",style:"margin:14px 0 4px"}),form,
+    h("h4",{text:"History ("+items.filter(cvTalk).length+")",style:"margin:18px 0 8px"}),
+    tl.length?h("div",{class:"cv-tl"},...tl):h("p",{class:"muted small",text:"Nothing logged yet. The first person to contact them should log it here."}));
+}
+
 function contactCard(l){
   if(!l.phone&&!l.email)return null;
   const msg=(ownerPlan(l)||{}).msg||"";
@@ -1035,9 +1121,10 @@ function contactCard(l){
       l.phone?[h("dt",{text:"Phone"}),h("dd",{},l.phone+" ",h("button",{class:"btn link",style:"padding:0",onclick:()=>copy(l.phone)},"Copy"))]:null,
       l.email?[h("dt",{text:"Email"}),h("dd",{},l.email+" ",h("button",{class:"btn link",style:"padding:0",onclick:()=>copy(l.email)},"Copy"))]:null),
     h("div",{class:"btns"},
-      l.phone?h("a",{class:"btn",href:"tel:"+String(l.phone).replace(/[^\d+]/g,"")},"Call"):null,
-      wa?h("a",{class:"btn",href:wa+(msg?"?text="+encodeURIComponent(msg):""),target:"_blank",rel:"noopener"},"WhatsApp"):null,
-      l.email?h("a",{class:"btn",href:"mailto:"+l.email+"?subject="+encodeURIComponent("Your property – Vivistays")+(msg?"&body="+encodeURIComponent(msg):"")},"Email"):null));
+      l.phone?h("a",{class:"btn",href:"tel:"+String(l.phone).replace(/[^\d+]/g,""),onclick:()=>cvPrep(l,"Phone call")},"Call"):null,
+      wa?h("a",{class:"btn",href:wa+(msg?"?text="+encodeURIComponent(msg):""),target:"_blank",rel:"noopener",onclick:()=>cvPrep(l,"WhatsApp")},"WhatsApp"):null,
+      l.email?h("a",{class:"btn",href:"mailto:"+l.email+"?subject="+encodeURIComponent("Your property – Vivistays")+(msg?"&body="+encodeURIComponent(msg):""),onclick:()=>cvPrep(l,"Email")},"Email"):null),
+    h("p",{class:"muted small",text:"After you call, message or email, log it in the Conversation below."}));
 }
 function stayfulCard(l){
   const s=l.stayful;if(!s)return null;
@@ -1073,7 +1160,7 @@ async function save(l,patch){
   try{await db.collection("leads").doc(l.id).update({...patch,updated:new Date().toISOString()})}catch(e){toast(e&&e.code==="permission_denied"?"You don't have permission to edit leads":"Couldn't save. Try again.")}
 }
 function setStatus(l,status){
-  const n=NEXT_DAYS[kindOf(l)][status];const patch={status,followUpDraft:null,activity:[...(l.activity||[]),{at:new Date().toISOString(),by:window.VL_USER||"",status,channel:"",said:""}].slice(-60)};
+  const n=NEXT_DAYS[kindOf(l)][status];const patch={status,followUpDraft:null,activity:[...(l.activity||[]),{at:new Date().toISOString(),by:window.VL_USER||"",status,channel:"",said:""}].slice(-400)};
   patch.nextFollowUp=n==null?(status==="call"?(l.nextFollowUp||null):null):addDays(n);
   save(l,patch);render();toast("Saved"+(patch.nextFollowUp?". Next step "+niceDate(patch.nextFollowUp).toLowerCase():""));
 }
