@@ -154,6 +154,23 @@ try {
             $db->prepare('INSERT OR REPLACE INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?)')->execute(['manuals', $id, json_encode($doc, JSON_UNESCAPED_UNICODE), gmdate('c')]);
             out(['ok' => true, 'size' => $doc['pdfSize']]);
 
+        case 'drive_pdf':
+            // Fetch a PDF that's shared "anyone with the link" on Google Drive (by its file id) and hand it
+            // back to the signed-in user, so a manual from the team's Drive folder can be updated here.
+            $fid = (string)($in['fid'] ?? '');
+            if (!preg_match('/^[A-Za-z0-9_-]{20,80}$/', $fid)) fail('Bad Drive file id');
+            $ch = curl_init('https://drive.usercontent.google.com/download?id=' . $fid . '&export=download&confirm=t');
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 5, CURLOPT_TIMEOUT => 120, CURLOPT_USERAGENT => 'Mozilla/5.0 vivistays-leads']);
+            $blob = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+            if ($blob === false || $code !== 200) fail('Could not download from Drive (' . $code . ')');
+            if (substr($blob, 0, 5) !== '%PDF-') fail('Drive did not return a PDF (is the file shared with anyone who has the link?)');
+            if (strlen($blob) > 60 * 1024 * 1024) fail('PDF is too large');
+            header('Content-Type: application/pdf');
+            header('Content-Length: ' . strlen($blob));
+            header('Cache-Control: no-store');
+            echo $blob;
+            exit;
+
         case 'manual_pull':
             // Fetch an encrypted manual PDF from this project's GitHub release, decrypt it with the
             // key sent by the signed-in user (AES-256-GCM: 12-byte nonce + ciphertext + 16-byte tag), store it.
